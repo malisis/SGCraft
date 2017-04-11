@@ -8,8 +8,10 @@ package gcewing.sg;
 
 import static java.lang.Math.*;
 import java.util.*;
-import java.lang.reflect.Method;
 import org.apache.logging.log4j.*;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.event.player.PlayerTeleportEvent;
 import io.netty.channel.*;
 
 import net.minecraft.block.*;
@@ -29,20 +31,15 @@ import net.minecraft.tileentity.*;
 import net.minecraft.util.*;
 import net.minecraft.world.*;
 import net.minecraft.world.chunk.*;
-
 import net.minecraftforge.common.*;
-import net.minecraftforge.common.util.*;
 import net.minecraftforge.common.network.*;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.network.*;
 import cpw.mods.fml.relauncher.Side;
 
-import gcewing.sg.SGAddressing.AddressingError;
 import gcewing.sg.oc.OCWirelessEndpoint; //[OC]
 import static gcewing.sg.BaseBlockUtils.*;
 import static gcewing.sg.BaseUtils.*;
-import static gcewing.sg.BaseInventoryUtils.*;
-import static gcewing.sg.Utils.*;
 
 public class SGBaseTE extends BaseTileInventory {
 
@@ -1005,7 +1002,17 @@ public class SGBaseTE extends BaseTileInventory {
                     Trans3 dt = dte.localToGlobalTransformation();
                     while (entity.ridingEntity != null)
                         entity = entity.ridingEntity;
-                    teleportEntityAndRider(entity, t, dt, connectedLocation.dimension, dte.irisIsClosed());
+                    
+                    // Almura: Add in custom event call to prevent cross teleportation based on permissions.
+                    Location from = new Location(Bukkit.getWorld(entity.worldObj.getWorldInfo().getWorldName()), (int)entity.chunkCoordX, (int)entity.chunkCoordY, (int)entity.chunkCoordZ);
+                    Location to = new Location(Bukkit.getWorld(dte.getWorldObj().getWorldInfo().getWorldName()), dte.getX(), dte.getY(), dte.getZ());
+                    @SuppressWarnings("deprecation")
+                    PlayerTeleportEvent event = new PlayerTeleportEvent(Bukkit.getPlayer(entity.getCommandSenderName()), from, to, PlayerTeleportEvent.TeleportCause.UNKNOWN);                    
+                    Bukkit.getServer().getPluginManager().callEvent(event);
+                    if (!event.isCancelled()) {
+                        teleportEntityAndRider(entity, t, dt, connectedLocation.dimension, dte.irisIsClosed());
+                    }
+                    // Almura: end.
                 }
             }
         }
