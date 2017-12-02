@@ -42,6 +42,10 @@ import net.minecraftforge.fml.relauncher.Side;
 
 import gcewing.sg.SGAddressing.AddressingError;
 import gcewing.sg.oc.OCWirelessEndpoint; //[OC]
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
+
 import static gcewing.sg.BaseBlockUtils.*;
 import static gcewing.sg.BaseUtils.*;
 import static gcewing.sg.Utils.*;
@@ -53,6 +57,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
     static boolean debugConnect = false;
     static boolean debugTransientDamage = false;
     static boolean debugTeleport = false;
+    boolean sendMessage = false;
 
     static SoundEvent sound(String name) {
         return new SoundEvent(new ResourceLocation(name));
@@ -1076,6 +1081,28 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
               entity.lastTickPosX, entity.lastTickPosY, entity.lastTickPosZ,
               entity.rotationPitch, entity.rotationYaw);
         }
+
+        /***
+         *  The following is for checking permissions prior to teleport
+         *  since SGCraft doesn't respect the proper handling of teleporting
+         *  between dimension or within worlds
+         ***/
+        
+        // ToDo: Better Sponge compatibility
+        // ToDo: For some reason I am getting here twice, always.
+        if (entity instanceof EntityPlayerMP) {
+            Player spongePlayer = (Player) entity;
+            if (spongePlayer != null) {
+                MinecraftServer server = BaseUtils.getMinecraftServer();
+                WorldServer newWorld = server.getWorld(dimension);
+                if (!spongePlayer.hasPermission("almura.world." + newWorld.getWorldInfo().getWorldName())) {
+                    System.out.println("SGCraft: - TeleportEntity denied for: " + spongePlayer.getName() + " to world: " + newWorld.getWorldInfo().getWorldName());
+                    spongePlayer.sendMessage(Text.of(TextColors.RED, "SGCraft - Teleport permission denied."));
+                    return null;
+                }
+            }
+        }
+
         Vector3 p = t1.ip(entity.posX, entity.posY, entity.posZ); // local position
         Vector3 v = t1.iv(entity.motionX, entity.motionY, entity.motionZ); // local velocity
         Vector3 r = t1.iv(yawVector(entity)); // local facing
@@ -1182,6 +1209,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
         player.dimension = newDimension;
         WorldServer oldWorld = server.getWorld(oldDimension);
         WorldServer newWorld = server.getWorld(newDimension);
+
         //System.out.printf("SGBaseTE.transferPlayerToDimension: %s with %s\n", newWorld, newWorld.getEntityTracker());
         // <<< Fix for MCPC+
         // -- Is this still necessary now that we are calling firePlayerChangedDimensionEvent?
@@ -1225,6 +1253,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
         if (debugTeleport)
             System.out.printf("SGBaseTE.teleportEntityToWorld: %s to %s, destBlocked = %s\n",
                 repr(oldEntity), newWorld, destBlocked);
+
         WorldServer oldWorld = (WorldServer)oldEntity.world;
         NBTTagCompound nbt = new NBTTagCompound();
         oldEntity.writeToNBT(nbt);

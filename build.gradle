@@ -4,14 +4,21 @@ buildscript
     {
         mavenCentral()
         mavenLocal()
-        jcenter()
-        maven
-        {
-            url = "http://files.minecraftforge.net/maven"
+        jcenter()        
+        maven {
+            name 'Sponge API repo'
+            url 'http://repo.spongepowered.org/maven'
         }
-        maven
-        {
-            url = "https://oss.sonatype.org/content/repositories/snapshots/"
+        maven {
+            name = 'forge'
+            url = 'http://files.minecraftforge.net/maven/'
+        }
+        maven {
+            name = 'oss-sonatype-public'
+            url = 'https://oss.sonatype.org/content/repositories/public/'
+        }
+        maven {
+            url = 'https://plugins.gradle.org/m2/'
         }
     }
     dependencies
@@ -30,7 +37,9 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 archivesBaseName = jarName
 
 dependencies
-    {        
+    {
+//      compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
+        compile files('lib/spongeapi-7.0.0-SNAPSHOT.jar')
         compile files('lib/industrialcraft-2-2.8.25-ex112-api.jar')
         compile files('lib/OpenComputers-MC1.12.1-1.7.0.20.jar')
         compile files('lib/ComputerCraft1.80pr1.jar')
