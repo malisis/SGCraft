@@ -8,6 +8,9 @@ package gcewing.sg;
 
 import java.util.*;
 import java.lang.reflect.Method;
+import java.util.function.Consumer;
+
+import com.google.common.collect.Sets;
 import org.apache.logging.log4j.*;
 import io.netty.channel.*;
 
@@ -42,7 +45,9 @@ import net.minecraftforge.fml.relauncher.Side;
 
 import gcewing.sg.SGAddressing.AddressingError;
 import gcewing.sg.oc.OCWirelessEndpoint; //[OC]
+import org.spongepowered.api.Sponge;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
@@ -169,7 +174,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
     IInventory inventory = new InventoryBasic("Stargate", false, numInventorySlots);
 
     double ehGrid[][][];
-    
+
+    private static Set<UUID> messagesQueue = Sets.newHashSet();
+
     public static void configure(BaseConfiguration cfg) {
         energyPerFuelItem = cfg.getDouble("stargate", "energyPerFuelItem", energyPerFuelItem);
         gateOpeningsPerFuelItem = cfg.getInteger("stargate", "gateOpeningsPerFuelItem", gateOpeningsPerFuelItem);
@@ -1070,6 +1077,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
         return entity.world.getEntitiesWithinAABB(EntityLiving.class, box);
     }
 
+    static Consumer<Task> clearMessageQueue(Player player) {
+        return task -> {
+            messagesQueue.remove(player.getUniqueId());
+        };
+    }
+
     static Entity teleportEntity(Entity entity, Trans3 t1, Trans3 t2, int dimension, boolean destBlocked) {
         Entity newEntity = null;
         if (debugTeleport) {
@@ -1097,9 +1110,16 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
             if (spongePlayer != null) {
                 MinecraftServer server = BaseUtils.getMinecraftServer();
                 WorldServer newWorld = server.getWorld(dimension);
-                if (!spongePlayer.hasPermission("almura.world." + newWorld.getWorldInfo().getWorldName())) {
-                    System.out.println("SGCraft: - TeleportEntity denied for: " + spongePlayer.getName() + " to world: " + newWorld.getWorldInfo().getWorldName());
-                    spongePlayer.sendMessage(Text.of(TextColors.RED, "SGCraft - Teleport permission denied."));
+                if (!spongePlayer.hasPermission("sgcraft.worlds." + newWorld.getWorldInfo().getWorldName())) {
+                    if (!messagesQueue.contains(spongePlayer.getUniqueId())) {
+                        spongePlayer.sendMessage(Text.of(TextColors.RED, "SGCraft - Teleport permission denied."));
+                        messagesQueue.add(spongePlayer.getUniqueId());
+                        Sponge.getScheduler().createTaskBuilder().delayTicks(10).execute(clearMessageQueue(spongePlayer)).submit(SGCraft.mod);
+                    }
+                    if (debugTeleport) {
+                        System.out.println("SGCraft: - TeleportEntity denied for: " + spongePlayer.getName() + " to world: " + newWorld.getWorldInfo().getWorldName());
+                        System.out.println("SGCraft: - Player lacks permission: sgcraft.worlds." + newWorld.getWorldInfo().getWorldName());
+                    }
                     return null;
                 }
             }
@@ -1129,10 +1149,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
             }
             //if (entity != newEntity)
             //  System.out.printf("SGBaseTE.teleportEntity: %s is now %s\n", repr(entity), repr(newEntity));
-        }
-        else {
+        } else {
             terminateEntityByIrisImpact(entity);
-            playIrisHitSound(worldForDimension(dimension), q, entity);  
+            playIrisHitSound(worldForDimension(dimension), q, entity);
         }
         return newEntity;
     }
@@ -1436,7 +1455,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
         }
         return ehGrid;
     }
-    
+
     void initiateOpeningTransient() {
         double v[][] = getEventHorizonGrid()[1];
         int n = SGBaseTERenderer.ehGridPolarSize;
@@ -1445,7 +1464,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
             v[j][1] = v[j][0] + openingTransientRandomness * random.nextGaussian();
         }
     }
-    
+
     void initiateClosingTransient() {
         double v[][] = getEventHorizonGrid()[1];
         int m = SGBaseTERenderer.ehGridRadialSize;
@@ -1454,7 +1473,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
             for (int j = 1; j <= n; j++)
                 v[j][i] += closingTransientRandomness * random.nextGaussian();
     }
-    
+
     void applyRandomImpulse() {
         double v[][] = getEventHorizonGrid()[1];
         int m = SGBaseTERenderer.ehGridRadialSize;
@@ -1463,7 +1482,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
         int j = random.nextInt(n) + 1;
         v[j][i] += 0.05 * random.nextGaussian();
     }
-    
+
     void updateEventHorizon() {
         double grid[][][] = getEventHorizonGrid();
         double u[][] = grid[0];
