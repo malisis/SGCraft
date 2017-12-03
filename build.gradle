@@ -27,6 +27,15 @@ buildscript
     }
 }
 
+repositories {
+    mavenCentral()
+    jcenter()
+    maven {
+        name 'Sponge API repo'
+        url 'http://repo.spongepowered.org/maven'
+    } 
+}
+
 apply plugin: 'net.minecraftforge.gradle.forge'
 
 //Only edit below this line, the above code adds and enables the nessasary things for Forge to be setup.
@@ -38,8 +47,8 @@ archivesBaseName = jarName
 
 dependencies
     {
-//      compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
-        compile files('lib/spongeapi-7.0.0-SNAPSHOT.jar')
+        compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
+//        compile files('lib/spongeapi-7.0.0-SNAPSHOT.jar')
         compile files('lib/industrialcraft-2-2.8.25-ex112-api.jar')
         compile files('lib/OpenComputers-MC1.12.1-1.7.0.20.jar')
         compile files('lib/ComputerCraft1.80pr1.jar')

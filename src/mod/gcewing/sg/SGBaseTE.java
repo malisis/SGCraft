@@ -1091,7 +1091,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
         // ToDo: Better Sponge compatibility
         // ToDo: For some reason I am getting here twice if the player walks normally through the gate.
         // If the player approaches slowly the double trigger does not appear.
-        
+
         if (entity instanceof EntityPlayerMP) {
             Player spongePlayer = (Player) entity;
             if (spongePlayer != null) {
