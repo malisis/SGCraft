@@ -1232,7 +1232,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
     static void transferPlayerToDimension(EntityPlayerMP player, int newDimension, Vector3 p, double a) {
         //System.out.printf("SGBaseTE.transferPlayerToDimension: %s to dimension %d\n", repr(player), newDimension);
         MinecraftServer server = BaseUtils.getMinecraftServer();
-        BlockPos oldLocation = player.getPosition();
         PlayerList scm = server.getPlayerList();
         // Sponge Addon -> Generate Teleport Event FROM
         Transform<org.spongepowered.api.world.World> fromTransform = ((IMixinEntity)player).getTransform();
@@ -1241,18 +1240,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
         WorldServer oldWorld = server.getWorld(oldDimension);
         WorldServer newWorld = server.getWorld(newDimension);
 
-        //System.out.printf("SGBaseTE.transferPlayerToDimension: %s with %s\n", newWorld, newWorld.getEntityTracker());
-        // <<< Fix for MCPC+
-        // -- Is this still necessary now that we are calling firePlayerChangedDimensionEvent?
-        // -- Yes, apparently it is.
         sendDimensionRegister(player, newDimension);
-        // >>>
+
         player.closeScreen();
         player.connection.sendPacket(new SPacketRespawn(player.dimension,
             player.world.getDifficulty(), newWorld.getWorldInfo().getTerrainType(),
             player.interactionManager.getGameType()));
-//         if (SGCraft.mystcraftIntegration != null) //[MYST]
-//             SGCraft.mystcraftIntegration.sendAgeData(newWorld, player);
         oldWorld.removeEntityDangerously(player); // Removes player right now instead of waiting for next tick
         player.isDead = false;
         player.setLocationAndAngles(p.x, p.y, p.z, (float)a, player.rotationPitch);
