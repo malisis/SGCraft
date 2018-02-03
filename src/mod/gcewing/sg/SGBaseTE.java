@@ -10,6 +10,7 @@ import java.util.*;
 import java.lang.reflect.Method;
 import java.util.function.Consumer;
 
+import com.flowpowered.math.vector.Vector3d;
 import com.google.common.collect.Sets;
 import org.apache.logging.log4j.*;
 import io.netty.channel.*;
@@ -46,10 +47,16 @@ import net.minecraftforge.fml.relauncher.Side;
 import gcewing.sg.SGAddressing.AddressingError;
 import gcewing.sg.oc.OCWirelessEndpoint; //[OC]
 import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.Transform;
 import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.event.entity.MoveEntityEvent;
 import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
+import org.spongepowered.common.SpongeImpl;
+import org.spongepowered.common.entity.EntityUtil;
+import org.spongepowered.common.interfaces.entity.IMixinEntity;
+
 
 import static gcewing.sg.BaseBlockUtils.*;
 import static gcewing.sg.BaseUtils.*;
@@ -1225,7 +1232,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
     static void transferPlayerToDimension(EntityPlayerMP player, int newDimension, Vector3 p, double a) {
         //System.out.printf("SGBaseTE.transferPlayerToDimension: %s to dimension %d\n", repr(player), newDimension);
         MinecraftServer server = BaseUtils.getMinecraftServer();
+        BlockPos oldLocation = player.getPosition();
         PlayerList scm = server.getPlayerList();
+        // Sponge Addon -> Generate Teleport Event FROM
+        Transform<org.spongepowered.api.world.World> fromTransform = ((IMixinEntity)player).getTransform();
         int oldDimension = player.dimension;
         player.dimension = newDimension;
         WorldServer oldWorld = server.getWorld(oldDimension);
@@ -1260,6 +1270,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
         }
         player.connection.sendPacket(new SPacketSetExperience(player.experience, player.experienceTotal, player.experienceLevel));
         FMLCommonHandler.instance().firePlayerChangedDimensionEvent(player, oldDimension, newDimension);
+        // Sponge Addon -> Generate Teleport Event TO
+        Transform<org.spongepowered.api.world.World> toTransform = ((IMixinEntity)player).getTransform();
+        // Fire Fake event to allow for GUI update.
+        MoveEntityEvent.Teleport event = EntityUtil.handleDisplaceEntityTeleportEvent(player,fromTransform, toTransform, false);
         //System.out.printf("SGBaseTE.transferPlayerToDimension: Transferred %s\n", repr(player));
     }   
     

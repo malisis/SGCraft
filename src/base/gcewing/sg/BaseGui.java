@@ -70,14 +70,13 @@ public class BaseGui {
             super.initGui();
             root.layout();
         }
-        
-//      @Override
-//      public void drawScreen(int par1, int par2, float par3) {
-//          resetColor();
-//          textColor = defaultTextColor;
-//          textShadow = false;
-//          super.drawScreen(par1, par2, par3);
-//      }
+
+        //@Override
+        public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+            this.drawDefaultBackground();
+            super.drawScreen(mouseX, mouseY, partialTicks);
+            this.renderHoveredToolTip(mouseX, mouseY);
+        }
         
         @Override
         protected void drawGuiContainerBackgroundLayer(float f, int mouseX, int mouseY) {

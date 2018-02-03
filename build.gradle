@@ -47,8 +47,8 @@ archivesBaseName = jarName
 
 dependencies
     {
-        compile 'org.spongepowered:spongeapi:7.0.0-SNAPSHOT'
-//        compile files('lib/spongeapi-7.0.0-SNAPSHOT.jar')
+        //compile 'org.spongepowered:spongeapi:7.1.0-SNAPSHOT'        
+        compile files('lib/spongeforge-1.12.2-2586-7.1.0-BETA-2873.jar')
         compile files('lib/industrialcraft-2-2.8.25-ex112-api.jar')
         compile files('lib/OpenComputers-MC1.12.1-1.7.0.20.jar')
         compile files('lib/ComputerCraft1.80pr1.jar')
