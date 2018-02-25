@@ -6,6 +6,7 @@
 
 package gcewing.sg;
 
+import com.google.common.collect.Sets;
 import gcewing.sg.oc.OCWirelessEndpoint;
 import io.netty.channel.ChannelFutureListener;
 import net.minecraft.block.Block;
@@ -54,8 +55,19 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.spongepowered.api.entity.Transform;
+import org.spongepowered.api.event.entity.MoveEntityEvent;
+import org.spongepowered.common.entity.EntityUtil;
+import org.spongepowered.common.interfaces.entity.IMixinEntity;
+
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.entity.living.player.Player;
+import org.spongepowered.api.scheduler.Task;
+import org.spongepowered.api.text.Text;
+import org.spongepowered.api.text.format.TextColors;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 import static gcewing.sg.BaseBlockUtils.getWorldTileEntity;
 import static gcewing.sg.BaseUtils.max;
@@ -183,6 +195,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
     IInventory inventory = new InventoryBasic("Stargate", false, numInventorySlots);
 
     double ehGrid[][][];
+    private static Set<UUID> messagesQueue = Sets.newHashSet();
     
     public static void configure(BaseConfiguration cfg) {
         energyPerFuelItem = cfg.getDouble("stargate", "energyPerFuelItem", energyPerFuelItem);
@@ -1083,17 +1096,55 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
         return entity.world.getEntitiesWithinAABB(EntityLiving.class, box);
     }
 
+    // Sponge Addon
+    static Consumer<Task> clearMessageQueue(Player player) {
+        return task -> {
+            messagesQueue.remove(player.getUniqueId());
+        };
+    }
+
     static Entity teleportEntity(Entity entity, Trans3 t1, Trans3 t2, int dimension, boolean destBlocked) {
         Entity newEntity = null;
         if (debugTeleport) {
             System.out.printf("SGBaseTE.teleportEntity: %s (in dimension %d)  to dimension %d\n",
-              repr(entity), entity.dimension, dimension);
+                    repr(entity), entity.dimension, dimension);
             System.out.printf("SGBaseTE.teleportEntity: pos (%.2f, %.2f, %.2f) prev (%.2f, %.2f, %.2f) last (%.2f, %.2f, %.2f) pitch %.2f yaw %.2f\n",
-              entity.posX, entity.posY, entity.posZ,
-              entity.prevPosX, entity.prevPosY, entity.prevPosZ,
-              entity.lastTickPosX, entity.lastTickPosY, entity.lastTickPosZ,
-              entity.rotationPitch, entity.rotationYaw);
+                    entity.posX, entity.posY, entity.posZ,
+                    entity.prevPosX, entity.prevPosY, entity.prevPosZ,
+                    entity.lastTickPosX, entity.lastTickPosY, entity.lastTickPosZ,
+                    entity.rotationPitch, entity.rotationYaw);
         }
+
+        /***
+         *  The following is for checking permissions prior to teleport
+         *  since SGCraft doesn't respect the proper handling of teleporting
+         *  between dimension or within worlds
+         ***/
+
+        // ToDo: Better Sponge compatibility
+        // ToDo: For some reason I am getting here twice if the player walks normally through the gate.
+        // If the player approaches slowly the double trigger does not appear.
+
+        if (entity instanceof EntityPlayerMP) {
+            Player spongePlayer = (Player) entity;
+            if (spongePlayer != null) {
+                MinecraftServer server = BaseUtils.getMinecraftServer();
+                WorldServer newWorld = server.getWorld(dimension);
+                if (!spongePlayer.hasPermission("sgcraft.worlds." + newWorld.getWorldInfo().getWorldName())) {
+                    if (!messagesQueue.contains(spongePlayer.getUniqueId())) {
+                        spongePlayer.sendMessage(Text.of(TextColors.RED, "SGCraft - Teleport permission denied."));
+                        messagesQueue.add(spongePlayer.getUniqueId());
+                        Sponge.getScheduler().createTaskBuilder().delayTicks(10).execute(clearMessageQueue(spongePlayer)).submit(SGCraft.mod);
+                    }
+                    if (debugTeleport) {
+                        System.out.println("SGCraft: - TeleportEntity denied for: " + spongePlayer.getName() + " to world: " + newWorld.getWorldInfo().getWorldName());
+                        System.out.println("SGCraft: - Player lacks permission: sgcraft.worlds." + newWorld.getWorldInfo().getWorldName());
+                    }
+                    return null;
+                }
+            }
+        }
+
         Vector3 p = t1.ip(entity.posX, entity.posY, entity.posZ); // local position
         Vector3 v = t1.iv(entity.motionX, entity.motionY, entity.motionZ); // local velocity
         Vector3 r = t1.iv(yawVector(entity)); // local facing
@@ -1118,10 +1169,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
             }
             //if (entity != newEntity)
             //  System.out.printf("SGBaseTE.teleportEntity: %s is now %s\n", repr(entity), repr(newEntity));
-        }
-        else {
+        } else {
             terminateEntityByIrisImpact(entity);
-            playIrisHitSound(worldForDimension(dimension), q, entity);  
+            playIrisHitSound(worldForDimension(dimension), q, entity);
         }
         return newEntity;
     }
@@ -1190,28 +1240,25 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
         channel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(player);
         channel.writeAndFlush(msg).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
     }
-    
-    
+
+
     static void transferPlayerToDimension(EntityPlayerMP player, int newDimension, Vector3 p, double a) {
         //System.out.printf("SGBaseTE.transferPlayerToDimension: %s to dimension %d\n", repr(player), newDimension);
         MinecraftServer server = BaseUtils.getMinecraftServer();
         PlayerList scm = server.getPlayerList();
+        // Sponge Addon -> Generate Teleport Event FROM
+        Transform<org.spongepowered.api.world.World> fromTransform = ((IMixinEntity)player).getTransform();
         int oldDimension = player.dimension;
         player.dimension = newDimension;
         WorldServer oldWorld = server.getWorld(oldDimension);
         WorldServer newWorld = server.getWorld(newDimension);
-        //System.out.printf("SGBaseTE.transferPlayerToDimension: %s with %s\n", newWorld, newWorld.getEntityTracker());
-        // <<< Fix for MCPC+
-        // -- Is this still necessary now that we are calling firePlayerChangedDimensionEvent?
-        // -- Yes, apparently it is.
+
         sendDimensionRegister(player, newDimension);
-        // >>>
+
         player.closeScreen();
         player.connection.sendPacket(new SPacketRespawn(player.dimension,
-            player.world.getDifficulty(), newWorld.getWorldInfo().getTerrainType(),
-            player.interactionManager.getGameType()));
-//         if (SGCraft.mystcraftIntegration != null) //[MYST]
-//             SGCraft.mystcraftIntegration.sendAgeData(newWorld, player);
+                player.world.getDifficulty(), newWorld.getWorldInfo().getTerrainType(),
+                player.interactionManager.getGameType()));
         oldWorld.removeEntityDangerously(player); // Removes player right now instead of waiting for next tick
         player.isDead = false;
         player.setLocationAndAngles(p.x, p.y, p.z, (float)a, player.rotationPitch);
@@ -1229,9 +1276,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
         }
         player.connection.sendPacket(new SPacketSetExperience(player.experience, player.experienceTotal, player.experienceLevel));
         FMLCommonHandler.instance().firePlayerChangedDimensionEvent(player, oldDimension, newDimension);
+        // Sponge Addon -> Generate Teleport Event TO
+        Transform<org.spongepowered.api.world.World> toTransform = ((IMixinEntity)player).getTransform();
+        // Fire Fake event to allow for GUI update.
+        MoveEntityEvent.Teleport event = EntityUtil.handleDisplaceEntityTeleportEvent(player,fromTransform, toTransform, false);
         //System.out.printf("SGBaseTE.transferPlayerToDimension: Transferred %s\n", repr(player));
-    }   
-    
+    }
+
     static Entity teleportEntityToDimension(Entity entity, Vector3 p, Vector3 v, double a, int dimension, boolean destBlocked) {
         //System.out.printf("SGBaseTE.teleportEntityToDimension: %s to dimension %d\n", repr(entity), dimension);
         MinecraftServer server = BaseUtils.getMinecraftServer();
