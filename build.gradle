@@ -25,16 +25,18 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 archivesBaseName = jarName
 
 repositories {
+    maven { url = "http://files.minecraftforge.net/maven" } // spongeforge
     maven { url = "http://maven.cil.li/" }
     maven { url = "http://maven.ic2.player.to" }
     maven { url = "http://repo.spongepowered.org/maven" }
+    maven { url = "http://cc.crzd.me/maven/" }
 }
 
 dependencies {
-    compile files('lib/spongeforge-1.12.2-2586-7.1.0-BETA-2873.jar')
+    compile "org.spongepowered:spongeforge:1.12.2-2586-7.1.0-BETA-2873:dev"
     compile "li.cil.oc:OpenComputers:MC1.12.1-1.7.1.52"
     compile "net.industrial-craft:industrialcraft-2:2.8.9-ex112:api"
-    compile files('lib/ComputerCraft1.80pr1.jar')
+    deobfCompile "dan200.computercraft:ComputerCraft:1.80pr1-build4"
 }
 
 minecraft {
