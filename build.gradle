@@ -27,23 +27,30 @@ archivesBaseName = jarName
 repositories {
     maven { url = "http://files.minecraftforge.net/maven" } // spongeforge
     maven { url = "http://maven.cil.li/" }
+    maven {
+        name = 'oss-sonatype-public'
+        url = 'https://oss.sonatype.org/content/groups/public/'
+    }
     maven { url = "http://maven.ic2.player.to" }
     maven { url = "http://repo.spongepowered.org/maven" }
     maven { url = "http://cc.crzd.me/maven/" }
 }
 
 dependencies {
-    compile "org.spongepowered:spongeforge:1.12.2-2586-7.1.0-BETA-2873:dev"
+    compile "org.spongepowered:spongeforge:1.12.2-2655-7.1.0-BETA-3065:dev"
     compile "li.cil.oc:OpenComputers:MC1.12.1-1.7.1.52"
     compile "net.industrial-craft:industrialcraft-2:2.8.9-ex112:api"
     deobfCompile "dan200.computercraft:ComputerCraft:1.80pr1-build4"
+    deobfCompile ('net.malisis:malisiscore:1.12.2-6.4.1-SNAPSHOT') {
+        transitive = false
+    }
 }
 
 minecraft {
-    version = "1.12.2-14.23.0.2529"
+    version = "1.12.2-14.23.3.2655"
     runDir = "run"
     mappings = 'snapshot_20180114'
-    useDepAts = true
+    useDepAts = false
 
     // the mappings can be changed at any time, and must be in the following format.
     // snapshot_YYYYMMDD   snapshot are built nightly.

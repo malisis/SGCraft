@@ -1279,7 +1279,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable {
         // Sponge Addon -> Generate Teleport Event TO
         Transform<org.spongepowered.api.world.World> toTransform = ((IMixinEntity)player).getTransform();
         // Fire Fake event to allow for GUI update.
-        MoveEntityEvent.Teleport event = EntityUtil.handleDisplaceEntityTeleportEvent(player,fromTransform, toTransform, false);
+        MoveEntityEvent.Teleport event = EntityUtil.handleDisplaceEntityTeleportEvent(player,fromTransform, toTransform);
         //System.out.printf("SGBaseTE.transferPlayerToDimension: Transferred %s\n", repr(player));
     }
 
