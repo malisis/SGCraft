@@ -6,8 +6,6 @@
 
 package gcewing.sg;
 
-import java.util.*;
-
 import gcewing.sg.rf.RFIntegration;
 import net.minecraft.block.*;
 import net.minecraft.block.material.*;
@@ -15,14 +13,11 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.*;
 import net.minecraft.item.*;
 import net.minecraft.item.crafting.Ingredient;
-import net.minecraft.tileentity.*;
 import net.minecraft.util.*;
-import net.minecraft.world.*;
 import net.minecraft.world.chunk.*;
 import net.minecraft.world.gen.structure.*;
 
 import net.minecraftforge.common.*;
-import net.minecraftforge.event.*;
 import net.minecraftforge.event.world.*;
 import net.minecraftforge.event.terraingen.*;
 
@@ -71,6 +66,10 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static OCIntegration ocIntegration; //[OC]
     public static RFIntegration rfIntegration; //[RF]
 //     public static MystcraftIntegration mystcraftIntegration; //[MYST]
+
+    // ZPM
+    public static Block zeroPointModuleBlock;
+    public static Item zeroPointModuleItem;
 
     public SGCraft() {
         mod = this;
