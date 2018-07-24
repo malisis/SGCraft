@@ -17,32 +17,32 @@ import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
 
-public class ZpmInterfaceCartTE extends BasicSource implements ISGEnergySource,IInventory, ITickable {
+public class ZpmInterfaceCartTE extends TileEntity implements ISGEnergySource, IEnergySource ,IInventory, ITickable {
   private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
+  private final BasicSource ic2EnergySource;
 
-
-  public ZpmInterfaceCartTE(TileEntity parent, double capacity, int tier) {
-    super(parent, capacity, tier);
+  public ZpmInterfaceCartTE() {
     this.setInventorySlotContents(0, new ItemStack(SGCraft.zpm));
-    setCapacity(Integer.MAX_VALUE);
-    setEnergyStored(this.getOfferedEnergy());
+    this.ic2EnergySource = new BasicSource(this, 100000, 3);
+    this.ic2EnergySource.setCapacity(Integer.MAX_VALUE);
+    this.ic2EnergySource.setEnergyStored(this.getOfferedEnergy());
   }
 
-  //@Override
-  //public void readFromNBT(NBTTagCompound tag) {
-  //  super.readFromNBT(tag);
-  //  ic2EnergySource.readFromNBT(tag);
-  //}
+  @Override
+  public void readFromNBT(NBTTagCompound tag) {
+    super.readFromNBT(tag);
+    ic2EnergySource.readFromNBT(tag);
+  }
 
-  //@Override
-  //public void writeToNBT(NBTTagCompound tag) {
-  //  super.writeToNBT(tag);
-  //  ic2EnergySource.writeToNBT(tag);
-  //}
+  @Override
+  public void writeToNBT(NBTTagCompound tag) {
+    super.writeToNBT(tag);
+    ic2EnergySource.writeToNBT(tag);
+  }
 
   @Override
   public void update() {
-    //update(); // notify the energy source
+   ic2EnergySource.update(); // notify the energy source
   }
 
   @Override
