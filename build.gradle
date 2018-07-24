@@ -37,7 +37,7 @@ repositories {
 }
 
 dependencies {
-    compile "org.spongepowered:spongeforge:1.12.2-2655-7.1.0-BETA-3065:dev"
+    compile "org.spongepowered:spongeforge:1.12.2-2705-7.1.0-BETA-3338:dev"
     compile "li.cil.oc:OpenComputers:MC1.12.1-1.7.1.52"
     compile "net.industrial-craft:industrialcraft-2:2.8.9-ex112:api"
     deobfCompile "dan200.computercraft:ComputerCraft:1.80pr1-build4"
@@ -46,11 +46,14 @@ dependencies {
     }
 }
 
+deobfMcMCP { failOnAtError = false }
+deobfMcSRG { failOnAtError = false }
+
 minecraft {
     version = "1.12.2-14.23.3.2655"
     runDir = "run"
     mappings = 'snapshot_20180114'
-    useDepAts = false
+    useDepAts = true
 
     // the mappings can be changed at any time, and must be in the following format.
     // snapshot_YYYYMMDD   snapshot are built nightly.
