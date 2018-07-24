@@ -2,6 +2,7 @@ package gcewing.sg.ic2.zpm;
 
 import gcewing.sg.ISGEnergySource;
 import gcewing.sg.SGCraft;
+import ic2.api.energy.prefab.BasicSource;
 import ic2.api.energy.tile.IEnergyAcceptor;
 import ic2.api.energy.tile.IEnergySource;
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,13 +12,33 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
 
-public class ZpmInterfaceCartTE extends TileEntity implements IEnergySource, ISGEnergySource,IInventory {
+public class ZpmInterfaceCartTE extends TileEntity implements IEnergySource, ISGEnergySource,IInventory, ITickable {
   private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
+  private BasicSource ic2EnergySource = new BasicSource(this, 25000, 3);
 
   public ZpmInterfaceCartTE() {
     this.setInventorySlotContents(0, new ItemStack(SGCraft.zpm));
+    ic2EnergySource.setCapacity(Integer.MAX_VALUE);
+  }
+
+  @Override
+  public void update() {
+    ic2EnergySource.update(); // notify the energy source
+    //ic2EnergySource.addEnergy(5); // add 5 eu to the source's buffer this tick
+  }
+
+  @Override
+  public void invalidate() {
+    ic2EnergySource.invalidate(); // notify the energy source
+    super.invalidate(); // this is important for mc!
+  }
+
+  @Override
+  public void onChunkUnload() {
+    ic2EnergySource.onChunkUnload(); // notify the energy source
   }
 
   @Override
