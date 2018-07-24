@@ -14,31 +14,46 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.world.World;
 
-public class ZpmInterfaceCartTE extends TileEntity implements IEnergySource, ISGEnergySource,IInventory, ITickable {
+public class ZpmInterfaceCartTE extends BasicSource implements ISGEnergySource,IInventory, ITickable {
   private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
-  private BasicSource ic2EnergySource = new BasicSource(this, 25000, 3);
 
-  public ZpmInterfaceCartTE() {
+
+  public ZpmInterfaceCartTE(TileEntity parent, double capacity, int tier) {
+    super(parent, capacity, tier);
     this.setInventorySlotContents(0, new ItemStack(SGCraft.zpm));
-    ic2EnergySource.setCapacity(Integer.MAX_VALUE);
+    setCapacity(Integer.MAX_VALUE);
+    setEnergyStored(this.getOfferedEnergy());
   }
+
+  //@Override
+  //public void readFromNBT(NBTTagCompound tag) {
+  //  super.readFromNBT(tag);
+  //  ic2EnergySource.readFromNBT(tag);
+  //}
+
+  //@Override
+  //public void writeToNBT(NBTTagCompound tag) {
+  //  super.writeToNBT(tag);
+  //  ic2EnergySource.writeToNBT(tag);
+  //}
 
   @Override
   public void update() {
-    ic2EnergySource.update(); // notify the energy source
-    //ic2EnergySource.addEnergy(5); // add 5 eu to the source's buffer this tick
+    //update(); // notify the energy source
   }
 
   @Override
   public void invalidate() {
-    ic2EnergySource.invalidate(); // notify the energy source
+    invalidate(); // notify the energy source
     super.invalidate(); // this is important for mc!
   }
 
   @Override
   public void onChunkUnload() {
-    ic2EnergySource.onChunkUnload(); // notify the energy source
+    onChunkUnload(); // notify the energy source
   }
 
   @Override
@@ -87,8 +102,10 @@ public class ZpmInterfaceCartTE extends TileEntity implements IEnergySource, ISG
       energy = this.availableEnergy(item);
       if(energy > 0d) {
         final NBTTagCompound tag = item.getTagCompound();
+        double setValue = Math.max(0, energy - value);
         if(tag != null) {
-          tag.setDouble(ZPMItem.ENERGY, Math.max(0, energy - value));
+          tag.setDouble(ZPMItem.ENERGY, Math.max(0, setValue));
+          System.out.println("Saved to NBT: " + setValue);
         }
       }
     }
@@ -180,11 +197,15 @@ public class ZpmInterfaceCartTE extends TileEntity implements IEnergySource, ISG
     return 1;
   }
 
+  @Override public void markDirty() {
+
+  }
+
   @Override
   public boolean isUsableByPlayer(final EntityPlayer player) {
-    if(this.world.getTileEntity(this.pos) != this) {
-      return false;
-    }
+    //if(this.world.getTileEntity(this.pos) != this) {
+    //  return false;
+    //}
     return player.getDistanceSq((double) this.pos.getX() + 0.5D, (double) this.pos.getY() + 0.5D, (double) this.pos.getZ() + 0.5D) <= 64.0D;
   }
 
@@ -228,5 +249,9 @@ public class ZpmInterfaceCartTE extends TileEntity implements IEnergySource, ISG
   @Override
   public boolean hasCustomName() {
     return false;
+  }
+
+  @Override public ITextComponent getDisplayName() {
+    return null;
   }
 }
