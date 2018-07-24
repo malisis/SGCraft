@@ -658,11 +658,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         // ZPM Implementation.
         if (requireZPM(dte.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
-            if (!(zpmPowerAvailable(dte.getPos(), 6) > 0)) {
-                System.out.println("ZPM or HV source not found.");
+            long power = (long)zpmPowerAvailable(this.pos, 4);
+            if (!(power > 0)) {
+                System.out.println("ZPM or HV source not found." + power);
                 return diallingFailure(player, "zpmNotFound");
             } else {
-                if (!(zpmPowerAvailable(dte.getPos(), 6) > energyToOpen * distanceFactor)) {
+                if (!(power > energyToOpen * distanceFactor)) {
                     return diallingFailure(player, "zpmLowPower");
                 } else {
                     // Gold?
@@ -880,7 +881,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     
     boolean useEnergy(double amount) {
         if (debugEnergyUse)
-            System.out.printf("SGBaseTE.useEnergy: %s; buffered: %s\n", amount, energyInBuffer);
+            //System.out.printf("SGBaseTE.useEnergy: %s; buffered: %s\n", amount, energyInBuffer);
         if (amount <= energyInBuffer) {
             energyInBuffer -= amount;
             return true;
@@ -914,14 +915,19 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     public double zpmPowerAvailable(BlockPos pos, int radius) {
         double zpmPower = 0.0;
+        System.out.println("Start: " + pos);
         for (final BlockPos.MutableBlockPos nearPos : BlockPos.getAllInBoxMutable(
                 pos.add(-radius, -radius, -radius),
                 pos.add(radius, radius, radius)
         )) {
             TileEntity nte = world.getTileEntity(nearPos);
-            System.out.printf("SGBaseTE.zpmInterfaceCartNear: %s at %s\n", nte, nearPos);
-            if (nte instanceof ZpmInterfaceCartTE) {
-                zpmPower = ((ISGEnergySource)nte).totalAvailableEnergy();
+            if (nte != null) {
+                if (nte instanceof ZpmInterfaceCartTE) {
+                    System.out.printf("SGBaseTE.zpmInterfaceCartNear: %s at %s\n", nte, nearPos);
+                    zpmPower = ((ISGEnergySource) nte).totalAvailableEnergy();
+                    System.out.println("ZPMPowerAvailable: " + zpmPower);
+                    break;
+                }
             }
         }
         return zpmPower;
@@ -932,7 +938,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         List<ISGEnergySource> result = new ArrayList<>();
         Trans3 t = localToGlobalTransformation();
         for (int i = -5; i <= 2; i++) {
-            BlockPos bp = t.p(i, i, i).blockPos();
+            BlockPos bp = t.p(i, -1, 0).blockPos();
             TileEntity nte = world.getTileEntity(bp);
             System.out.printf("SGBaseTE.findEnergySources: %s at %s\n", nte, bp);
             if (nte instanceof ISGEnergySource) {
@@ -975,7 +981,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         for (ISGEnergySource source : sources) {
             if (total >= amount)
                 break;
-            double e = source.drawEnergy(amount - total);
+            double e = source.drawEnergyDouble(amount - total);
             if (debugEnergyUse)
                 System.out.printf("SGBaseTe.drawEnergyFrom: %s supplied %s\n", source, e);
             total += e;

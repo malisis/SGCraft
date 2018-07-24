@@ -10,4 +10,4 @@ public interface ISGEnergySource {
 
     double availableEnergy();
     double totalAvailableEnergy();
-    double drawEnergy(double amount);}
+    double drawEnergyDouble(double amount);}

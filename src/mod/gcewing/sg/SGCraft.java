@@ -6,6 +6,7 @@
 
 package gcewing.sg;
 
+import gcewing.sg.ic2.zpm.ZpmInterfaceCartTE;
 import gcewing.sg.oc.OCIntegration;
 import gcewing.sg.rf.RFIntegration;
 import net.minecraft.block.Block;
@@ -108,6 +109,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         ccIntegration = (IIntegration) integrateWithMod("computercraft", "gcewing.sg.cc.CCIntegration"); //[CC]
         ocIntegration = (OCIntegration)integrateWithMod("opencomputers", "gcewing.sg.oc.OCIntegration"); //[OC]
 //         mystcraftIntegration = (MystcraftIntegration)integrateWithMod("Mystcraft", "gcewing.sg.MystcraftIntegration"); //[MYST]
+        GameRegistry.registerTileEntity(ZpmInterfaceCartTE.class, new ResourceLocation(this.modID));
         super.preInit(e);
     }
     

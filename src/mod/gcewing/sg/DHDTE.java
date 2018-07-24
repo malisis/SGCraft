@@ -192,7 +192,7 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
     }
     
     @Override
-    public double drawEnergy(double amount) {
+    public double drawEnergyDouble(double amount) {
         double energyDrawn = 0;
         while (energyDrawn < amount) {
             if (energyInBuffer == 0) {
@@ -204,7 +204,7 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
             energyInBuffer -= e;
         }
         if (SGBaseTE.debugEnergyUse)
-            System.out.printf("DHDTE.drawEnergy: %s; supplied: %s; buffered: %s\n",
+            System.out.printf("DHDTE.drawEnergyDouble: %s; supplied: %s; buffered: %s\n",
                 amount, energyDrawn, energyInBuffer);
         markChanged();
         return energyDrawn;

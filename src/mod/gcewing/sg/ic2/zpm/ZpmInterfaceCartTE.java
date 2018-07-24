@@ -1,5 +1,7 @@
 package gcewing.sg.ic2.zpm;
 
+import gcewing.sg.ISGEnergySource;
+import gcewing.sg.SGCraft;
 import ic2.api.energy.tile.IEnergyAcceptor;
 import ic2.api.energy.tile.IEnergySource;
 import net.minecraft.entity.player.EntityPlayer;
@@ -11,10 +13,11 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 
-public class ZpmInterfaceCartTE extends TileEntity implements IEnergySource, IInventory {
+public class ZpmInterfaceCartTE extends TileEntity implements IEnergySource, ISGEnergySource,IInventory {
   private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
 
   public ZpmInterfaceCartTE() {
+    this.setInventorySlotContents(0, new ItemStack(SGCraft.zpm));
   }
 
   @Override
@@ -22,6 +25,10 @@ public class ZpmInterfaceCartTE extends TileEntity implements IEnergySource, IIn
     double offeredEnergy = 0d;
     for(final ItemStack item : this.items) {
       final double availableEnergy = this.availableEnergy(item);
+      System.out.println("ZPM Power Available: " + availableEnergy);
+      offeredEnergy = availableEnergy;
+
+      /*
       if(availableEnergy == Double.MAX_VALUE) {
         offeredEnergy = Double.MAX_VALUE;
       } else {
@@ -31,22 +38,40 @@ public class ZpmInterfaceCartTE extends TileEntity implements IEnergySource, IIn
         } else {
           offeredEnergy = incremented;
         }
-      }
+      }*/
     }
+
     return offeredEnergy;
   }
 
   @Override
-  public void drawEnergy(final double value) {
+  public void drawEnergy(double v) {
+    drawEnergyDouble(v);
+  }
+
+  @Override
+  public double availableEnergy() {
+    return this.getOfferedEnergy();
+  }
+
+  @Override
+  public double totalAvailableEnergy() {
+    return this.getOfferedEnergy();
+  }
+
+  @Override
+  public double drawEnergyDouble(final double value) {
+    double energy = 0;
     for(final ItemStack item : this.items) {
-      final double energy = this.availableEnergy(item);
+      energy = this.availableEnergy(item);
       if(energy > 0d) {
         final NBTTagCompound tag = item.getTagCompound();
         if(tag != null) {
-          tag.setDouble(ZPMItem.ENERGY, energy - value);
+          tag.setDouble(ZPMItem.ENERGY, Math.max(0, energy - value));
         }
       }
     }
+    return Math.min(value, energy);
   }
 
   @Override
@@ -63,9 +88,11 @@ public class ZpmInterfaceCartTE extends TileEntity implements IEnergySource, IIn
     for(final ItemStack item : this.items) {
       final double energy = this.availableEnergy(item);
       if(energy > 0d) {
+        System.out.println("Emit True");
         return true;
       }
     }
+    System.out.println("Emit false");
     return false;
   }
 
@@ -123,7 +150,7 @@ public class ZpmInterfaceCartTE extends TileEntity implements IEnergySource, IIn
       item.setTagCompound(tag);
     }
     if(!tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
-      tag.setDouble(ZPMItem.ENERGY, Double.MAX_VALUE);
+      tag.setDouble(ZPMItem.ENERGY, Integer.MAX_VALUE);
     }
   }
 

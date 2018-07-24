@@ -55,7 +55,8 @@ public abstract class PowerTE extends BaseTileEntity implements ISGEnergySource 
         return energyBuffer;
     }
     
-    public double drawEnergy(double request) {
+    public double drawEnergyDouble(double request) {
+        //                10000 / 20
         double available = energyBuffer / energyPerSGEnergyUnit;
         double supply = min(request, available);
         energyBuffer -= supply * energyPerSGEnergyUnit;

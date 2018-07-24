@@ -1,6 +1,7 @@
 package gcewing.sg.ic2.zpm;
 
 import gcewing.sg.SGCraft;
+import ic2.api.tile.IWrenchable;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
