@@ -79,6 +79,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static RFIntegration rfIntegration; //[RF]
 //     public static MystcraftIntegration mystcraftIntegration; //[MYST]
 
+    public static Block zeroPointModuleBlock;
+    public static Item zeroPointModuleItem;
+
     public SGCraft() {
         mod = this;
         creativeTab = new CreativeTabs("sgcraft:sgcraft") {

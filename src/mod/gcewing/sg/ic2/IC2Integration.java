@@ -6,10 +6,17 @@
 
 package gcewing.sg.ic2;
 
+import gcewing.sg.ic2.zpm.ZeroPointModuleBlock;
+import gcewing.sg.ic2.zpm.ZeroPointModuleItem;
+import net.minecraft.block.*;
+import net.minecraft.block.material.Material;
+import net.minecraft.init.*;
 import net.minecraft.item.*;
 import gcewing.sg.*;
 
 import ic2.api.item.*; //[IC2]
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class IC2Integration extends BaseSubsystem<SGCraft, SGCraftClient> {
 
@@ -27,8 +34,20 @@ public class IC2Integration extends BaseSubsystem<SGCraft, SGCraftClient> {
     @Override
     public void registerBlocks() {
         mod.ic2PowerUnit = mod.newBlock("ic2PowerUnit", IC2PowerBlock.class, IC2PowerItem.class);
+
+        SGCraft.zeroPointModuleBlock = new ZeroPointModuleBlock(Material.ROCK).setHardness(1.5f);
+        SGCraft.zeroPointModuleBlock.setRegistryName(new ResourceLocation(Info.modID, "zero_point_module"));
+        SGCraft.zeroPointModuleBlock.setUnlocalizedName(Info.modID + ".zero_point_module");
+        ForgeRegistries.BLOCKS.register(SGCraft.zeroPointModuleBlock);
     }
-    
+
+    @Override
+    protected void registerItems() {
+        SGCraft.zeroPointModuleItem = new ZeroPointModuleItem(SGCraft.zeroPointModuleBlock);
+        SGCraft.zeroPointModuleItem.setRegistryName(new ResourceLocation(Info.modID, "zero_point_module"));
+        ForgeRegistries.ITEMS.register(SGCraft.zeroPointModuleItem);
+    }
+
     @Override
     public void registerRecipes() {
         ItemStack rubber = getIC2Item("crafting", "rubber");

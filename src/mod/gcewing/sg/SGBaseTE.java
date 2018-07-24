@@ -77,7 +77,7 @@ import static gcewing.sg.BaseUtils.min;
 public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSoundSource {
 
     static boolean debugState = false;
-    static boolean debugEnergyUse = false;
+    static boolean debugEnergyUse = true;
     static boolean debugConnect = false;
     static boolean debugTransientDamage = false;
     static boolean debugTeleport = false;
@@ -188,11 +188,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     int timeout, maxTimeout;
     double energyInBuffer, distanceFactor; // all energy use is multiplied by this
     public String homeAddress, addressError;
-    
-//  public static final int firstFuelSlot = 0;
-//  public static final int numFuelSlots = 4;
-//  public static final int firstUpgradeSlot = 4;
-//  public static final int numUpgradeSlots = 0;
 
     IInventory inventory = new InventoryBasic("Stargate", false, numInventorySlots);
 
@@ -658,6 +653,20 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         dte.startDiallingStargate(homeAddress, this, false);
         return null;
     }
+
+    // Almura START
+    public static double getWorldMultiplier(String world) {
+        if (world.equalsIgnoreCase("cemaria") || world.equalsIgnoreCase("cemaria-nether") || world.equalsIgnoreCase("cemaria-end")) {
+            return 2.0;
+        } else if (world.equalsIgnoreCase("keystone") || world.equalsIgnoreCase("keystone-nether") || world.equalsIgnoreCase("keystone-end")) {
+            return 3.0;
+        } else if (world.equalsIgnoreCase("atlantis") || world.equalsIgnoreCase("atlantis-nether") || world.equalsIgnoreCase("atlantis-end")) {
+            return 4.0;
+        }
+
+        return 3.0; // Change this for testing.
+    }
+    // Almura END
     
     public static double distanceFactorForCoordDifference(TileEntity te1, TileEntity te2) {
         double dx = te1.getPos().getX() - te2.getPos().getX();
@@ -669,8 +678,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         double lm = Math.log(0.05 * 16 * SGAddressing.coordRange);
         double lr = ld / lm;
         double f = 1 + 14 * distanceFactorMultiplier * lr * lr;
-        if (te1.getWorld() != te2.getWorld())
-            f *= interDimensionMultiplier;
+        if (te1.getWorld() != te2.getWorld()) {
+            // Almura START
+            String destination = te2.getWorld().getWorldInfo().getWorldName().toLowerCase();
+            f *= getWorldMultiplier(destination);
+            // Almura END
+        }
         return f;
     }
     
