@@ -98,7 +98,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             }
         };
     }
-    
+
     @Mod.EventHandler
     @Override
     public void preInit(FMLPreInitializationEvent e) {
@@ -323,5 +323,22 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         }
     }
 
+    @SubscribeEvent
+    @SideOnly(Side.CLIENT)
+    public void onModelRegistry(ModelRegistryEvent event) {
+        // Register Complex Block Models
+        // Note: Complex Item Models register within their creation class because their registration order isn't important.
+        registerModel(Item.getItemFromBlock(SGCraft.zpm_interface_cart));
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void registerModel(Item item) {
+        this.registerInventoryModel(item, requireNonNull(item.getRegistryName()));
+    }
+
+    @SideOnly(Side.CLIENT)
+    private void registerInventoryModel(Item item, ResourceLocation blockName) {
+        ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(blockName, "inventory"));
+    }
 
 }

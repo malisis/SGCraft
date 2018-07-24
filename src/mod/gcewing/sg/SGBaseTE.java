@@ -7,6 +7,7 @@
 package gcewing.sg;
 
 import com.google.common.collect.Sets;
+import gcewing.sg.ic2.zpm.ZpmInterfaceCartTE;
 import gcewing.sg.oc.OCWirelessEndpoint;
 import io.netty.channel.ChannelFutureListener;
 import net.minecraft.block.Block;
@@ -190,6 +191,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public String homeAddress, addressError;
 
     IInventory inventory = new InventoryBasic("Stargate", false, numInventorySlots);
+
+    // ZPM Implementation
+    public boolean zpmPowered = false;
 
     double ehGrid[][][];
     private static Set<UUID> messagesQueue = Sets.newHashSet();
@@ -652,14 +656,20 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             return diallingFailure(player, "insufficientEnergy");
         }
 
+        // ZPM Implementation.
         if (requireZPM(dte.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
-            if (!(availableTotalEnergy() > 1000000)) {
+            if (!(zpmPowerAvailable(dte.getPos(), 6) > 0)) {
                 System.out.println("ZPM or HV source not found.");
-                return diallingFailure(player, "insufficientEnergy");
+                return diallingFailure(player, "zpmNotFound");
+            } else {
+                if (!(zpmPowerAvailable(dte.getPos(), 6) > energyToOpen * distanceFactor)) {
+                    return diallingFailure(player, "zpmLowPower");
+                } else {
+                    // Gold?
+                }
             }
+            System.out.println("ZPM Found - Engage!");
         }
-
-        System.out.println("Start Dialing");
 
         startDiallingStargate(address, dte, true);
         dte.startDiallingStargate(homeAddress, this, false);
@@ -901,13 +911,28 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             System.out.printf("SGBaseTE.useEnergy: %s left over in buffer\n", energyInBuffer);
         return true;
     }
+
+    public double zpmPowerAvailable(BlockPos pos, int radius) {
+        double zpmPower = 0.0;
+        for (final BlockPos.MutableBlockPos nearPos : BlockPos.getAllInBoxMutable(
+                pos.add(-radius, -radius, -radius),
+                pos.add(radius, radius, radius)
+        )) {
+            TileEntity nte = world.getTileEntity(nearPos);
+            System.out.printf("SGBaseTE.zpmInterfaceCartNear: %s at %s\n", nte, nearPos);
+            if (nte instanceof ZpmInterfaceCartTE) {
+                zpmPower = ((ISGEnergySource)nte).totalAvailableEnergy();
+            }
+        }
+        return zpmPower;
+    }
     
     List<ISGEnergySource> findEnergySources() {
         System.out.printf("SGBaseTe.findEnergySources: for %s\n", getSoundPos());
         List<ISGEnergySource> result = new ArrayList<>();
         Trans3 t = localToGlobalTransformation();
-        for (int i = -2; i <= 2; i++) {
-            BlockPos bp = t.p(i, -1, 0).blockPos();
+        for (int i = -5; i <= 2; i++) {
+            BlockPos bp = t.p(i, i, i).blockPos();
             TileEntity nte = world.getTileEntity(bp);
             System.out.printf("SGBaseTE.findEnergySources: %s at %s\n", nte, bp);
             if (nte instanceof ISGEnergySource) {

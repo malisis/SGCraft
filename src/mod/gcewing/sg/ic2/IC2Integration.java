@@ -6,19 +6,15 @@
 
 package gcewing.sg.ic2;
 
-import gcewing.sg.ic2.zpm.ZeroPointModuleBlock;
-import gcewing.sg.ic2.zpm.ZeroPointModuleItem;
-import net.minecraft.block.*;
+import gcewing.sg.ic2.zpm.ZPMItem;
+import gcewing.sg.ic2.zpm.ZpmInterfaceCart;
 import net.minecraft.block.material.Material;
 import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.init.*;
 import net.minecraft.item.*;
 import gcewing.sg.*;
 
 import ic2.api.item.*; //[IC2]
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.client.event.ModelRegistryEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 public class IC2Integration extends BaseSubsystem<SGCraft, SGCraftClient> {
@@ -37,9 +33,11 @@ public class IC2Integration extends BaseSubsystem<SGCraft, SGCraftClient> {
     @Override
     public void registerBlocks() {
         mod.ic2PowerUnit = mod.newBlock("ic2PowerUnit", IC2PowerBlock.class, IC2PowerItem.class);
-        SGCraft.zpm_interface_cart = new ZeroPointModuleBlock(Material.ROCK).setHardness(1.5f);
+
+        SGCraft.zpm_interface_cart = new ZpmInterfaceCart(Material.ROCK).setHardness(1.5f);
         SGCraft.zpm_interface_cart.setRegistryName(new ResourceLocation(Info.modID, "block/zpm_interface_cart"));
-        SGCraft.zpm_interface_cart.setUnlocalizedName(Info.modID + ".zpm_interface_cart").setCreativeTab(SGCraft.creativeTabs);
+        SGCraft.zpm_interface_cart.setUnlocalizedName(SGCraft.zpm_interface_cart.getRegistryName().getResourcePath().replace('/', '.'));
+        SGCraft.zpm_interface_cart.setCreativeTab(CreativeTabs.MISC);
         ForgeRegistries.BLOCKS.register(SGCraft.zpm_interface_cart);
     }
 
@@ -50,9 +48,9 @@ public class IC2Integration extends BaseSubsystem<SGCraft, SGCraftClient> {
         SGCraft.zpm_interface_cart_item.setUnlocalizedName(Info.modID + ".zpm_interface_cart");
         SGCraft.zpm_interface_cart_item.setCreativeTab(CreativeTabs.MISC);
         ForgeRegistries.ITEMS.register(SGCraft.zpm_interface_cart_item);
+        SGCraft.zpm = new ZPMItem(new ResourceLocation(Info.modID, "zpm"), "zpm_item");
 
-        //SGCraft.zpm.setRegistryName(new ResourceLocation(Info.modID, "zpm"));
-        //ForgeRegistries.ITEMS.register(SGCraft.zpm);
+        ForgeRegistries.ITEMS.register(SGCraft.zpm);
     }
 
     @Override

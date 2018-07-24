@@ -11,10 +11,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.NonNullList;
 
-public class ZeroPointModuleBlockEntity extends TileEntity implements IEnergySource, IInventory {
-  private NonNullList<ItemStack> items = NonNullList.withSize(3, ItemStack.EMPTY);
+public class ZpmInterfaceCartTE extends TileEntity implements IEnergySource, IInventory {
+  private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
 
-  public ZeroPointModuleBlockEntity() {
+  public ZpmInterfaceCartTE() {
   }
 
   @Override
@@ -43,7 +43,7 @@ public class ZeroPointModuleBlockEntity extends TileEntity implements IEnergySou
       if(energy > 0d) {
         final NBTTagCompound tag = item.getTagCompound();
         if(tag != null) {
-          tag.setDouble(ZeroPointModuleItem.ENERGY, energy - value);
+          tag.setDouble(ZPMItem.ENERGY, energy - value);
         }
       }
     }
@@ -51,10 +51,10 @@ public class ZeroPointModuleBlockEntity extends TileEntity implements IEnergySou
 
   @Override
   public int getSourceTier() {
-    int tier = 0;
-    if(!this.items.get(0).isEmpty()) tier++; // LV
-    if(!this.items.get(1).isEmpty()) tier++; // MV
-    if(!this.items.get(2).isEmpty()) tier++; // HV
+    int tier = 3;
+    //if(!this.items.get(0).isEmpty()) tier++; // LV
+    //if(!this.items.get(1).isEmpty()) tier++; // MV
+    //if(!this.items.get(2).isEmpty()) tier++; // HV
     return tier;
   }
 
@@ -73,7 +73,7 @@ public class ZeroPointModuleBlockEntity extends TileEntity implements IEnergySou
     if(item.hasTagCompound()) {
       final NBTTagCompound tag = item.getTagCompound();
       if(tag != null) {
-        return tag.getDouble(ZeroPointModuleItem.ENERGY);
+        return tag.getDouble(ZPMItem.ENERGY);
       }
     }
     return 0d;
@@ -81,7 +81,7 @@ public class ZeroPointModuleBlockEntity extends TileEntity implements IEnergySou
 
   @Override
   public int getSizeInventory() {
-    return 3;
+    return 1;
   }
 
   @Override
@@ -122,8 +122,8 @@ public class ZeroPointModuleBlockEntity extends TileEntity implements IEnergySou
       tag = new NBTTagCompound();
       item.setTagCompound(tag);
     }
-    if(!tag.hasKey(ZeroPointModuleItem.ENERGY, 99 /* number */)) {
-      tag.setDouble(ZeroPointModuleItem.ENERGY, Double.MAX_VALUE);
+    if(!tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
+      tag.setDouble(ZPMItem.ENERGY, Double.MAX_VALUE);
     }
   }
 
@@ -150,7 +150,7 @@ public class ZeroPointModuleBlockEntity extends TileEntity implements IEnergySou
 
   @Override
   public boolean isItemValidForSlot(final int index, final ItemStack item) {
-    return item.getItem() instanceof ZeroPointModuleItem;
+    return item.getItem() instanceof ZPMItem;
   }
 
   @Override

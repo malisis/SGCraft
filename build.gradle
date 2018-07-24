@@ -55,7 +55,7 @@ deobfMcSRG { failOnAtError = false }
 minecraft {
     version = "1.12.2-14.23.4.2705"
     runDir = "run"
-    mappings = 'snapshot_20180114'
+    mappings = 'snapshot_20171007'
     useDepAts = true
 
     // the mappings can be changed at any time, and must be in the following format.
