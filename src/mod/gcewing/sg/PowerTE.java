@@ -20,34 +20,39 @@ public abstract class PowerTE extends BaseTileEntity implements ISGEnergySource 
     public double energyBuffer = 0;
     public double energyMax;
     double energyPerSGEnergyUnit;
-    
+
     public PowerTE(double energyMax, double energyPerSGEnergyUnit) {
         this.energyMax = energyMax;
         this.energyPerSGEnergyUnit = energyPerSGEnergyUnit;
     }
-    
+
     public abstract String getScreenTitle();
+
     public abstract String getUnitName();
-    
+
     @Override
     public void readContentsFromNBT(NBTTagCompound nbt) {
         super.readContentsFromNBT(nbt);
         energyBuffer = nbt.getDouble("energyBuffer");
     }
-    
+
     public void writeContentsToNBT(NBTTagCompound nbt) {
         super.writeContentsToNBT(nbt);
         nbt.setDouble("energyBuffer", energyBuffer);
     }
-    
+
     //------------------------- ISGEnergySource -------------------------
-    
+
     @Override
     public double availableEnergy() {
         double available = energyBuffer / energyPerSGEnergyUnit;
         if (debugOutput)
             System.out.printf("SGCraft: PowerTE: %s SGU available\n", available);
         return available;
+    }
+
+    public double totalAvailableEnergy() {
+        return energyBuffer;
     }
     
     public double drawEnergy(double request) {

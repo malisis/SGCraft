@@ -13,16 +13,20 @@ import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
+import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.crafting.Ingredient;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.gen.structure.MapGenStructureIO;
+import net.minecraftforge.client.event.ModelRegistryEvent;
+import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.event.world.ChunkDataEvent;
@@ -39,6 +43,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import static java.util.Objects.requireNonNull;
 import static net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerCareer;
 import static net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerProfession;
 
@@ -79,12 +84,14 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static RFIntegration rfIntegration; //[RF]
 //     public static MystcraftIntegration mystcraftIntegration; //[MYST]
 
-    public static Block zeroPointModuleBlock;
-    public static Item zeroPointModuleItem;
+    public static Block zpm_interface_cart;
+    public static Item zpm, zpm_interface_cart_item;
+
+    public static CreativeTabs creativeTabs;
 
     public SGCraft() {
         mod = this;
-        creativeTab = new CreativeTabs("sgcraft:sgcraft") {
+        this.creativeTab = new CreativeTabs("sgcraft:sgcraft") {
             @Override
             public ItemStack getTabIconItem() {
                 return new ItemStack(Item.getItemFromBlock(sgBaseBlock));
@@ -315,5 +322,6 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             }
         }
     }
+
 
 }

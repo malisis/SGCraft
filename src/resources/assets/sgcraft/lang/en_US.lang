@@ -37,5 +37,5 @@ message.sgcraft:insufficientEnergy=Stargate has insufficient energy
 message.sgcraft:malformedAddress=Malformed stargate address
 message.sgcraft:dimensionTooFar=Dimension not reachable by stargate
 
-tile.sgcraft.zero_point_module.name=ZPM Console
-item.sgcraft.zero_point_module.name=Zero Point Module
+tile.sgcraft.zpm_interface_cart.name=ZPM Interface Cart
+item.sgcraft.zpm.name=Zero Point Module

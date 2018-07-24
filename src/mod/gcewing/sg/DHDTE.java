@@ -209,7 +209,11 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
         markChanged();
         return energyDrawn;
     }
-    
+
+    @Override public double totalAvailableEnergy() {
+        return energyInBuffer;
+    }
+
     boolean useFuelItem() {
         for (int i = numFuelSlots - 1; i >= 0; i--) {
             ItemStack stack = fuelStackInSlot(i);
