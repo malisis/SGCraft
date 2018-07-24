@@ -1,6 +1,7 @@
 package gcewing.sg.ic2.zpm;
 
 import gcewing.sg.ISGEnergySource;
+import gcewing.sg.SGBaseTE;
 import gcewing.sg.SGCraft;
 import ic2.api.energy.prefab.BasicSource;
 import ic2.api.energy.tile.IEnergyAcceptor;
@@ -10,139 +11,124 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.world.World;
+import net.minecraft.util.text.TextComponentString;
 
-public class ZpmInterfaceCartTE extends TileEntity implements ISGEnergySource, IEnergySource ,IInventory, ITickable {
+import javax.annotation.Nonnull;
+
+public final class ZpmInterfaceCartTE extends SGBaseTE implements ISGEnergySource, IEnergySource, IInventory, ITickable {
   private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
-  private final BasicSource ic2EnergySource;
+  private final BasicSource source;
 
   public ZpmInterfaceCartTE() {
+    this.source = new BasicSource(this, 2000000, 4);
     this.setInventorySlotContents(0, new ItemStack(SGCraft.zpm));
-    this.ic2EnergySource = new BasicSource(this, 100000, 3);
-    this.ic2EnergySource.setCapacity(Integer.MAX_VALUE);
-    this.ic2EnergySource.setEnergyStored(this.getOfferedEnergy());
+  }
+
+  /* TileEntity */
+
+  @Override
+  public void readFromNBT(final NBTTagCompound compound) {
+    super.readFromNBT(compound);
+    this.source.readFromNBT(compound);
+
   }
 
   @Override
-  public void readFromNBT(NBTTagCompound tag) {
-    super.readFromNBT(tag);
-    ic2EnergySource.readFromNBT(tag);
-  }
+  public NBTTagCompound writeToNBT(final NBTTagCompound compound) {
+    super.writeToNBT(compound);
+    this.source.writeToNBT(compound);
 
-  @Override
-  public void writeToNBT(NBTTagCompound tag) {
-    super.writeToNBT(tag);
-    ic2EnergySource.writeToNBT(tag);
+    return compound;
   }
 
   @Override
   public void update() {
-   ic2EnergySource.update(); // notify the energy source
-  }
+    if (this.world == null || this.world.isRemote) {
+      return;
+    }
 
-  @Override
-  public void invalidate() {
-    invalidate(); // notify the energy source
-    super.invalidate(); // this is important for mc!
+    this.source.update();
   }
 
   @Override
   public void onChunkUnload() {
-    onChunkUnload(); // notify the energy source
+    this.source.onChunkUnload();
   }
 
   @Override
-  public double getOfferedEnergy() {
-    double offeredEnergy = 0d;
-    for(final ItemStack item : this.items) {
-      final double availableEnergy = this.availableEnergy(item);
-      System.out.println("ZPM Power Available: " + availableEnergy);
-      offeredEnergy = availableEnergy;
+  public void invalidate() {
+    super.invalidate(); // this is important for mc!
+    this.source.invalidate(); // notify the energy source
+  }
 
-      /*
-      if(availableEnergy == Double.MAX_VALUE) {
-        offeredEnergy = Double.MAX_VALUE;
-      } else {
-        final double incremented = offeredEnergy + availableEnergy;
-        if(incremented == Double.MIN_VALUE) {
-          offeredEnergy = Double.MAX_VALUE;
-        } else {
-          offeredEnergy = incremented;
-        }
-      }*/
-    }
-
-    return offeredEnergy;
+  // Below 3 methods are to keep the server and the client TE's in sync.
+  @Override
+  @Nonnull
+  public SPacketUpdateTileEntity getUpdatePacket() {
+    return new SPacketUpdateTileEntity(this.pos, 1, this.getUpdateTag());
   }
 
   @Override
-  public void drawEnergy(double v) {
-    drawEnergyDouble(v);
+  public NBTTagCompound getUpdateTag() {
+    final NBTTagCompound result = new NBTTagCompound();
+    this.writeToNBT(result);
+    return result;
   }
+
+  @Override
+  public void onDataPacket(final NetworkManager net, final SPacketUpdateTileEntity packet) {
+    final NBTTagCompound tag = packet.getNbtCompound();
+    this.readFromNBT(tag);
+  }
+
+  /* Energy */
 
   @Override
   public double availableEnergy() {
-    return this.getOfferedEnergy();
+    return this.source.getEnergyStored();
   }
 
   @Override
   public double totalAvailableEnergy() {
-    return this.getOfferedEnergy();
+    return this.source.getCapacity();
   }
 
   @Override
-  public double drawEnergyDouble(final double value) {
-    double energy = 0;
-    for(final ItemStack item : this.items) {
-      energy = this.availableEnergy(item);
-      if(energy > 0d) {
-        final NBTTagCompound tag = item.getTagCompound();
-        double setValue = Math.max(0, energy - value);
-        if(tag != null) {
-          tag.setDouble(ZPMItem.ENERGY, Math.max(0, setValue));
-          System.out.println("Saved to NBT: " + setValue);
-        }
-      }
-    }
-    return Math.min(value, energy);
+  public double drawEnergyDouble(double amount) {
+
+    this.source.drawEnergy(amount);
+
+    return amount;
+  }
+
+  @Override
+  public double getOfferedEnergy() {
+    return this.source.getOfferedEnergy();
+  }
+
+  @Override
+  public void drawEnergy(double v) {
+    this.source.drawEnergy(v);
   }
 
   @Override
   public int getSourceTier() {
-    int tier = 3;
-    //if(!this.items.get(0).isEmpty()) tier++; // LV
-    //if(!this.items.get(1).isEmpty()) tier++; // MV
-    //if(!this.items.get(2).isEmpty()) tier++; // HV
-    return tier;
+    return this.source.getSourceTier();
   }
 
   @Override
-  public boolean emitsEnergyTo(final IEnergyAcceptor acceptor, final EnumFacing direction) {
-    for(final ItemStack item : this.items) {
-      final double energy = this.availableEnergy(item);
-      if(energy > 0d) {
-        System.out.println("Emit True");
-        return true;
-      }
-    }
-    System.out.println("Emit false");
-    return false;
+  public boolean emitsEnergyTo(IEnergyAcceptor iEnergyAcceptor, EnumFacing enumFacing) {
+    //return this.source.emitsEnergyTo(iEnergyAcceptor, enumFacing);
+    return true;
   }
 
-  private double availableEnergy(final ItemStack item) {
-    if(item.hasTagCompound()) {
-      final NBTTagCompound tag = item.getTagCompound();
-      if(tag != null) {
-        return tag.getDouble(ZPMItem.ENERGY);
-      }
-    }
-    return 0d;
-  }
+  /* Inventory */
 
   @Override
   public int getSizeInventory() {
@@ -161,26 +147,44 @@ public class ZpmInterfaceCartTE extends TileEntity implements ISGEnergySource, I
 
   @Override
   public ItemStack getStackInSlot(final int index) {
-    return this.items.get(index);
+    return this.items.get(0);
+  }
+
+  @Override
+  public ItemStack removeStackFromSlot(final int index) {
+    final ItemStack item = ItemStackHelper.getAndSplit(this.items, 0, 1);
+    NBTTagCompound tag = item.getTagCompound();
+    if(tag == null) {
+      tag = new NBTTagCompound();
+      item.setTagCompound(tag);
+    }
+    if(tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
+      tag.setDouble(ZPMItem.ENERGY, this.source.getEnergyStored());
+      this.source.setEnergyStored(0);
+      System.out.println("Removed ZPM via Remote Slot");
+    }
+    return ItemStackHelper.getAndRemove(this.items, 0);
   }
 
   @Override
   public ItemStack decrStackSize(final int index, final int quantity) {
-    final ItemStack item = ItemStackHelper.getAndSplit(this.items, index, quantity);
+    final ItemStack item = ItemStackHelper.getAndRemove(this.items, 0);
     if(!item.isEmpty()) {
       this.markDirty();
+    }
+
+    NBTTagCompound tag = item.getTagCompound();
+    if(tag != null && tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
+      tag.setDouble(ZPMItem.ENERGY, this.source.getEnergyStored());
+      System.out.println("Stored: " + this.source.getEnergyStored() + " to the ZPM before it was removed, then set SOURCE to: 0");
+      this.source.setEnergyStored(0);
     }
     return item;
   }
 
   @Override
-  public ItemStack removeStackFromSlot(final int index) {
-    return ItemStackHelper.getAndRemove(this.items, index);
-  }
-
-  @Override
   public void setInventorySlotContents(final int index, final ItemStack item) {
-    this.items.set(index, item);
+    this.items.set(0, item);
 
     NBTTagCompound tag = item.getTagCompound();
     if(tag == null) {
@@ -188,7 +192,13 @@ public class ZpmInterfaceCartTE extends TileEntity implements ISGEnergySource, I
       item.setTagCompound(tag);
     }
     if(!tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
-      tag.setDouble(ZPMItem.ENERGY, Integer.MAX_VALUE);
+      System.out.println("Creating tag");
+      tag.setDouble(ZPMItem.ENERGY, 500000);
+      this.source.setCapacity(800000);
+      this.source.setEnergyStored(500000);
+    } else {
+      System.out.println("ZPM Power detected: " + tag.getDouble(ZPMItem.ENERGY));
+      this.source.setEnergyStored(tag.getDouble(ZPMItem.ENERGY));
     }
   }
 
@@ -197,8 +207,8 @@ public class ZpmInterfaceCartTE extends TileEntity implements ISGEnergySource, I
     return 1;
   }
 
-  @Override public void markDirty() {
-
+  @Override
+  public void markDirty() {
   }
 
   @Override
@@ -251,7 +261,8 @@ public class ZpmInterfaceCartTE extends TileEntity implements ISGEnergySource, I
     return false;
   }
 
-  @Override public ITextComponent getDisplayName() {
-    return null;
+  @Override
+  public ITextComponent getDisplayName() {
+    return new TextComponentString("ZPM Container");
   }
 }
