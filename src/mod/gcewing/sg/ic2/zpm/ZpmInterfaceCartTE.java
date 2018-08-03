@@ -1,5 +1,6 @@
 package gcewing.sg.ic2.zpm;
 
+import gcewing.sg.BaseTileInventory;
 import gcewing.sg.ISGEnergySource;
 import gcewing.sg.SGBaseTE;
 import gcewing.sg.SGCraft;
@@ -24,7 +25,7 @@ import net.minecraft.world.IBlockAccess;
 
 import javax.annotation.Nonnull;
 
-public final class ZpmInterfaceCartTE extends SGBaseTE implements ISGEnergySource, IEnergySource, IInventory, ITickable {
+public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEnergySource, IEnergySource, IInventory, ITickable {
   private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
   private final BasicSource source;
   public static final int firstZpmSlot = 0;
