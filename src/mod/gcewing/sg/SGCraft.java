@@ -6,7 +6,9 @@
 
 package gcewing.sg;
 
+import gcewing.sg.ic2.zpm.ZPMItem;
 import gcewing.sg.ic2.zpm.ZpmContainer;
+import gcewing.sg.ic2.zpm.ZpmInterfaceCart;
 import gcewing.sg.ic2.zpm.ZpmInterfaceCartTE;
 import gcewing.sg.oc.OCIntegration;
 import gcewing.sg.rf.RFIntegration;
@@ -93,23 +95,25 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 
     public SGCraft() {
         mod = this;
+
+    }
+
+    @Mod.EventHandler
+    @Override
+    public void preInit(FMLPreInitializationEvent e) {
         this.creativeTab = new CreativeTabs("sgcraft:sgcraft") {
             @Override
             public ItemStack getTabIconItem() {
                 return new ItemStack(Item.getItemFromBlock(sgBaseBlock));
             }
         };
-    }
-
-    @Mod.EventHandler
-    @Override
-    public void preInit(FMLPreInitializationEvent e) {
         FMLCommonHandler.instance().bus().register(this);
         rfIntegration = (RFIntegration) integrateWithMod("redstoneflux", "gcewing.sg.rf.RFIntegration"); //[RF]
         ic2Integration = integrateWithMod("ic2", "gcewing.sg.ic2.IC2Integration"); //[IC2]
         ccIntegration = (IIntegration) integrateWithMod("computercraft", "gcewing.sg.cc.CCIntegration"); //[CC]
         ocIntegration = (OCIntegration)integrateWithMod("opencomputers", "gcewing.sg.oc.OCIntegration"); //[OC]
 //         mystcraftIntegration = (MystcraftIntegration)integrateWithMod("Mystcraft", "gcewing.sg.MystcraftIntegration"); //[MYST]
+
         GameRegistry.registerTileEntity(ZpmInterfaceCartTE.class, new ResourceLocation(this.modID));
         super.preInit(e);
     }
@@ -158,6 +162,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         //sgPortalBlock = newBlock("stargatePortal", SGPortalBlock.class);
         naquadahBlock = newBlock("naquadahBlock", NaquadahBlock.class);
         naquadahOre = newBlock("naquadahOre", NaquadahOreBlock.class);
+        if (isModLoaded("ic2")) {
+            zpm_interface_cart = newBlock("zpm_interface_cart", ZpmInterfaceCart.class);
+        }
     }
     
     @Override
@@ -171,6 +178,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         sgIrisBlade = newItem("sgIrisBlade");
         if (isModLoaded("ic2") || !isModLoaded("thermalexpansion")) {
             ic2Capacitor = newItem("ic2Capacitor");
+        }
+        if (isModLoaded("ic2")) {
+            zpm = addItem(new ZPMItem(), "zpm");
         }
     }
 

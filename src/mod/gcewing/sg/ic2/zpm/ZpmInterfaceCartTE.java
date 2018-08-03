@@ -31,6 +31,7 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
   public static final int firstZpmSlot = 0;
   public static final int numZpmSlots = 1;
   public static final int numSlots = numZpmSlots;
+  private int update = 0;
 
   public ZpmInterfaceCartTE() {
     this.source = new BasicSource(this, 2000000, 4);
@@ -58,6 +59,12 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
   public void update() {
     if (this.world == null || this.world.isRemote) {
       return;
+    }
+    if (update++ > 20) {
+      world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+      world.scheduleBlockUpdate(pos, this.getBlockType(), 0, 0);
+      ZpmInterfaceCartTE.at(world, pos).markDirty();
+      update = 0;
     }
 
     this.source.update();
@@ -112,8 +119,8 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
 
   @Override
   public double drawEnergyDouble(double amount) {
-
     this.source.drawEnergy(amount);
+    System.out.println("DrawEnergyDouble: " + amount);
 
     return amount;
   }
@@ -125,6 +132,7 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
 
   @Override
   public void drawEnergy(double v) {
+    System.out.println("Draw: " + v);
     this.source.drawEnergy(v);
   }
 
@@ -204,9 +212,9 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
     }
     if(!tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
       System.out.println("Creating tag");
-      tag.setDouble(ZPMItem.ENERGY, 500000);
-      this.source.setCapacity(800000);
-      this.source.setEnergyStored(500000);
+      tag.setDouble(ZPMItem.ENERGY, Integer.MAX_VALUE);
+      this.source.setCapacity(Integer.MAX_VALUE);
+      this.source.setEnergyStored(tag.getDouble(ZPMItem.ENERGY));
     } else {
       System.out.println("ZPM Power detected: " + tag.getDouble(ZPMItem.ENERGY));
       this.source.setEnergyStored(tag.getDouble(ZPMItem.ENERGY));

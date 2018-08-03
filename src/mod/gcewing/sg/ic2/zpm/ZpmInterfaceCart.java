@@ -1,5 +1,6 @@
 package gcewing.sg.ic2.zpm;
 
+import gcewing.sg.Info;
 import gcewing.sg.SGCraft;
 import gcewing.sg.SGGui;
 import net.minecraft.block.BlockContainer;
@@ -7,20 +8,28 @@ import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 
 import javax.annotation.Nullable;
 
 public class ZpmInterfaceCart extends BlockContainer {
-  public ZpmInterfaceCart(final Material material) {
-    super(material);
+  public ZpmInterfaceCart() {
+    super(Material.ROCK);
+    setHardness(1.5f);
+    setRegistryName(new ResourceLocation(Info.modID, "block/zpm_interface_cart"));
+    setUnlocalizedName(SGCraft.zpm_interface_cart.getRegistryName().getResourcePath().replace('/', '.'));
+
+    //ForgeRegistries.BLOCKS.register(SGCraft.zpm_interface_cart);
   }
 
   @Nullable
@@ -78,7 +87,6 @@ public class ZpmInterfaceCart extends BlockContainer {
       world.notifyBlockUpdate(pos, state, state, 3);
       world.scheduleBlockUpdate(pos, state.getBlock(),0,0);
       ZpmInterfaceCartTE.at(world, pos).markDirty();
-      System.out.println("HGi");
       SGCraft.mod.openGui(player, SGGui.ZPMInterfaceCart, world, pos);
     return true;
   }

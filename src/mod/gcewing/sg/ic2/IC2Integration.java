@@ -34,23 +34,19 @@ public class IC2Integration extends BaseSubsystem<SGCraft, SGCraftClient> {
     public void registerBlocks() {
         mod.ic2PowerUnit = mod.newBlock("ic2PowerUnit", IC2PowerBlock.class, IC2PowerItem.class);
 
-        SGCraft.zpm_interface_cart = new ZpmInterfaceCart(Material.ROCK).setHardness(1.5f);
-        SGCraft.zpm_interface_cart.setRegistryName(new ResourceLocation(Info.modID, "block/zpm_interface_cart"));
-        SGCraft.zpm_interface_cart.setUnlocalizedName(SGCraft.zpm_interface_cart.getRegistryName().getResourcePath().replace('/', '.'));
-        SGCraft.zpm_interface_cart.setCreativeTab(CreativeTabs.MISC);
-        ForgeRegistries.BLOCKS.register(SGCraft.zpm_interface_cart);
+
     }
 
     @Override
     protected void registerItems() {
-        SGCraft.zpm_interface_cart_item = new ItemBlock(SGCraft.zpm_interface_cart);
-        SGCraft.zpm_interface_cart_item.setRegistryName(SGCraft.zpm_interface_cart.getRegistryName());
-        SGCraft.zpm_interface_cart_item.setUnlocalizedName(Info.modID + ".zpm_interface_cart");
-        SGCraft.zpm_interface_cart_item.setCreativeTab(CreativeTabs.MISC);
-        ForgeRegistries.ITEMS.register(SGCraft.zpm_interface_cart_item);
-        SGCraft.zpm = new ZPMItem(new ResourceLocation(Info.modID, "zpm"), "zpm_item");
 
-        ForgeRegistries.ITEMS.register(SGCraft.zpm);
+        //SGCraft.zpm_interface_cart_item = new ItemBlock(SGCraft.zpm_interface_cart);
+        //SGCraft.zpm_interface_cart_item.setRegistryName(SGCraft.zpm_interface_cart.getRegistryName());
+        //SGCraft.zpm_interface_cart_item.setUnlocalizedName(Info.modID + ".zpm_interface_cart");
+        //SGCraft.zpm_interface_cart_item.setCreativeTab(CreativeTabs.MISC);
+        //ForgeRegistries.ITEMS.register(SGCraft.zpm_interface_cart_item);
+        //SGCraft.zpm = new ZPMItem(new ResourceLocation(Info.modID, "zpm"), "zpm_item");
+        //ForgeRegistries.ITEMS.register(SGCraft.zpm);
     }
 
     @Override
