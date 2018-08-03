@@ -47,8 +47,10 @@ public class ZPMInterfaceCartScreen extends SGScreen {
         int cx = xSize / 2;
         setTextColor(0x004c66);
         drawCenteredString(screenTitle, cx, 8);
-        if (this.te.numZpmSlots > 0)
-            drawString("ZPM", 120, 45);
+        drawString("ZPM", 120, 45);
+
+        if (!this.te.getStackInSlot(0).isEmpty()) {
             drawString("Available Power: " + dFormat.format(te.availableEnergy()), 60, 100);
+        }
     }
 }

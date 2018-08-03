@@ -1,30 +1,33 @@
 package gcewing.sg.ic2.zpm;
 
-import net.minecraft.client.renderer.block.model.ModelResourceLocation;
+import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.Item;
-import net.minecraftforge.client.model.ModelLoader;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.World;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import javax.annotation.Nullable;
+import java.text.DecimalFormat;
+import java.util.List;
+
 public class ZPMItem extends Item {
   static final String ENERGY = "AvailableEnergy";
+  final static DecimalFormat dFormat = new DecimalFormat("###,###,###,##0");
 
-  /*public ZPMItem(ResourceLocation registryName, String unlocalizedName) {
-    this.setRegistryName(registryName);
-    this.setUnlocalizedName(unlocalizedName);
-    if (SGCraft.creativeTabs == null) {
-      System.out.println("Why is this null");
-    } else {
-      System.out.println("Its Not Null");
-    }
-
-    this.setCreativeTab(SGCraft.creativeTabs);
-    this.registerInventoryModel();
-
-  } */
+  public ZPMItem() {}
+  // Nothing here... yet.
 
   @SideOnly(Side.CLIENT)
-  private void registerInventoryModel() {
-    ModelLoader.setCustomModelResourceLocation(this, 0, new ModelResourceLocation(this.getRegistryName(), "inventory"));
+  @Override
+  public void addInformation(ItemStack stack, @Nullable World player, List<String> tooltip, ITooltipFlag advanced) {
+    super.addInformation(stack, player, tooltip, advanced);
+
+    final NBTTagCompound compound = stack.getTagCompound();
+    if (compound != null) {
+      tooltip.add("Power: " + dFormat.format(compound.getDouble(ZPMItem.ENERGY)));
+      return;
+    }
   }
 }

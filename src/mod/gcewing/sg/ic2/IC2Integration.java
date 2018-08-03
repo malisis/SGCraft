@@ -38,18 +38,6 @@ public class IC2Integration extends BaseSubsystem<SGCraft, SGCraftClient> {
     }
 
     @Override
-    protected void registerItems() {
-
-        //SGCraft.zpm_interface_cart_item = new ItemBlock(SGCraft.zpm_interface_cart);
-        //SGCraft.zpm_interface_cart_item.setRegistryName(SGCraft.zpm_interface_cart.getRegistryName());
-        //SGCraft.zpm_interface_cart_item.setUnlocalizedName(Info.modID + ".zpm_interface_cart");
-        //SGCraft.zpm_interface_cart_item.setCreativeTab(CreativeTabs.MISC);
-        //ForgeRegistries.ITEMS.register(SGCraft.zpm_interface_cart_item);
-        //SGCraft.zpm = new ZPMItem(new ResourceLocation(Info.modID, "zpm"), "zpm_item");
-        //ForgeRegistries.ITEMS.register(SGCraft.zpm);
-    }
-
-    @Override
     public void registerRecipes() {
         ItemStack rubber = getIC2Item("crafting", "rubber");
         ItemStack copperPlate = getIC2Item("plate", "copper");

@@ -15,8 +15,6 @@ public final class ZpmBasicSource extends BasicSource {
     @Override
     public void drawEnergy(double amount) {
         super.drawEnergy(amount);
-
-        // TODO
         this.parent.markDirty();
     }
 }
