@@ -1,5 +1,6 @@
 package gcewing.sg.ic2.zpm;
 
+import gcewing.sg.BaseTileInventory;
 import gcewing.sg.ISGEnergySource;
 import gcewing.sg.SGBaseTE;
 import gcewing.sg.SGCraft;
@@ -13,6 +14,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
@@ -21,7 +23,7 @@ import net.minecraft.util.text.TextComponentString;
 
 import javax.annotation.Nonnull;
 
-public final class ZpmInterfaceCartTE extends SGBaseTE implements ISGEnergySource, IEnergySource, IInventory, ITickable {
+public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEnergySource, IEnergySource, IInventory, ITickable {
   private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
   private final BasicSource source;
 
