@@ -13,17 +13,23 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
 import net.minecraft.util.NonNullList;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.IBlockAccess;
 
 import javax.annotation.Nonnull;
 
 public final class ZpmInterfaceCartTE extends SGBaseTE implements ISGEnergySource, IEnergySource, IInventory, ITickable {
   private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
   private final BasicSource source;
+  public static final int firstZpmSlot = 0;
+  public static final int numZpmSlots = 1;
+  public static final int numSlots = numZpmSlots;
 
   public ZpmInterfaceCartTE() {
     this.source = new BasicSource(this, 2000000, 4);
@@ -78,12 +84,16 @@ public final class ZpmInterfaceCartTE extends SGBaseTE implements ISGEnergySourc
   public NBTTagCompound getUpdateTag() {
     final NBTTagCompound result = new NBTTagCompound();
     this.writeToNBT(result);
+    System.out.println("getUpdateTag on: " + this.world.isRemote);
+    System.out.println("NBT: " + result);
     return result;
   }
 
   @Override
   public void onDataPacket(final NetworkManager net, final SPacketUpdateTileEntity packet) {
     final NBTTagCompound tag = packet.getNbtCompound();
+    System.out.println("onDataPacket on: " + this.world.isRemote);
+    System.out.println("NBT: " + tag);
     this.readFromNBT(tag);
   }
 
@@ -202,6 +212,10 @@ public final class ZpmInterfaceCartTE extends SGBaseTE implements ISGEnergySourc
     }
   }
 
+  public static boolean isValidFuelItem(ItemStack stack) {
+    return stack != null && stack.getItem() == SGCraft.zpm && stack.getCount() > 0;
+  }
+
   @Override
   public int getInventoryStackLimit() {
     return 1;
@@ -264,5 +278,10 @@ public final class ZpmInterfaceCartTE extends SGBaseTE implements ISGEnergySourc
   @Override
   public ITextComponent getDisplayName() {
     return new TextComponentString("ZPM Container");
+  }
+
+  public static ZpmInterfaceCartTE at(IBlockAccess world, BlockPos pos) {
+    TileEntity te = world.getTileEntity(pos);
+    return te instanceof ZpmInterfaceCartTE ? (ZpmInterfaceCartTE) te : null;
   }
 }

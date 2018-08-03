@@ -1,7 +1,7 @@
 package gcewing.sg.ic2.zpm;
 
 import gcewing.sg.SGCraft;
-import ic2.api.energy.prefab.BasicSource;
+import gcewing.sg.SGGui;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
@@ -15,7 +15,6 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.internal.FMLNetworkHandler;
 
 import javax.annotation.Nullable;
 
@@ -73,12 +72,14 @@ public class ZpmInterfaceCart extends BlockContainer {
   }
 
   @Override
-  public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX,
-                                  float hitY, float hitZ) {
-    if (!world.isRemote) {
-      super.onBlockActivated(world, pos, state, player, hand, facing, hitX, hitY, hitZ);
-      FMLNetworkHandler.openGui(player, SGCraft.mod, 0, world, pos.getX(), pos.getY(), pos.getZ());
-    }
+  public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float hx, float hy, float hz)  {
+
+    if (!world.isRemote)
+      world.notifyBlockUpdate(pos, state, state, 3);
+      world.scheduleBlockUpdate(pos, state.getBlock(),0,0);
+      ZpmInterfaceCartTE.at(world, pos).markDirty();
+      System.out.println("HGi");
+      SGCraft.mod.openGui(player, SGGui.ZPMInterfaceCart, world, pos);
     return true;
   }
 }

@@ -6,6 +6,7 @@
 
 package gcewing.sg;
 
+import gcewing.sg.ic2.zpm.ZpmContainer;
 import gcewing.sg.ic2.zpm.ZpmInterfaceCartTE;
 import gcewing.sg.oc.OCIntegration;
 import gcewing.sg.rf.RFIntegration;
@@ -252,6 +253,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         addContainer(SGGui.SGBase, SGBaseContainer.class);
         addContainer(SGGui.DHDFuel, DHDFuelContainer.class);
         addContainer(SGGui.PowerUnit, PowerContainer.class);
+        addContainer(SGGui.ZPMInterfaceCart, ZpmContainer.class);
     }
    
     @Override
