@@ -34,7 +34,7 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
   private int update = 0;
 
   public ZpmInterfaceCartTE() {
-    this.source = new BasicSource(this, 2000000, 4);
+    this.source = new ZpmBasicSource(this, 2000000, 4);
     this.setInventorySlotContents(0, new ItemStack(SGCraft.zpm));
   }
 
