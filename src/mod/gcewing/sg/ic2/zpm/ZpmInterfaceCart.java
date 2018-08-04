@@ -38,9 +38,6 @@ public class ZpmInterfaceCart extends BlockContainer {
 
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
-
-
-
         ZpmInterfaceCartTE zpmCart = ZpmInterfaceCartTE.at(world, pos);
         ItemStack zpm = zpmCart.getStackInSlot(0);
         NBTTagCompound tag = zpm.getTagCompound();
@@ -56,6 +53,7 @@ public class ZpmInterfaceCart extends BlockContainer {
 
             if (tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
                 tag.setDouble(ZPMItem.ENERGY, zpmCart.source.getEnergyStored());
+                tag.setBoolean(ZPMItem.LOADED, false);
                 zpmCart.source.setEnergyStored(0);
                 System.out.println("Wrote Data");
             }
@@ -115,18 +113,17 @@ public class ZpmInterfaceCart extends BlockContainer {
 
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float hx, float hy, float hz)  {
-
-        if (!world.isRemote)
-            world.notifyBlockUpdate(pos, state, state, 3);
+        world.notifyBlockUpdate(pos, state, state, 3);
         world.scheduleBlockUpdate(pos, state.getBlock(),0,0);
         ZpmInterfaceCartTE.at(world, pos).markDirty();
-        SGCraft.mod.openGui(player, SGGui.ZPMInterfaceCart, world, pos);
+        if (!world.isRemote) {
+            SGCraft.mod.openGui(player, SGGui.ZPMInterfaceCart, world, pos);
+        }
         return true;
     }
 
     @Override
     public ArrayList<ItemStack> getDrops(IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
-        System.out.println("GetDrops");
         ArrayList<ItemStack> returnList = new ArrayList<ItemStack>();
         Item item = getItemDropped(state, ((World)world).rand, fortune);
         ItemStack zpm_interface_cart = new ItemStack(item, 1);

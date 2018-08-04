@@ -14,6 +14,7 @@ import java.util.List;
 
 public class ZPMItem extends Item {
   static final String ENERGY = "AvailableEnergy";
+  static final String LOADED = "loadedIntoCart";
   final static DecimalFormat dFormat = new DecimalFormat("###,###,###,##0");
 
   public ZPMItem() {}
@@ -26,7 +27,11 @@ public class ZPMItem extends Item {
 
     final NBTTagCompound compound = stack.getTagCompound();
     if (compound != null) {
-      tooltip.add("Power: " + dFormat.format(compound.getDouble(ZPMItem.ENERGY)));
+      if (compound.hasKey(ZPMItem.LOADED, 99 /* number */)) {
+        if (!compound.getBoolean(ZPMItem.LOADED)) {
+          tooltip.add("Power: " + dFormat.format(compound.getDouble(ZPMItem.ENERGY)));
+        }
+      }
       return;
     }
   }

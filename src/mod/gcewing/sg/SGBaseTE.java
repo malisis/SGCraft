@@ -7,6 +7,7 @@
 package gcewing.sg;
 
 import com.google.common.collect.Sets;
+import gcewing.sg.almura.AlmuraAddon;
 import gcewing.sg.ic2.zpm.ZpmInterfaceCartTE;
 import gcewing.sg.oc.OCWirelessEndpoint;
 import io.netty.channel.ChannelFutureListener;
@@ -68,6 +69,7 @@ import org.spongepowered.api.scheduler.Task;
 import org.spongepowered.api.text.Text;
 import org.spongepowered.api.text.format.TextColors;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -78,10 +80,11 @@ import static gcewing.sg.BaseUtils.min;
 public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSoundSource {
 
     static boolean debugState = false;
-    static boolean debugEnergyUse = true;
+    static boolean debugEnergyUse = false;
     static boolean debugConnect = false;
     static boolean debugTransientDamage = false;
     static boolean debugTeleport = false;
+    final static DecimalFormat dFormat = new DecimalFormat("###,###,###,##0");
 
     static SoundEvent
         dialFailSound,
@@ -651,45 +654,32 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         distanceFactor = distanceFactorForCoordDifference(this, dte);
         if (debugEnergyUse)
             System.out.printf("SGBaseTE: distanceFactor = %s\n", distanceFactor);
+
+        //Reset this value:
+        energyToOpen = energyPerFuelItem / gateOpeningsPerFuelItem;
+
         if (!energyIsAvailable(energyToOpen * distanceFactor)) {
-            System.out.printf("SGBaseTE: Not enough energy: " + energyToOpen * distanceFactor);
+            System.out.println("SGBaseTE: Not enough energy: " + energyToOpen * distanceFactor);
             return diallingFailure(player, "insufficientEnergy");
         }
 
-        // ZPM Implementation.
-        if (requireZPM(dte.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
-            long power = (long)zpmPowerAvailable(this.pos, 4);
+        // Almura Start
+        if (AlmuraAddon.worldRequiresZPM(this.getWorld().getWorldInfo().getWorldName().toLowerCase(), dte.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
+            long power = (long)AlmuraAddon.zpmPowerAvailable(world, this.pos, 4, false);
             if (!(power > 0)) {
-                System.out.println("ZPM or HV source not found." + power);
                 return diallingFailure(player, "zpmNotFound");
             } else {
                 if (!(power > energyToOpen * distanceFactor)) {
                     return diallingFailure(player, "zpmLowPower");
-                } else {
-                    // Gold?
                 }
             }
-            System.out.println("ZPM Found - Engage!");
         }
+        // Almura End
 
         startDiallingStargate(address, dte, true);
         dte.startDiallingStargate(homeAddress, this, false);
         return null;
     }
-
-    // Almura START
-    public static boolean requireZPM(String world) {
-        if (world.equalsIgnoreCase("cemaria") || world.equalsIgnoreCase("cemaria-nether") || world.equalsIgnoreCase("cemaria-end")) {
-            return true;
-        } else if (world.equalsIgnoreCase("keystone") || world.equalsIgnoreCase("keystone-nether") || world.equalsIgnoreCase("keystone-end")) {
-            return true;
-        } else if (world.equalsIgnoreCase("atlantis") || world.equalsIgnoreCase("atlantis-nether") || world.equalsIgnoreCase("atlantis-end")) {
-            return true;
-        }
-
-        return true; // Change this for testing.
-    }
-    // Almura END
     
     public static double distanceFactorForCoordDifference(TileEntity te1, TileEntity te2) {
         double dx = te1.getPos().getX() - te2.getPos().getX();
@@ -703,6 +693,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         double f = 1 + 14 * distanceFactorMultiplier * lr * lr;
         if (te1.getWorld() != te2.getWorld()) {
             f *= distanceFactorMultiplier;
+            // Almura Start
+            if (AlmuraAddon.worldRequiresZPM(te1.getWorld().getWorldInfo().getWorldName().toLowerCase(), te2.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
+                f += AlmuraAddon.worldZpmMultiplier(te2.getWorld().getWorldInfo().getWorldName().toLowerCase());
+            }
+            // Almura End
         }
         return f;
     }
@@ -888,6 +883,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
         List<ISGEnergySource> sources = findEnergySources();
         double energyAvailable = energyInBuffer + energyAvailableFrom(sources);
+
         if (debugEnergyUse)
             System.out.printf("SGBaseTE.useEnergy: %s available\n", energyAvailable);
         if (amount > energyAvailable) {
@@ -912,38 +908,30 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             System.out.printf("SGBaseTE.useEnergy: %s left over in buffer\n", energyInBuffer);
         return true;
     }
-
-    public double zpmPowerAvailable(BlockPos pos, int radius) {
-        double zpmPower = 0.0;
-        System.out.println("Start: " + pos);
-        for (final BlockPos.MutableBlockPos nearPos : BlockPos.getAllInBoxMutable(
-                pos.add(-radius, -radius, -radius),
-                pos.add(radius, radius, radius)
-        )) {
-            TileEntity nte = world.getTileEntity(nearPos);
-            if (nte != null) {
-                if (nte instanceof ZpmInterfaceCartTE) {
-                    System.out.printf("SGBaseTE.zpmInterfaceCartNear: %s at %s\n", nte, nearPos);
-                    zpmPower = ((ISGEnergySource) nte).totalAvailableEnergy();
-                    System.out.println("ZPMPowerAvailable: " + zpmPower);
-                    break;
-                }
-            }
-        }
-        return zpmPower;
-    }
     
     List<ISGEnergySource> findEnergySources() {
-        System.out.printf("SGBaseTe.findEnergySources: for %s\n", getSoundPos());
+        if (debugEnergyUse) {
+            System.out.printf("SGBaseTe.findEnergySources: for %s\n", getSoundPos());
+        }
         List<ISGEnergySource> result = new ArrayList<>();
         Trans3 t = localToGlobalTransformation();
-        for (int i = -5; i <= 2; i++) {
-            BlockPos bp = t.p(i, -1, 0).blockPos();
-            TileEntity nte = world.getTileEntity(bp);
-            System.out.printf("SGBaseTE.findEnergySources: %s at %s\n", nte, bp);
+        //for (int i = -5; i <= 2; i++) {
+            //BlockPos bp = t.p(i, -1, 0).blockPos();
+        int radius = 4;
+        for (final BlockPos.MutableBlockPos nearPos : BlockPos.getAllInBoxMutable(
+            pos.add(-radius, -radius, -radius),
+            pos.add(radius, radius, radius)
+        )) {
+            TileEntity nte = world.getTileEntity(nearPos);
+            if (debugEnergyUse) {
+                System.out.printf("SGBaseTE.findEnergySources: %s at %s\n", nte, nearPos);
+            }
+
             if (nte instanceof ISGEnergySource) {
                 result.add((ISGEnergySource) nte);
-                System.out.println("Found IC2 Power Source.");
+                if (debugEnergyUse) {
+                    System.out.println("Found IC2 Power Source.");
+                }
             }
         }
         DHDTE te = getLinkedControllerTE();
@@ -956,7 +944,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         double energy = 0;
         for (ISGEnergySource source : sources) {
             double e = source.availableEnergy();
-            System.out.println("Source: " + source.toString());
+            //System.out.println("Source: " + source.toString());
             if (debugEnergyUse)
                 System.out.printf("SGBaseTe.energyAvailableFrom: %s can supply %s\n", source, e);
             energy += e;
@@ -968,7 +956,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         double energy = 0;
         for (ISGEnergySource source : sources) {
             double e = source.totalAvailableEnergy();
-            System.out.println("Source: " + source.toString());
+            //System.out.println("Source: " + source.toString());
             if (debugEnergyUse)
                 System.out.printf("SGBaseTe.energyAvailableFrom: %s can supply %s\n", source, e);
             energy += e;
@@ -1080,6 +1068,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     void finishDiallingAddress() {
         //System.out.printf("SGBaseTE: Connecting to '%s'\n", dialledAddress);
         if (!isInitiator || useEnergy(energyToOpen * distanceFactor)) {
+            if (debugEnergyUse)
+                System.out.println("Energy to open gate: " + dFormat.format(energyToOpen) + " / " + dFormat.format(distanceFactor) + " = " + dFormat.format(energyToOpen * distanceFactor));
             enterState(SGState.Transient, transientDuration);
         } else {
             disconnect();
