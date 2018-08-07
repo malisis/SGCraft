@@ -20,7 +20,7 @@ public class FeatureGeneration {
 
     public static boolean augmentStructures = false;
     public static boolean debugStructures = false;
-    public static int structureAugmentationChance = 25;
+    public static int structureAugmentationChance = 100;
     
     static Field structureMap = BaseReflectionUtils.getFieldDef(MapGenStructure.class,
         "structureMap", "field_75053_d");

@@ -6,13 +6,17 @@
 
 package gcewing.sg;
 
+import gcewing.sg.ic2.zpm.ZPMItem;
+import net.minecraft.block.BlockChest;
 import net.minecraft.block.BlockColored;
 import net.minecraft.block.BlockSandStone;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumDyeColor;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -35,7 +39,7 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
     public FeatureUnderDesertPyramid() {
         //System.out.printf("SGCraft: FeatureUnderDesertPyramid instantiated with no arguments\n");
     }
-    
+
     public FeatureUnderDesertPyramid(StructureComponent base) {
         super(0);
         if (FeatureGeneration.debugStructures)
@@ -54,7 +58,7 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
     public boolean addComponentParts(World world, Random rand, StructureBoundingBox clip) {
         return rand.nextInt(100) >= FeatureGeneration.structureAugmentationChance || addAugmentationParts(world, rand, clip);
     }
-    
+
     protected boolean addAugmentationParts(World world, Random rand, StructureBoundingBox clip) {
         if (FeatureGeneration.debugStructures)
             System.out.printf("SGCraft: FeatureUnderDesertPyramid.addComponentParts in %s clipped to %s\n", getBoundingBox(), clip);
@@ -73,6 +77,7 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
         IBlockState[] sgRings = new IBlockState[2];
         sgRings[0] = SGCraft.sgRingBlock.getDefaultState();
         sgRings[1] = sgRings[0].withProperty(SGRingBlock.VARIANT, 1);
+        IBlockState chest = Blocks.CHEST.getDefaultState().withProperty(BlockChest.FACING, EnumFacing.NORTH);
         //System.out.printf("SGCraft: FeatureUnderDesertPyramid.addComponentParts: " +
         //  "Filling (%d,%d,%d)-(%d,%d,%d)\n", box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
         // Main chamber
@@ -121,21 +126,45 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
             }
         int baseX = box.minX + 5, baseY = box.minY + 1, baseZ = box.minZ + 2;
         SGBaseTE te = (SGBaseTE)world.getTileEntity(new BlockPos(baseX, baseY, baseZ));
-        if (te != null)
+        if (te != null) {
             te.hasChevronUpgrade = true;
-//      else
-//          System.out.printf("FeatureUnderDesertPyramid.addComponentParts: No tile entity at (%d,%d,%d)\n",
-//              baseX, baseY, baseZ);
-        // Controller
+        }
+
+        // DHD
         setBlockState(world, dhd, 5, 1, 7, clip);
+
+        // ZPM Chest Placement
+        int chestX = box.minX + 8, chestY = box.minY + 1, chestZ = box.minZ + 2;
+        BlockPos chestPos = new BlockPos(chestX, chestY, chestZ);
+
+        if (world.getBlockState(chestPos).getBlock() != Blocks.CHEST) {
+            setBlockState(world, chest, 8, 1, 2, clip);
+            TileEntityChest chestTE = (TileEntityChest) world.getTileEntity(chestPos);
+            if (chestTE != null) {
+                if (FeatureGeneration.debugStructures) {
+                    System.out.println("Generating Items in Chest at: " + chestPos);
+                }
+
+                ItemStack zpm = new ItemStack(SGCraft.zpm,1);
+
+                if (zpm != null) {
+                    NBTTagCompound tag = zpm.getTagCompound();
+                    if(tag == null) {
+                        tag = new NBTTagCompound();
+                    }
+
+                    zpm.setTagCompound(tag);
+                    tag.setDouble(ZPMItem.ENERGY, Integer.MAX_VALUE);
+                    tag.setBoolean(ZPMItem.LOADED, false);
+
+                    if (FeatureGeneration.debugStructures) {
+                        System.out.println("Setting zpm power values: " + chestPos);
+                    }
+                }
+                chestTE.getSingleChestHandler().insertItem(0, zpm, false);
+            }
+        }
+
         return true;
     }
-
-//     @Override
-//     protected void setBlockState(World worldIn, IBlockState blockstateIn, int x, int y, int z, StructureBoundingBox boundingboxIn) {
-//         System.out.printf("SGCraft: FeatureUnderDesertPyramid.setBlockState: %s at (%s, %s, %s)\n",
-//             blockstateIn, this.getXWithOffset(x, z), this.getYWithOffset(y), this.getZWithOffset(x, z));
-//         super.setBlockState(worldIn, blockstateIn, x, y, z, boundingboxIn);
-//     }
-
 }

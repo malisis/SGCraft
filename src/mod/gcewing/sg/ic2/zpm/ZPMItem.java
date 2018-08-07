@@ -13,8 +13,8 @@ import java.text.DecimalFormat;
 import java.util.List;
 
 public class ZPMItem extends Item {
-  static final String ENERGY = "AvailableEnergy";
-  static final String LOADED = "loadedIntoCart";
+  public static final String ENERGY = "AvailableEnergy";
+  public static final String LOADED = "loadedIntoCart";
   final static DecimalFormat dFormat = new DecimalFormat("###,###,###,##0");
 
   public ZPMItem() {}
