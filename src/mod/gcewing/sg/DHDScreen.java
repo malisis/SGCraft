@@ -160,6 +160,14 @@ public class DHDScreen extends SGScreen {
             case Keyboard.KEY_ESCAPE:
                 close();
                 break;
+           // Experimental -> Auto Dial address with instant open, Knox's anyone?
+            case Keyboard.KEY_F12:
+                SGBaseTE te = getStargateTE();
+                DHDTE dhd = te.getLinkedControllerTE();
+                dhd.immediateDialDHD = true;
+                sendConnectOrDisconnect(te, "ABKD7M6");
+                break;
+            // End Experiment.
             case Keyboard.KEY_BACK:
             case Keyboard.KEY_DELETE:
                 erase();
