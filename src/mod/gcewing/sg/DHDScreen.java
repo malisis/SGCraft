@@ -181,10 +181,12 @@ public class DHDScreen extends SGScreen {
         if (te != null) {
             buttonSound(SGBaseTE.dhdDialSound);
             sendConnectOrDisconnect(te, te.state == SGState.Idle ? getEnteredAddress() : "");
+
         }
     }
     
     void sendConnectOrDisconnect(SGBaseTE te, String address) {
+        System.out.println("dial address: " + address);
         SGChannel.sendConnectOrDisconnectToServer(te, address);
         closeAfterDelay(10);
     }

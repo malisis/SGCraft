@@ -23,7 +23,7 @@ public class AlmuraAddon {
         if (debugAddon) {
             System.out.println("SGCraft:AlmuraAddon - Origin: " + origin + " -> Destination: " + destination + " Zpm Required: true");
         }
-        return true;
+        return false;
     }
 
     public static int worldZpmMultiplier(String world) {
