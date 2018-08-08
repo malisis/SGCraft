@@ -612,10 +612,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     numEngagedChevrons = 0;
                     markChanged();
                 }
-            } else {
-                disconnect(player);
             }
+        } else {
+            disconnect(player);
         }
+
     }
 
     public String disconnect(EntityPlayer player) {
