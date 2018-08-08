@@ -11,6 +11,8 @@ import net.minecraft.block.BlockChest;
 import net.minecraft.block.BlockColored;
 import net.minecraft.block.BlockSandStone;
 import net.minecraft.block.BlockStairs;
+import net.minecraft.block.BlockStoneBrick;
+import net.minecraft.block.BlockStoneSlab;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumDyeColor;
@@ -29,6 +31,7 @@ import java.util.Random;
 public class FeatureUnderDesertPyramid extends StructureComponent {
 
     StructureComponent base;
+    boolean generateStructure = false;
 
     @Override
     protected void readStructureFromNBT(NBTTagCompound compound, TemplateManager templateManager) {}
@@ -42,9 +45,14 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
 
     public FeatureUnderDesertPyramid(StructureComponent base) {
         super(0);
-        if (FeatureGeneration.debugStructures)
-            System.out.println("SGCraft: Instantiating FeatureUnderDesertPyramid");
         this.base = base;
+        Random rand = new Random();
+        generateStructure = rand.nextInt(100) <= FeatureGeneration.structureAugmentationChance;
+
+        if (FeatureGeneration.debugStructures) {
+            System.out.println("SGCraft: Creating FeatureUnderDesertPyramid with GenerateStructure: " + generateStructure);
+        }
+
         StructureBoundingBox baseBox = base.getBoundingBox();
         BlockPos boxCenter = new BlockPos(baseBox.minX + (baseBox.maxX - baseBox.minX + 1) / 2, baseBox.minY + (baseBox.maxY - baseBox.minY + 1) / 2, baseBox.minZ + (baseBox.maxZ - baseBox.minZ + 1) / 2);
         int cx = boxCenter.getX();
@@ -56,12 +64,13 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
 
     @Override
     public boolean addComponentParts(World world, Random rand, StructureBoundingBox clip) {
-        return rand.nextInt(100) >= FeatureGeneration.structureAugmentationChance || addAugmentationParts(world, rand, clip);
+        return generateStructure && addAugmentationParts(world, rand, clip);
     }
 
     protected boolean addAugmentationParts(World world, Random rand, StructureBoundingBox clip) {
-        if (FeatureGeneration.debugStructures)
+        if (FeatureGeneration.debugStructures) {
             System.out.printf("SGCraft: FeatureUnderDesertPyramid.addComponentParts in %s clipped to %s\n", getBoundingBox(), clip);
+        }
         if (base == null) {
             System.out.printf("SGCraft: FeatureUnderDesertPyramid.addComponentParts: no base\n");
             return false;
@@ -109,59 +118,79 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
         for (int i = -2; i <= 2; i++)
             for (int j = 0; j <= 4; j++) {
                 IBlockState id;
-//                 int data;
                 if (i == 0 && j == 0) {
                     id = sgBase;
-//                     data = sgBaseNorth;
                 }
                 else if (i == -2 || i == 2 || j == 0 || j == 4) {
                     id = sgRings[(i + j + 1) & 1];
-//                     data = (i + j + 1) & 1;
                 }
                 else {
                     id = air;
-//                     data = 0;
                 }
                 setBlockState(world, id, 5+i, 1+j, 2, clip);
             }
+
         int baseX = box.minX + 5, baseY = box.minY + 1, baseZ = box.minZ + 2;
         SGBaseTE te = (SGBaseTE)world.getTileEntity(new BlockPos(baseX, baseY, baseZ));
+        if (FeatureGeneration.debugStructures) {
+            System.out.println("Stargate built at: " + baseX + "/" + baseY + "/" + baseZ);
+        }
+
         if (te != null) {
-            te.hasChevronUpgrade = true;
+            // Randomly give stargates the chevron upgrade.
+            if (rand.nextInt(100) <= FeatureGeneration.chevronUpgradeChance) {
+                te.hasChevronUpgrade = true;
+                if (FeatureGeneration.debugStructures) {
+                    System.out.println("Stargate at: [" + baseX + "/" + baseY + "/" + baseZ + "] granted chevron upgrade.");
+                }
+            }
+
+            // Set sandstone base so Stargate doesn't appear to float.
+            ItemStack sandStoneSlab = new ItemStack(Blocks.STONE_SLAB, 1, BlockStoneSlab.EnumType.SAND.getMetadata());
+            te.getInventory().setInventorySlotContents(0, sandStoneSlab.copy());
+            te.getInventory().setInventorySlotContents(1, sandStoneSlab.copy());
+            te.getInventory().setInventorySlotContents(2, sandStoneSlab.copy());
+            te.getInventory().setInventorySlotContents(3, sandStoneSlab.copy());
+            te.getInventory().setInventorySlotContents(4, sandStoneSlab.copy());
         }
 
         // DHD
         setBlockState(world, dhd, 5, 1, 7, clip);
 
         // ZPM Chest Placement
-        int chestX = box.minX + 8, chestY = box.minY + 1, chestZ = box.minZ + 2;
-        BlockPos chestPos = new BlockPos(chestX, chestY, chestZ);
+        if (rand.nextInt(100) <= FeatureGeneration.zpmChestChance) {
+            if (SGCraft.zpm == null) {
+                return true; // ZPM Item not found thus cant continue.
+            }
 
-        if (world.getBlockState(chestPos).getBlock() != Blocks.CHEST) {
-            setBlockState(world, chest, 8, 1, 2, clip);
-            TileEntityChest chestTE = (TileEntityChest) world.getTileEntity(chestPos);
-            if (chestTE != null) {
-                if (FeatureGeneration.debugStructures) {
-                    System.out.println("Generating Items in Chest at: " + chestPos);
-                }
+            int chestX = box.minX + 8, chestY = box.minY + 1, chestZ = box.minZ + 2;
+            BlockPos chestPos = new BlockPos(chestX, chestY, chestZ);
 
-                ItemStack zpm = new ItemStack(SGCraft.zpm,1);
+            if (world.getBlockState(chestPos).getBlock() != Blocks.CHEST) {
 
-                if (zpm != null) {
-                    NBTTagCompound tag = zpm.getTagCompound();
-                    if(tag == null) {
-                        tag = new NBTTagCompound();
-                    }
+                setBlockState(world, chest, 8, 1, 2, clip);  // Expects offset location.
 
-                    zpm.setTagCompound(tag);
-                    tag.setDouble(ZPMItem.ENERGY, Integer.MAX_VALUE);
-                    tag.setBoolean(ZPMItem.LOADED, false);
+                TileEntityChest chestTE = (TileEntityChest) world.getTileEntity(chestPos);
 
+                if (chestTE != null) {
                     if (FeatureGeneration.debugStructures) {
-                        System.out.println("Setting zpm power values: " + chestPos);
+                        System.out.println("Generating ZPM Chest at: " + chestPos);
                     }
+
+                    ItemStack zpm = new ItemStack(SGCraft.zpm, 1);
+
+                    if (zpm != null) {
+                        NBTTagCompound tag = zpm.getTagCompound();
+                        if (tag == null) {
+                            tag = new NBTTagCompound();
+                        }
+
+                        zpm.setTagCompound(tag);
+                        tag.setDouble(ZPMItem.ENERGY, Integer.MAX_VALUE);
+                        tag.setBoolean(ZPMItem.LOADED, false);
+                    }
+                    chestTE.getSingleChestHandler().insertItem(0, zpm, false);
                 }
-                chestTE.getSingleChestHandler().insertItem(0, zpm, false);
             }
         }
 
