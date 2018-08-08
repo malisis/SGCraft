@@ -29,12 +29,12 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
     public final BasicSource source;
     public static final int firstZpmSlot = 0;
     public static final int numZpmSlots = 1;
-    public static final int numSlots = numZpmSlots;
+    public static final int numSlots = numZpmSlots; // future usage > 1
     private int update = 0;
 
     public ZpmInterfaceCartTE() {
         this.source = new ZpmBasicSource(this, Integer.MAX_VALUE, 4);
-        //this.setInventorySlotContents(0, new ItemStack(SGCraft.zpm));
+        //this.setInventorySlotContents(0, new ItemStack(SGCraft.zpm)); // Testing purposes only.
     }
 
     /* TileEntity */
@@ -185,6 +185,12 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
         }
 
         NBTTagCompound tag = item.getTagCompound();
+
+        if(tag == null) {
+            tag = new NBTTagCompound();
+            item.setTagCompound(tag);
+        }
+
         if(tag != null && tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
             tag.setDouble(ZPMItem.ENERGY, this.source.getEnergyStored());
             tag.setBoolean(ZPMItem.LOADED, false);
@@ -198,18 +204,19 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
         this.items.set(0, item);
         NBTTagCompound tag = item.getTagCompound();
 
-        if(tag == null) {
+        if (tag == null) {
             tag = new NBTTagCompound();
             item.setTagCompound(tag);
+        }
+
+        tag.setBoolean(ZPMItem.LOADED, true);
+
+        if (!tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
+            tag.setDouble(ZPMItem.ENERGY, Integer.MAX_VALUE);
+            this.source.setCapacity(Integer.MAX_VALUE);
+            this.source.setEnergyStored(tag.getDouble(ZPMItem.ENERGY));
         } else {
-            tag.setBoolean(ZPMItem.LOADED, true);
-            if (!tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
-                tag.setDouble(ZPMItem.ENERGY, Integer.MAX_VALUE);
-                this.source.setCapacity(Integer.MAX_VALUE);
-                this.source.setEnergyStored(tag.getDouble(ZPMItem.ENERGY));
-            } else {
-                this.source.setEnergyStored(tag.getDouble(ZPMItem.ENERGY));
-            }
+            this.source.setEnergyStored(tag.getDouble(ZPMItem.ENERGY));
         }
     }
 

@@ -32,6 +32,8 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
 
     StructureComponent base;
     boolean generateStructure = false;
+    boolean generateChevronUpgrade = false;
+    boolean generateZpmChest = false;
 
     @Override
     protected void readStructureFromNBT(NBTTagCompound compound, TemplateManager templateManager) {}
@@ -48,7 +50,8 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
         this.base = base;
         Random rand = new Random();
         generateStructure = rand.nextInt(100) <= FeatureGeneration.structureAugmentationChance;
-
+        generateChevronUpgrade = rand.nextInt(100) <= FeatureGeneration.chevronUpgradeChance;
+        generateZpmChest = rand.nextInt(100) <= FeatureGeneration.zpmChestChance;
         if (FeatureGeneration.debugStructures) {
             System.out.println("SGCraft: Creating FeatureUnderDesertPyramid with GenerateStructure: " + generateStructure);
         }
@@ -138,7 +141,7 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
 
         if (te != null) {
             // Randomly give stargates the chevron upgrade.
-            if (rand.nextInt(100) <= FeatureGeneration.chevronUpgradeChance) {
+            if (generateChevronUpgrade) {
                 te.hasChevronUpgrade = true;
                 if (FeatureGeneration.debugStructures) {
                     System.out.println("Stargate at: [" + baseX + "/" + baseY + "/" + baseZ + "] granted chevron upgrade.");
@@ -158,7 +161,7 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
         setBlockState(world, dhd, 5, 1, 7, clip);
 
         // ZPM Chest Placement
-        if (rand.nextInt(100) <= FeatureGeneration.zpmChestChance) {
+        if (generateZpmChest) {
             if (SGCraft.zpm == null) {
                 return true; // ZPM Item not found thus cant continue.
             }

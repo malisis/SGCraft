@@ -21,8 +21,9 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
+
+import javax.annotation.Nullable;
 
 public class ZpmInterfaceCart extends BlockContainer {
     public ZpmInterfaceCart() {
@@ -41,12 +42,9 @@ public class ZpmInterfaceCart extends BlockContainer {
         ZpmInterfaceCartTE zpmCart = ZpmInterfaceCartTE.at(world, pos);
         ItemStack zpm = zpmCart.getStackInSlot(0);
         NBTTagCompound tag = zpm.getTagCompound();
-        if (zpmCart == null)
-            System.out.println("TE null");
+
         if (zpmCart != null) {
-            System.out.println("ZPM CartNot Null");
             if (tag == null) {
-                System.out.println("Creating Tag");
                 tag = new NBTTagCompound();
                 zpm.setTagCompound(tag);
             }
@@ -55,7 +53,6 @@ public class ZpmInterfaceCart extends BlockContainer {
                 tag.setDouble(ZPMItem.ENERGY, zpmCart.source.getEnergyStored());
                 tag.setBoolean(ZPMItem.LOADED, false);
                 zpmCart.source.setEnergyStored(0);
-                System.out.println("Wrote Data");
             }
 
         }
