@@ -145,6 +145,11 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
     }
 
     @Override
+    protected IInventory getInventory() {
+        return this;
+    }
+
+    @Override
     public boolean isEmpty() {
         for(final ItemStack item : this.items) {
             if(!item.isEmpty()) {
