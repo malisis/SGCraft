@@ -342,7 +342,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public void onModelRegistry(ModelRegistryEvent event) {
         // Register Complex Block Models
         // Note: Complex Item Models register within their creation class because their registration order isn't important.
-        registerModel(Item.getItemFromBlock(SGCraft.zpm_interface_cart));
+        if (isModLoaded("ic2") && SGCraft.zpm_interface_cart != null) {
+            registerModel(Item.getItemFromBlock(SGCraft.zpm_interface_cart));
+        }
     }
 
     @SideOnly(Side.CLIENT)
