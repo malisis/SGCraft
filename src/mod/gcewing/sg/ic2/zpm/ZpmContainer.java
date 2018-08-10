@@ -49,7 +49,6 @@ public class ZpmContainer extends BaseContainer {
             int col = i % numFuelSlotColumns;
             int x = zpmSlotsX + col * 18;
             int y = zpmSlotsY + row * 18;
-            System.out.println("ZPM Slotzs: " + x + " / " + y);
             addSlotToContainer(new ZpmSlot(te, b + i, x, y));
         }
     }
