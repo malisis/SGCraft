@@ -7,8 +7,7 @@
   "mcversion": "${mcversion}",
   "url": "http://www.cosc.canterbury.ac.nz/greg.ewing/minecraft/mods/SGCraft/",
   "updateUrl": "",
-  "authors": ["Dockter"],
-  "credits": ["Greg Ewing", "Radviger"],
+  "authors": [ "Greg Ewing", "AlmuraDev", "Radviger" ],
   "logoFile": "",
   "screenshots": [],
   "dependencies": []
