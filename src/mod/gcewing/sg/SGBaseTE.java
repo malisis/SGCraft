@@ -687,7 +687,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
 
         // Almura Start
-        if (AlmuraAddon.worldRequiresZPM(this.getWorld().getWorldInfo().getWorldName().toLowerCase(), targetGate.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
+        String originName = this.getWorld().getWorldInfo().getWorldName().toLowerCase();
+        String destinationName = targetGate.getWorld().getWorldInfo().getWorldName().toLowerCase();
+        if (AlmuraAddon.worldRequiresZPM(originName, destinationName)) {
             long power = (long) AlmuraAddon.zpmPowerAvailable(world, this.pos, 4, false);
             if (!(power > 0)) {
                 return diallingFailure(player, "zpmNotFound");
@@ -696,6 +698,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     return diallingFailure(player, "zpmLowPower");
                 }
             }
+            System.out.println("ZPM Power Required: " + energyToOpen * distanceFactor + " , distance factor: " + distanceFactor);
         }
         // Almura End
 
@@ -717,8 +720,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (te1.getWorld() != te2.getWorld()) {
             f *= distanceFactorMultiplier;
             // Almura Start
+            String originName = te1.getWorld().getWorldInfo().getWorldName().toLowerCase();
+            String destinationName = te2.getWorld().getWorldInfo().getWorldName().toLowerCase();
             if (AlmuraAddon.worldRequiresZPM(te1.getWorld().getWorldInfo().getWorldName().toLowerCase(), te2.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
-                f += AlmuraAddon.worldZpmMultiplier(te2.getWorld().getWorldInfo().getWorldName().toLowerCase());
+                f += AlmuraAddon.worldZpmMultiplier(originName, destinationName);
             }
             // Almura End
         }

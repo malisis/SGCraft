@@ -26,21 +26,31 @@ public class AlmuraAddon {
         return true;
     }
 
-    public static int worldZpmMultiplier(String world) {
-        int multiplier = 0;
-        if (world.equalsIgnoreCase("cemaria") || world.equalsIgnoreCase("cemaria-nether") || world.equalsIgnoreCase("cemaria-end")) {
-            multiplier = 1000;
-        } else if (world.equalsIgnoreCase("keystone") || world.equalsIgnoreCase("keystone-nether") || world.equalsIgnoreCase("keystone-end")) {
-            multiplier = 1000;
-        } else if (world.equalsIgnoreCase("atlantis") || world.equalsIgnoreCase("atlantis-nether") || world.equalsIgnoreCase("atlantis-end")) {
-            multiplier = 1000;
+    public static int worldZpmMultiplier(String origin, String destination) {
+        if (origin.equalsIgnoreCase("dakara") || origin.equalsIgnoreCase("nether") || origin.equalsIgnoreCase("the_end") || origin.equalsIgnoreCase("asgard") || origin.equalsIgnoreCase("orilla")) {
+            if (destination.equalsIgnoreCase("dakara") || destination.equalsIgnoreCase("nether") || destination.equalsIgnoreCase("the_end") || destination.equalsIgnoreCase("asgard") || destination.equalsIgnoreCase("orilla")) {
+                if (debugAddon) {
+                    System.out.println("SGCraft:AlmuraAddon - Origin: " + origin + " -> Destination: " + destination + " Zpm Power Multiplier: " + 0);
+                }
+                return 0;
+            }
         }
 
-        if (debugAddon) {
-            System.out.println("SGCraft:AlmuraAddon - Destination: " + world + " Zpm Multiplier: " + multiplier);
+        if (origin.equalsIgnoreCase("keystone") || origin.equalsIgnoreCase("cemaria") || origin.equalsIgnoreCase("atlantis") || origin.equalsIgnoreCase("zeal")) {
+            if (debugAddon) {
+                System.out.println("SGCraft:AlmuraAddon - Origin: " + origin + " -> Destination: " + destination + " Zpm Power Multiplier: " + 1000);
+            }
+            return 1000;
         }
 
-        return multiplier;
+        if (destination.equalsIgnoreCase("keystone") || destination.equalsIgnoreCase("cemaria") || destination.equalsIgnoreCase("atlantis") || destination.equalsIgnoreCase("zeal")) {
+            if (debugAddon) {
+                System.out.println("SGCraft:AlmuraAddon - Origin: " + origin + " -> Destination: " + destination + " Zpm Power Multiplier: " + 1000);
+            }
+            return 1000;
+        }
+
+        return 0;
     }
 
     public static double zpmPowerAvailable(World world, BlockPos pos, int radius, boolean debug) {
