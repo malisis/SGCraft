@@ -533,6 +533,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         timeout = newTimeout;
         markChanged();
         if ((oldState == SGState.Idle) != (newState == SGState.Idle)) {
+            updateChunkLoadingStatus();
             world.notifyNeighborsOfStateChange(pos, getBlockType(), true);
             //Update: may not need observer update here.
         }
@@ -710,7 +711,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         startDiallingStargate(address, targetGate, true, immediate);
 
         targetGate.enterState(SGState.attemptToDial, 0);
-        targetGate.updateChunkLoadingStatus();
 
         targetGate.startDiallingStargate(homeAddress, this, false, immediate);
 
