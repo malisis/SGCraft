@@ -1,0 +1,11 @@
+{
+    "required": true,
+    "minVersion": "0.7.10",
+    "package": "gcewing.sg.mixin",
+    "refmap": "mixins.sgcraft.refmap.json",
+    "target": "@env(DEFAULT)",
+    "compatibilityLevel": "JAVA_8",
+    "mixins": [
+        "MixinStructureVillagePiecesVillage"
+    ]
+}
