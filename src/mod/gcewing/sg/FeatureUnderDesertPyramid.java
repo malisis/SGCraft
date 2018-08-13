@@ -37,7 +37,7 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
     boolean generateStructure = false;
     boolean generateChevronUpgrade = false;
     boolean generateZpmChest = false;
-    int pass = 1;
+    int pass = 0;
 
     @Override
     protected void readStructureFromNBT(NBTTagCompound compound, TemplateManager templateManager) {}
@@ -202,7 +202,6 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
         }
 
         if (FeatureGeneration.spawnTokra && pass == 0) { // pass = 0 prevents more than 1 entity from spawning.
-            System.out.println("Spawned Tokra");
             EntityVillager entityvillager = new EntityVillager(world);
             entityvillager.setLocationAndAngles((double)chestX + 0.5D, (double)chestY + 2, (double)chestZ + 0.5D, 0.0F, 0.0F);
             entityvillager.setProfession(VillagerRegistry.getId(SGCraft.tokraProfession));
