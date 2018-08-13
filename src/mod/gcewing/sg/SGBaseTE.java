@@ -611,7 +611,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 boolean fastDial = false;
                 boolean openIris = false;
                 System.out.println("Item: " + player.getHeldItemOffhand());
-                if (player.getHeldItemOffhand().item.equals(SGCraft.gdo)) {
+
+                if (player != null && !player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().item.equals(SGCraft.gdo)) {
                     fastDial = true;
                     openIris = true;
                 }

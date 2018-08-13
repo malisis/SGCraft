@@ -69,7 +69,6 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static SGBaseBlock sgBaseBlock;
     public static SGRingBlock sgRingBlock;
     public static DHDBlock sgControllerBlock;
-    //public static SGPortalBlock sgPortalBlock;
     public static Block naquadahBlock, naquadahOre;
     
     public static Item naquadah, naquadahIngot, sgCoreCrystal, sgControllerCrystal, sgChevronUpgrade,
@@ -81,7 +80,6 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     
     public static boolean addOresToExistingWorlds;
     public static NaquadahOreWorldGen naquadahOreGenerator;
-//     public static int tokraVillagerID;
     
     public static BaseSubsystem ic2Integration; //[IC2]
     public static IIntegration ccIntegration; //[CC]
@@ -94,11 +92,19 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 
     public static CreativeTabs creativeTabs;
 
+    // Villager Profession for Generators
     public static VillagerProfession tokraProfession;
 
+    // Block Harvests
     public static boolean canHarvestDHD = false;
     public static boolean canHarvestSGBaseBlock = false;
     public static boolean canHarvestSGRingBlock = false;
+
+    //Client Options
+    public static boolean useHDEventHorizionTexture = true;
+    public static boolean saveAddressToClipboard = false;
+
+
 
     public SGCraft() {
         mod = this;
@@ -153,7 +159,13 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         SGBaseBlock.configure(config);
         SGBaseTE.configure(config);
         FeatureGeneration.configure(config);
+
+        // Server-Side Options
         addOresToExistingWorlds = config.getBoolean("options", "addOresToExistingWorlds", false);
+
+        // Client-Side Options
+        useHDEventHorizionTexture = config.getBoolean("client", "useHDEventHorizonTexture", useHDEventHorizionTexture);
+        saveAddressToClipboard = config.getBoolean("client", "useHDEventHorizonTexture", saveAddressToClipboard);
     }       
 
     @Override
@@ -166,7 +178,6 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         sgRingBlock = newBlock("stargateRing", SGRingBlock.class, SGRingItem.class);
         sgBaseBlock = newBlock("stargateBase", SGBaseBlock.class);
         sgControllerBlock = newBlock("stargateController", DHDBlock.class);
-        //sgPortalBlock = newBlock("stargatePortal", SGPortalBlock.class);
         naquadahBlock = newBlock("naquadahBlock", NaquadahBlock.class);
         naquadahOre = newBlock("naquadahOre", NaquadahOreBlock.class);
         if (isModLoaded("ic2")) {
