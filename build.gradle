@@ -17,24 +17,18 @@ buildscript {
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
         classpath 'org.spongepowered:mixingradle:0.6+'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.0'
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'org.spongepowered.mixin'
+apply plugin: 'com.github.johnrengelman.shadow'
 
 sourceSets {
     main {
         refMap = "mixins.sgcraft.refmap.json"
     }
-}
-
-jar {
-    manifest.attributes(
-            'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
-            'MixinConfigs': 'mixins.sgcraft.json',
-            'FMLCorePluginContainsFMLMod': 'true',
-    )
 }
 
 archivesBaseName = jarName
@@ -56,6 +50,7 @@ dependencies {
         exclude module: 'testplugins'
         exclude module: 'testmods'
     }
+    compile('org.spongepowered:mixin:0.7.11-SNAPSHOT')
     compile "li.cil.oc:OpenComputers:MC1.12.1-1.7.1.52"
     compile "net.industrial-craft:industrialcraft-2:2.8.93-ex112:api"
     deobfCompile "dan200.computercraft:ComputerCraft:1.80pr1-build4"
@@ -72,6 +67,7 @@ minecraft {
     runDir = "run"
     mappings = 'snapshot_20171007'
     useDepAts = true
+    makeObfSourceJar = false
 }
 
 sourceSets.main {
@@ -89,13 +85,39 @@ processResources {
     // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
-                
+
         // replace version and mcversion
         expand 'version':project.version, 'mcversion':project.minecraft.version, 'modid':project.jarName
     }
-        
+
     // copy everything else, thats not the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+}
+
+jar {
+    manifest.attributes(
+            'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
+            'MixinConfigs': 'mixins.sgcraft.json',
+            'FMLCorePluginContainsFMLMod': 'true',
+            'ForceLoadAsMod': true
+    )
+}
+
+shadowJar {
+    mainSpec.sourcePaths.clear()
+    dependsOn reobfJar
+    classifier ''
+    exclude 'dummyThing'
+    dependencies {
+        include dependency('org.spongepowered:mixin')
+    }
+    afterEvaluate {
+        from zipTree(reobfJar.jar)
+    }
+}
+
+artifacts {
+    archives shadowJar
 }
