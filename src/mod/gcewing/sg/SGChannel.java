@@ -67,7 +67,7 @@ public class SGChannel extends BaseDataChannel {
         if (player.world.isBlockLoaded(pos)) {
             DHDTE te = DHDTE.at(player.world, pos);
             if (te != null) {
-                te.unsetSymbol();
+                te.unsetSymbol(player);
             }
         }
     }
@@ -86,7 +86,7 @@ public class SGChannel extends BaseDataChannel {
         if (player.world.isBlockLoaded(pos)) {
             DHDTE te = DHDTE.at(player.world, pos);
             if (te != null) {
-                te.enterSymbol(symbol);
+                te.enterSymbol(player, symbol);
             }
         }
     }

@@ -6,6 +6,7 @@
 
 package gcewing.sg;
 
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.ItemStack;
@@ -63,13 +64,16 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
         return DHDTE.at(world, pos);
     }
 
-    void enterSymbol(char symbol) {
+    void enterSymbol(EntityPlayer player, char symbol) {
         SGBaseTE gate = getLinkedStargateTE();
         if (gate != null) {
             if (enteredAddress.length() < gate.getNumChevrons()) {
                 enteredAddress += symbol;
-                //if (SGBaseTE.immediateDHDGateDial) {
-                if (this.immediateDialDHD) {
+                boolean fastLockChevron = false;
+                if (player != null && !player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().item.equals(SGCraft.gdo)) {
+                    fastLockChevron = true;
+                }
+                if (fastLockChevron) {
                     boolean last = enteredAddress.length() == gate.getNumChevrons();
                     gate.finishDiallingSymbol(symbol, true, false, last);
                     gate.markChanged();
@@ -78,14 +82,18 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
         }
     }
 
-    void unsetSymbol() {
+    void unsetSymbol(EntityPlayer player) {
         SGBaseTE gate = getLinkedStargateTE();
         if (gate != null) {
             if (!enteredAddress.isEmpty()) {
                 char symbol = enteredAddress.charAt(enteredAddress.length() - 1);
                 enteredAddress = enteredAddress.substring(0, enteredAddress.length() - 1);
                 //if (SGBaseTE.immediateDHDGateDial) {
-                if (this.immediateDialDHD) {
+                boolean fastLockChevron = false;
+                if (player != null && !player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().item.equals(SGCraft.gdo)) {
+                    fastLockChevron = true;
+                }
+                if (fastLockChevron) {
                     gate.unsetSymbol(symbol);
                     gate.markChanged();
                 }

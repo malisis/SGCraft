@@ -202,7 +202,7 @@ public class DHDScreen extends SGScreen {
             buttonSound(SoundEvents.UI_BUTTON_CLICK);
             String enteredAddress = getEnteredAddress();
             if (!enteredAddress.isEmpty()) {
-                cte.unsetSymbol();
+                cte.unsetSymbol(this.mc.player);
                 SGChannel.sendUnsetSymbolToServer(cte);
             }
         }
@@ -214,7 +214,7 @@ public class DHDScreen extends SGScreen {
             String a = getEnteredAddress();
             int n = a.length();
             if (n < addressLength) {
-                cte.enterSymbol(c);
+                cte.enterSymbol(null, c);
                 SGChannel.sendEnterSymbolToServer(cte, c);
             }
         }

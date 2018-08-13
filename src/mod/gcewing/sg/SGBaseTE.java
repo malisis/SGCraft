@@ -6,10 +6,6 @@
 
 package gcewing.sg;
 
-import static gcewing.sg.BaseBlockUtils.getWorldTileEntity;
-import static gcewing.sg.BaseUtils.max;
-import static gcewing.sg.BaseUtils.min;
-
 import com.google.common.collect.Sets;
 import gcewing.sg.almura.AlmuraAddon;
 import gcewing.sg.oc.OCWirelessEndpoint;
@@ -39,11 +35,7 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.ITickable;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
+import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -76,13 +68,12 @@ import org.spongepowered.common.entity.EntityUtil;
 import org.spongepowered.common.interfaces.entity.IMixinEntity;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Consumer;
+
+import static gcewing.sg.BaseBlockUtils.getWorldTileEntity;
+import static gcewing.sg.BaseUtils.max;
+import static gcewing.sg.BaseUtils.min;
 
 public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSoundSource {
 
@@ -91,22 +82,23 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     static boolean debugConnect = false;
     static boolean debugTransientDamage = false;
     static boolean debugTeleport = false;
+    static boolean debugZPM = false;
     final static DecimalFormat dFormat = new DecimalFormat("###,###,###,##0");
 
     static SoundEvent
-        dialFailSound,
-        connectSound,
-        disconnectSound,
-        irisOpenSound,
-        irisCloseSound,
-        irisHitSound,
-        dhdPressSound,
-        dhdDialSound,
-        chevronOutgoingSound,
-        chevronIncomingSound,
-        lockOutgoingSound,
-        lockIncomingSound,
-        gateRollSound;
+            dialFailSound,
+            connectSound,
+            disconnectSound,
+            irisOpenSound,
+            irisCloseSound,
+            irisHitSound,
+            dhdPressSound,
+            dhdDialSound,
+            chevronOutgoingSound,
+            chevronIncomingSound,
+            lockOutgoingSound,
+            lockIncomingSound,
+            gateRollSound;
 
     public static void registerSounds(SGCraft mod) {
         dialFailSound = mod.newSound("dial_fail");
@@ -134,7 +126,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public final static double ringRotationSpeed = 2.0;
 
     final static int interDiallingTime = 10; // ticks
-    final static int syncAwaitTime = 20; // ticks
+    public int syncAwaitTime = 10; // ticks  // 10 - withinWorld, 30 - dimensional
     final static int transientDuration = 20; // ticks
     final static int disconnectTime = 40; // ticks
 
@@ -151,9 +143,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     static float defaultChevronAngle = 40f;
     static float chevronAngles[][] = {
-        //     0    1    2    <-- Base camouflage level
-        { 45f, 45f, 40f }, // 7 chevrons
-        { 36f, 33f, 30f }  // 9 chevrons
+            //     0    1    2    <-- Base camouflage level
+            { 45f, 45f, 40f }, // 7 chevrons
+            { 36f, 33f, 30f }  // 9 chevrons
     };
 
     // Configuration options
@@ -533,7 +525,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     void enterState(SGState newState, int newTimeout) {
         if (debugState)
             System.out.printf("SGBaseTE: at %s in dimension %s entering state %s with timeout %s\n",
-                pos, world.provider.getDimension(), newState, newTimeout);
+                    pos, world.provider.getDimension(), newState, newTimeout);
         SGState oldState = state;
         state = newState;
         startRingAngle = ringAngle;
@@ -553,9 +545,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     public boolean isConnected() {
         return state == SGState.SyncAwait
-            || state == SGState.Transient
-            || state == SGState.Connected
-            || state == SGState.Disconnecting;
+                || state == SGState.Transient
+                || state == SGState.Connected
+                || state == SGState.Disconnecting;
     }
 
     DHDTE getLinkedControllerTE() {
@@ -574,7 +566,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         int rangeZ = DHDTE.linkRangeZ;
         if (SGBaseBlock.debugMerge)
             System.out.printf("SGBaseTE.checkForLink: in range +/-(%d,%d,%d) of %s\n",
-                rangeXY, rangeZ, rangeXY, pos);
+                    rangeXY, rangeZ, rangeXY, pos);
         for (int i = -rangeXY; i <= rangeXY; i++)
             for (int j = -rangeZ; j <= rangeZ; j++)
                 for (int k = -rangeXY; k <= rangeXY; k++) {
@@ -610,8 +602,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             if (te != null) {
                 boolean fastDial = false;
                 boolean openIris = false;
-                System.out.println("Item: " + player.getHeldItemOffhand());
-
                 if (player != null && !player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().item.equals(SGCraft.gdo)) {
                     fastDial = true;
                     openIris = true;
@@ -672,8 +662,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             return diallingFailure(player, "diallingItself");
         }
         if (debugConnect) {
-            System.out.printf("SGBaseTE.connect: to %s in dimension %d with state %s\n",
-                targetGate.getPos(), targetGate.getWorld().provider.getDimension(), targetGate.state);
+            System.out.printf("SGBaseTE.connect: to %s in dimension %d with state %s\n", targetGate.getPos(), targetGate.getWorld().provider.getDimension(), targetGate.state);
         }
         if (targetGate.getNumChevrons() < homeAddress.length()) {
             return diallingFailure(player, "targetLackChevrons");
@@ -690,7 +679,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         energyToOpen = energyPerFuelItem / gateOpeningsPerFuelItem;
 
         if (!energyIsAvailable(energyToOpen * distanceFactor)) {
-            System.out.println("SGBaseTE: Not enough energy: " + energyToOpen * distanceFactor);
+            if (debugEnergyUse) {
+                System.out.println("SGBaseTE: Not enough energy: " + energyToOpen * distanceFactor);
+            }
             return diallingFailure(player, "insufficientEnergy");
         }
 
@@ -706,14 +697,21 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     return diallingFailure(player, "zpmLowPower");
                 }
             }
-            System.out.println("ZPM Power Required: " + energyToOpen * distanceFactor + " , distance factor: " + distanceFactor);
+            this.syncAwaitTime = 30; // Sets longer connect delay due to distance
+
+            if (this.debugZPM) {
+                System.out.println("ZPM Power Required: " + energyToOpen * distanceFactor + " , distance factor: " + distanceFactor);
+            }
+
+        } else {
+            this.syncAwaitTime = 10; // Sets short connect delay for in-world Stargates
         }
         // Almura End
 
         startDiallingStargate(address, targetGate, true, immediate);
         targetGate.startDiallingStargate(homeAddress, this, false, immediate);
 
-        if (targetGate.irisIsClosed() && openIris) {
+        if (targetGate.irisIsClosed() && openIris) { // Open Remote Iris if GDO says so.
             targetGate.openIris();
         }
 
@@ -855,13 +853,19 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                         }
                         break;
                     case Dialling:
-                        double step = (double)(maxTimeout - timeout) / (double)maxTimeout;
+                        double step = (double) (maxTimeout - timeout) / (double) maxTimeout;
                         ringAngle = startRingAngle + (targetRingAngle - startRingAngle) * step;
+                        break;
+
+                    case EstablishingConnection:
+                        if (timeout == 25) {
+                            playSGSoundEffect(connectSound, 1F, 1F); // Play sound before gate actually opens.
+                        }
                         break;
                 }
                 --timeout;
             } else {
-                switch(state) {
+                switch(state) { // Next Stage
                     case Idle:
                         if (symbolsRemaining(false) && isInitiator) {
                             startDiallingNextSymbol();
@@ -882,7 +886,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                         }
                         break;
                     case SyncAwait:
-                        finishDiallingAddress();
+                        attemptToLockStargate();
+                        break;
+                    case EstablishingConnection:
+                        openStargate();
                         break;
                     case Transient:
                         enterState(SGState.Connected, isInitiator ? ticksToStayOpen : 0);
@@ -952,7 +959,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             System.out.printf("SGBaseTE.useEnergy: %s now on hand, need %s\n", energyOnHand, amount);
         if (amount - 0.0001 > energyOnHand) {
             System.out.printf("SGBaseTE: Energy sources only delivered %s of promised %s\n",
-                energyOnHand - energyInBuffer, energyAvailable);
+                    energyOnHand - energyInBuffer, energyAvailable);
             return false;
         }
         setEnergyInBuffer(energyOnHand - amount);
@@ -971,8 +978,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         //BlockPos bp = t.p(i, -1, 0).blockPos();
         int radius = 4;
         for (final BlockPos.MutableBlockPos nearPos : BlockPos.getAllInBoxMutable(
-            pos.add(-radius, -radius, -radius),
-            pos.add(radius, radius, radius)
+                pos.add(-radius, -radius, -radius),
+                pos.add(radius, radius, radius)
         )) {
             TileEntity nte = world.getTileEntity(nearPos);
             if (debugEnergyUse) {
@@ -1028,7 +1035,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
         if (total < amount)
             System.out.printf("SGCraft: Warning: Energy sources did not deliver promised energy " +
-                "(%s requested, %s delivered)\n", amount, total);
+                    "(%s requested, %s delivered)\n", amount, total);
         return total;
     }
 
@@ -1065,23 +1072,23 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             int damage = (int)Math.ceil(dist * transientDamageRate);
             if (debugTransientDamage)
                 System.out.printf("SGBaseTE.performTransientDamage: distance = %s, damage = %s\n",
-                    dist, damage);
+                        dist, damage);
             ent.attackEntityFrom(transientDamage, damage);
         }
     }
 
-    boolean symbolsRemaining(boolean before) {
+    public boolean symbolsRemaining(boolean before) {
         int n = numEngagedChevrons;
         return n < dialledAddress.length() - (before ? 1 : 0);
     }
 
-    void startDiallingNextSymbol() {
+    public void startDiallingNextSymbol() {
         if (debugState)
             System.out.printf("SGBaseTE.startDiallingNextSymbol: %s of %s\n", numEngagedChevrons, dialledAddress);
         startDiallingSymbol(dialledAddress.charAt(numEngagedChevrons));
     }
 
-    void startDiallingSymbol(char c) {
+    public void startDiallingSymbol(char c) {
         int i = SGAddressing.charToSymbol(c);
         if (debugState)
             System.out.printf("SGBaseTE.startDiallingSymbol: %s\n", i);
@@ -1103,12 +1110,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    void unsetSymbol(char symbol) {
+    public void unsetSymbol(char symbol) {
         postEvent("sgChevronUnset", numEngagedChevrons, symbol);
         --numEngagedChevrons;
     }
 
-    void finishDiallingSymbol(char symbol, boolean outgoing, boolean changeState, boolean lastOne) {
+    public void finishDiallingSymbol(char symbol, boolean outgoing, boolean changeState, boolean lastOne) {
         ++numEngagedChevrons;
         postEvent("sgChevronEngaged", numEngagedChevrons, symbol);
         if (lastOne) {
@@ -1124,20 +1131,25 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    void finishDiallingAddress() {
-        //System.out.printf("SGBaseTE: Connecting to '%s'\n", dialledAddress);
+    private void attemptToLockStargate() {
         if (!isInitiator || useEnergy(energyToOpen * distanceFactor)) {
             if (debugEnergyUse) {
                 System.out.println("Energy to open gate: " + dFormat.format(energyToOpen) + " / " + dFormat.format(distanceFactor) + " = " + dFormat.format(energyToOpen * distanceFactor));
             }
-            playSGSoundEffect(connectSound, 1F, 1F);
-            enterState(SGState.Transient, transientDuration);
+            enterState(SGState.EstablishingConnection, 30);
         } else {
             disconnect();
         }
     }
 
-    boolean canTravelFromThisEnd() {
+    private void openStargate() {
+        if (debugConnect) {
+            System.out.printf("SGBaseTE: Connecting to '%s'\n", dialledAddress);
+        }
+        enterState(SGState.Transient, transientDuration);
+    }
+
+    public boolean canTravelFromThisEnd() {
         return isInitiator || !oneWayTravel;
     }
 
@@ -1261,8 +1273,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     protected static List<EntityLiving> entitiesWithinLeashRange(Entity entity) {
         AxisAlignedBB box = new AxisAlignedBB(
-            entity.posX - 7.0D, entity.posY - 7.0D, entity.posZ - 7.0D,
-            entity.posX + 7.0D, entity.posY + 7.0D, entity.posZ + 7.0D);
+                entity.posX - 7.0D, entity.posY - 7.0D, entity.posZ - 7.0D,
+                entity.posX + 7.0D, entity.posY + 7.0D, entity.posZ + 7.0D);
         return entity.world.getEntitiesWithinAABB(EntityLiving.class, box);
     }
 
@@ -1277,12 +1289,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         Entity newEntity = null;
         if (debugTeleport) {
             System.out.printf("SGBaseTE.teleportEntity: %s (in dimension %d)  to dimension %d\n",
-                repr(entity), entity.dimension, dimension);
+                    repr(entity), entity.dimension, dimension);
             System.out.printf("SGBaseTE.teleportEntity: pos (%.2f, %.2f, %.2f) prev (%.2f, %.2f, %.2f) last (%.2f, %.2f, %.2f) pitch %.2f yaw %.2f\n",
-                entity.posX, entity.posY, entity.posZ,
-                entity.prevPosX, entity.prevPosY, entity.prevPosZ,
-                entity.lastTickPosX, entity.lastTickPosY, entity.lastTickPosZ,
-                entity.rotationPitch, entity.rotationYaw);
+                    entity.posX, entity.posY, entity.posZ,
+                    entity.prevPosX, entity.prevPosY, entity.prevPosZ,
+                    entity.lastTickPosX, entity.lastTickPosY, entity.lastTickPosZ,
+                    entity.rotationPitch, entity.rotationYaw);
         }
 
         /***
@@ -1426,8 +1438,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         player.closeScreen();
         player.connection.sendPacket(new SPacketRespawn(player.dimension,
-            player.world.getDifficulty(), newWorld.getWorldInfo().getTerrainType(),
-            player.interactionManager.getGameType()));
+                player.world.getDifficulty(), newWorld.getWorldInfo().getTerrainType(),
+                player.interactionManager.getGameType()));
         oldWorld.removeEntityDangerously(player); // Removes player right now instead of waiting for next tick
         player.isDead = false;
         player.setLocationAndAngles(p.x, p.y, p.z, (float)a, player.rotationPitch);
@@ -1481,12 +1493,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             newEntity.setWorld(newWorld);
             if (debugTeleport)
                 System.out.printf(
-                    "SGBaseTE.teleportEntityToWorld: Spawned %s pos (%.2f, %.2f, %.2f) vel (%.2f, %.2f, %.2f) pitch %.2f (%.2f) yaw %.2f (%.2f)\n",
-                    repr(newEntity),
-                    newEntity.posX, newEntity.posY, newEntity.posZ,
-                    newEntity.motionX, newEntity.motionY, newEntity.motionZ,
-                    newEntity.rotationPitch, newEntity.prevRotationPitch,
-                    newEntity.rotationYaw, newEntity.prevRotationYaw);
+                        "SGBaseTE.teleportEntityToWorld: Spawned %s pos (%.2f, %.2f, %.2f) vel (%.2f, %.2f, %.2f) pitch %.2f (%.2f) yaw %.2f (%.2f)\n",
+                        repr(newEntity),
+                        newEntity.posX, newEntity.posY, newEntity.posZ,
+                        newEntity.motionX, newEntity.motionY, newEntity.motionZ,
+                        newEntity.rotationPitch, newEntity.prevRotationPitch,
+                        newEntity.rotationYaw, newEntity.prevRotationYaw);
         }
         oldWorld.resetUpdateEntityTick();
         if (oldWorld != newWorld)
