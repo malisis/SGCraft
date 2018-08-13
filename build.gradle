@@ -34,6 +34,7 @@ jar {
             'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
             'MixinConfigs': 'mixins.sgcraft.json',
             'FMLCorePluginContainsFMLMod': 'true',
+            'ForceLoadAsMod': true
     )
 }
 
