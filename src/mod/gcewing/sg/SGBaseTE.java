@@ -709,9 +709,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         // Almura End
 
         startDiallingStargate(address, targetGate, true, immediate);
-
-        targetGate.enterState(SGState.attemptToDial, 0);
-
+        targetGate.enterState(SGState.attemptToDial, 0); // Force remote gate immediate change state to help chunk stay loaded
         targetGate.startDiallingStargate(homeAddress, this, false, immediate);
 
 
