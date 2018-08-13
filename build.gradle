@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.bundling.Jar
+
 buildscript {
     repositories {
         mavenCentral()
@@ -17,21 +19,17 @@ buildscript {
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
         classpath 'org.spongepowered:mixingradle:0.6+'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.0'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.1'
     }
+}
+
+plugins {
+    id 'com.github.johnrengelman.shadow' version '2.0.1'
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'org.spongepowered.mixin'
 apply plugin: 'com.github.johnrengelman.shadow'
-
-sourceSets {
-    main {
-        refMap = "mixins.sgcraft.refmap.json"
-    }
-}
-
-archivesBaseName = jarName
 
 repositories {
     maven { url = "http://files.minecraftforge.net/maven" } // spongeforge
@@ -59,6 +57,11 @@ dependencies {
     }
 }
 
+archivesBaseName = jarName
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
 deobfMcMCP { failOnAtError = false }
 deobfMcSRG { failOnAtError = false }
 
@@ -74,6 +77,7 @@ sourceSets.main {
 	compileClasspath += files("lib")
 	java.srcDirs "src/base", "src/mod"
 	resources.srcDirs "src/resources"
+    ext.refMap = "mixins.sgcraft.refmap.json"
 }
 
 processResources {
@@ -97,12 +101,20 @@ processResources {
 }
 
 jar {
+    classifier 'base'
+    exclude 'log4j2-test.xml'
     manifest.attributes(
             'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
             'MixinConfigs': 'mixins.sgcraft.json',
             'FMLCorePluginContainsFMLMod': 'true',
             'ForceLoadAsMod': true
     )
+}
+
+if (JavaVersion.current().isJava8Compatible()) {
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
 }
 
 shadowJar {
