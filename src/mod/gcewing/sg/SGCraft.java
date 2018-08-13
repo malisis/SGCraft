@@ -165,7 +165,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 
         // Client-Side Options
         useHDEventHorizionTexture = config.getBoolean("client", "useHDEventHorizonTexture", useHDEventHorizionTexture);
-        saveAddressToClipboard = config.getBoolean("client", "useHDEventHorizonTexture", saveAddressToClipboard);
+        saveAddressToClipboard = config.getBoolean("client", "saveAddressToClipboard", saveAddressToClipboard);
     }       
 
     @Override
