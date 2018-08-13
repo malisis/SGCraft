@@ -91,7 +91,7 @@ public class SGBaseBlock extends SGBlock<SGBaseTE>  {
 
     @Override
     public boolean canHarvestBlock(IBlockAccess world, BlockPos pos, EntityPlayer player) {
-        return true;
+        return SGCraft.canHarvestSGBaseBlock;
     }
 
     @Override
@@ -107,17 +107,6 @@ public class SGBaseBlock extends SGBlock<SGBaseTE>  {
         checkForMerge(world, pos);
     }
 
-//     @Override
-//     public void onBlockPlacedBy(World world, BlockPos pos, IBlockState state, EntityLivingBase player, ItemStack stack) {
-//         int data = Math.round((180 - player.rotationYaw) / 90) & 3;
-//         world.setBlockState(pos, state);
-//         if (!world.isRemote) {
-//             if (debugMerge)
-//                 System.out.printf("SGBaseBlock.onBlockPlacedBy: yaw = %.1f state = %s\n", player.rotationYaw, state);
-//             checkForMerge(world, pos);
-//         }
-//     }
-    
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
         EnumHand hand, EnumFacing side, float cx, float cy, float cz)
@@ -211,7 +200,9 @@ public class SGBaseBlock extends SGBlock<SGBaseTE>  {
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         unmerge(world, pos);
-        dropUpgrades(world, pos);
+        if (SGCraft.canHarvestSGBaseBlock) {
+            dropUpgrades(world, pos);
+        }
         super.breakBlock(world, pos, state);
     }
     

@@ -115,13 +115,7 @@ public class BaseModClient<MOD extends BaseMod<? extends BaseModClient>> impleme
     public void addScreen(int id, Class<? extends GuiScreen> cls) {
         screenClasses.put(id, cls);
     }
-    
-    //-------------- Renderer registration --------------------------------------------------------
-    
-//     void registerRenderers() {
-//         // Make calls to addBlockRenderer(), addItemRenderer() and addTileEntityRenderer() here
-//     }
-    
+
     protected void registerBlockRenderers() {}
     protected void registerItemRenderers() {}
     protected void registerEntityRenderers() {}

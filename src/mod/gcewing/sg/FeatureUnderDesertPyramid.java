@@ -14,6 +14,8 @@ import net.minecraft.block.BlockStairs;
 import net.minecraft.block.BlockStoneBrick;
 import net.minecraft.block.BlockStoneSlab;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.entity.IEntityLivingData;
+import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
@@ -25,6 +27,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.template.TemplateManager;
+import net.minecraftforge.fml.common.registry.VillagerRegistry;
 
 import java.util.Random;
 
@@ -34,6 +37,7 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
     boolean generateStructure = false;
     boolean generateChevronUpgrade = false;
     boolean generateZpmChest = false;
+    int pass = 1;
 
     @Override
     protected void readStructureFromNBT(NBTTagCompound compound, TemplateManager templateManager) {}
@@ -160,14 +164,14 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
         // DHD
         setBlockState(world, dhd, 5, 1, 7, clip);
 
+        int chestX = box.minX + 8, chestY = box.minY + 1, chestZ = box.minZ + 2;
+        BlockPos chestPos = new BlockPos(chestX, chestY, chestZ);
+
         // ZPM Chest Placement
         if (generateZpmChest) {
             if (SGCraft.zpm == null) {
                 return true; // ZPM Item not found thus cant continue.
             }
-
-            int chestX = box.minX + 8, chestY = box.minY + 1, chestZ = box.minZ + 2;
-            BlockPos chestPos = new BlockPos(chestX, chestY, chestZ);
 
             if (world.getBlockState(chestPos).getBlock() != Blocks.CHEST) {
 
@@ -196,6 +200,17 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
                 }
             }
         }
+
+        if (FeatureGeneration.spawnTokra && pass == 0) { // pass = 0 prevents more than 1 entity from spawning.
+            System.out.println("Spawned Tokra");
+            EntityVillager entityvillager = new EntityVillager(world);
+            entityvillager.setLocationAndAngles((double)chestX + 0.5D, (double)chestY + 2, (double)chestZ + 0.5D, 0.0F, 0.0F);
+            entityvillager.setProfession(VillagerRegistry.getId(SGCraft.tokraProfession));
+            entityvillager.finalizeMobSpawn(world.getDifficultyForLocation(new BlockPos(entityvillager)), (IEntityLivingData)null, false);
+            world.spawnEntity(entityvillager);
+        }
+
+        pass++;  // Reminder: this entire method is called 4 times during world generation.
 
         return true;
     }

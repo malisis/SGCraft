@@ -6,16 +6,11 @@
 
 package gcewing.sg.ic2;
 
-import gcewing.sg.ic2.zpm.ZPMItem;
-import gcewing.sg.ic2.zpm.ZpmInterfaceCart;
-import net.minecraft.block.material.Material;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.item.*;
-import gcewing.sg.*;
-
-import ic2.api.item.*; //[IC2]
-import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import gcewing.sg.BaseSubsystem;
+import gcewing.sg.SGCraft;
+import gcewing.sg.SGCraftClient;
+import ic2.api.item.IC2Items;
+import net.minecraft.item.ItemStack;
 
 public class IC2Integration extends BaseSubsystem<SGCraft, SGCraftClient> {
 
@@ -29,12 +24,10 @@ public class IC2Integration extends BaseSubsystem<SGCraft, SGCraftClient> {
             throw new RuntimeException(String.format("IC2 item %s.%s not found", name, variant));
         return stack;
     }
-    
+
     @Override
     public void registerBlocks() {
         mod.ic2PowerUnit = mod.newBlock("ic2PowerUnit", IC2PowerBlock.class, IC2PowerItem.class);
-
-
     }
 
     @Override
@@ -42,10 +35,22 @@ public class IC2Integration extends BaseSubsystem<SGCraft, SGCraftClient> {
         ItemStack rubber = getIC2Item("crafting", "rubber");
         ItemStack copperPlate = getIC2Item("plate", "copper");
         ItemStack machine = getIC2Item("resource", "machine");
+        ItemStack advancedCasing = getIC2Item("resource", "advanced_machine");
         ItemStack wire = getIC2Item("cable", "type:copper,insulation:0");
         ItemStack circuit = getIC2Item("crafting", "circuit");
-        mod.newRecipe("ic2Capacitor",mod.ic2Capacitor, 1, "ppp", "rrr", "ppp", 'p', copperPlate, 'r', rubber);
-        mod.newRecipe("ic2Powerunit", mod.ic2PowerUnit,  1, "cwc", "wMw", "cec", 'c', mod.ic2Capacitor, 'w', wire, 'M', machine, 'e', circuit);
+
+        if (rubber != null && copperPlate != null && machine != null && advancedCasing != null && wire != null && circuit != null && mod.ic2Capacitor != null && mod.ic2PowerUnit != null) {
+            if (mod.config.getBoolean("recipes", "ic2CapacitorItem", true)) {
+                mod.newRecipe("ic2Capacitor", mod.ic2Capacitor, 1, "ppp", "rrr", "ppp", 'p', copperPlate, 'r', rubber);
+            }
+
+            if (mod.config.getBoolean("recipes", "ic2PowerUnitBlock", true)) {
+                mod.newRecipe("ic2Powerunit", mod.ic2PowerUnit, 1, "cwc", "wMw", "cec", 'c', mod.ic2Capacitor, 'w', wire, 'M', machine, 'e', circuit);
+            }
+
+            if (mod.config.getBoolean("recipes", "zpmInterfaceCartBlock", true)) {
+                mod.newRecipe("zpm_Interface_Cart", mod.zpm_interface_cart, 1, "eAw", "wBw", "wMe", 'B', mod.ic2PowerUnit, 'A', advancedCasing, 'w', wire, 'M', machine, 'e', circuit);
+            }
+        }
     }
-    
 }
