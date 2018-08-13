@@ -12,6 +12,10 @@ public class AlmuraAddon {
     final static boolean debugAddon = true;
 
     public static boolean worldRequiresZPM(String origin, String destination) {
+        if (origin.equalsIgnoreCase(destination)) {
+            return false;
+        }
+
         if (origin.equalsIgnoreCase("dakara") || origin.equalsIgnoreCase("nether") || origin.equalsIgnoreCase("the_end") || origin.equalsIgnoreCase("asgard") || origin.equalsIgnoreCase("orilla")) {
             if (destination.equalsIgnoreCase("dakara") || destination.equalsIgnoreCase("nether") || destination.equalsIgnoreCase("the_end") || destination.equalsIgnoreCase("asgard") || destination.equalsIgnoreCase("orilla")) {
                 if (debugAddon) {
