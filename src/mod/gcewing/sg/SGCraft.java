@@ -6,6 +6,7 @@
 
 package gcewing.sg;
 
+import gcewing.sg.ic2.gdo.GDOItem;
 import gcewing.sg.ic2.zpm.ZPMItem;
 import gcewing.sg.ic2.zpm.ZpmContainer;
 import gcewing.sg.ic2.zpm.ZpmInterfaceCart;
@@ -89,7 +90,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 //     public static MystcraftIntegration mystcraftIntegration; //[MYST]
 
     public static Block zpm_interface_cart;
-    public static Item zpm, zpm_interface_cart_item;
+    public static Item zpm, gdo;
 
     public static CreativeTabs creativeTabs;
 
@@ -190,6 +191,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         if (isModLoaded("ic2")) {
             zpm = addItem(new ZPMItem(), "zpm");
         }
+
+        gdo = addItem(new GDOItem(), "gdo");
     }
 
     @SideOnly(Side.CLIENT)

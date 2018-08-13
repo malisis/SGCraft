@@ -608,7 +608,14 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (address.length() > 0) {
             DHDTE te = getLinkedControllerTE();
             if (te != null) {
-                if (connect(address, player, te.immediateDialDHD) != null) {
+                boolean fastDial = false;
+                boolean openIris = false;
+                System.out.println("Item: " + player.getHeldItemOffhand());
+                if (player.getHeldItemOffhand().item.equals(SGCraft.gdo)) {
+                    fastDial = true;
+                    openIris = true;
+                }
+                if (connect(address, player, fastDial, openIris) != null) {
                     numEngagedChevrons = 0;
                     markChanged();
                 }
@@ -636,7 +643,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return isInitiator || closeFromEitherEnd;
     }
 
-    String connect(String address, EntityPlayer player, boolean immediate) {
+    String connect(String address, EntityPlayer player, boolean immediate, boolean openIris) {
         if (state != SGState.Idle) {
             return diallingFailure(player, "selfBusy");
         }
@@ -704,6 +711,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         startDiallingStargate(address, targetGate, true, immediate);
         targetGate.startDiallingStargate(homeAddress, this, false, immediate);
+
+        if (targetGate.irisIsClosed() && openIris) {
+            targetGate.openIris();
+        }
+
         return null;
     }
 
