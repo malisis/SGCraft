@@ -298,7 +298,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     void updateChunkLoadingStatus() {
-        if (state != SGState.Idle) {
+        if (state != SGState.Idle || state == SGState.attemptToDial) {
             int n = chunkLoadingRange;
             if (n >= 0) {
                 SGCraft.chunkManager.setForcedChunkRange(this, -n, -n, n, n);
@@ -533,7 +533,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         timeout = newTimeout;
         markChanged();
         if ((oldState == SGState.Idle) != (newState == SGState.Idle)) {
-            updateChunkLoadingStatus();
             world.notifyNeighborsOfStateChange(pos, getBlockType(), true);
             //Update: may not need observer update here.
         }
@@ -709,7 +708,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         // Almura End
 
         startDiallingStargate(address, targetGate, true, immediate);
+
+        targetGate.enterState(SGState.attemptToDial, 0);
+        targetGate.updateChunkLoadingStatus();
+
         targetGate.startDiallingStargate(homeAddress, this, false, immediate);
+
 
         if (targetGate.irisIsClosed() && openIris) { // Open Remote Iris if GDO says so.
             targetGate.openIris();
@@ -823,6 +827,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         } else {
             numEngagedChevrons = 0;
         }
+
     }
 
     void serverUpdate() {
