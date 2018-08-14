@@ -23,8 +23,8 @@ public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
     boolean debugInput = false;
 
     final static int maxSafeInput = 2048;
-    final static int maxEnergyBuffer = 1000000;
-    final static double euPerSGEnergyUnit = 200.0;
+    final static int maxEnergyBuffer = 5000000;
+    final static double euPerSGEnergyUnit = 20.0;
 
     boolean loaded = false;
     
