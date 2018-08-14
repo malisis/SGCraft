@@ -1186,12 +1186,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    private void unsetSymbol(char symbol) {
+    void unsetSymbol(char symbol) {
         postEvent("sgChevronUnset", numEngagedChevrons, symbol);
         --numEngagedChevrons;
     }
 
-    private void finishDiallingSymbol(char symbol, boolean outgoing, boolean changeState, boolean lastOne) {
+    void finishDiallingSymbol(char symbol, boolean outgoing, boolean changeState, boolean lastOne) {
         ++numEngagedChevrons;
         postEvent("sgChevronEngaged", numEngagedChevrons, symbol);
         if (lastOne) {
