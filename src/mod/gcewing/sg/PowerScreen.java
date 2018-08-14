@@ -16,7 +16,7 @@ import java.text.DecimalFormat;
 
 public class PowerScreen extends BaseGui.Screen {
 
-    final static int guiWidth = 128;
+    final static int guiWidth = 148;
     final static int guiHeight = 64;
     final static DecimalFormat dFormat = new DecimalFormat("###,###,###");
 
@@ -41,14 +41,16 @@ public class PowerScreen extends BaseGui.Screen {
     }
 
     protected void drawBackgroundLayer() {
-        bindTexture(SGCraft.mod.resourceLocation("textures/gui/power_gui.png"), 128, 64);
+        bindTexture(SGCraft.mod.resourceLocation("textures/gui/power_gui.png"), 148, 64);
         drawTexturedRect(0, 0, guiWidth, guiHeight, 0, 0);
         int cx = xSize / 2;
         drawCenteredString(te.getScreenTitle(), cx, 8);
-        drawRightAlignedString(te.getUnitName()+":", 70, 28);
-        drawRightAlignedString(dFormat.format(Math.min(Math.max(te.energyBuffer, 0), te.energyMax)), 121, 28);
-        drawRightAlignedString("Max:", 70, 45);
-        drawRightAlignedString(dFormat.format(te.energyMax), 121, 45);
+        drawRightAlignedString(te.getUnitName()+":", 90, 23);
+        drawRightAlignedString(dFormat.format(Math.min(Math.max(te.energyBuffer, 0), te.energyMax)), 141, 23);
+        drawRightAlignedString("SGPU:", 90, 34);
+        drawRightAlignedString(dFormat.format(Math.min(Math.max(te.energyBuffer/te.energyPerSGEnergyUnit, 0), te.energyMax)), 141, 34);
+        drawRightAlignedString("Max:", 90, 45);
+        drawRightAlignedString(dFormat.format(te.energyMax), 141, 45);
          drawPowerGauge();
     }
     
@@ -58,7 +60,7 @@ public class PowerScreen extends BaseGui.Screen {
         glEnable(GL_BLEND);
         glBlendFunc(GL_ONE, GL_ONE);
         setColor(1, 0, 0);
-        drawRect(19, 28, 25 * te.energyBuffer / te.energyMax, 10);
+        drawRect(23, 28, 29 * te.energyBuffer / te.energyMax, 10);
         glBlendFunc(GL_ONE, GL_ZERO);
         glPopAttrib();
         gRestore();
