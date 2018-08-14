@@ -12,6 +12,8 @@ import net.minecraft.entity.player.*;
 import net.minecraft.util.math.*;
 import net.minecraft.world.*;
 
+import java.text.DecimalFormat;
+
 public class DHDFuelScreen extends SGScreen {
 
     static String screenTitle = "Stargate Controller";
@@ -23,6 +25,7 @@ public class DHDFuelScreen extends SGScreen {
     static final int fuelGaugeY = 84;
     static final int fuelGaugeU = 0;
     static final int fuelGaugeV = 208;
+    final static DecimalFormat dFormat = new DecimalFormat("###,###,###");
 
     DHDTE te;
     
@@ -47,6 +50,26 @@ public class DHDFuelScreen extends SGScreen {
         int cx = xSize / 2;
         setTextColor(0x004c66);
         drawCenteredString(screenTitle, cx, 8);
+
+        int naquadahUnits = 0;
+        naquadahUnits = te.getInventory().getStackInSlot(0).getCount() + te.getInventory().getStackInSlot(1).getCount() + te.getInventory().getStackInSlot(2).getCount() + te.getInventory().getStackInSlot(3).getCount();
+
+        // Buffer Available
+        drawRightAlignedString("DHD Buffer:", 125, 30);
+        drawString(dFormat.format(Math.min(Math.max(te.energyInBuffer, 0), te.maxEnergyBuffer)), 130, 30);
+
+        // Buffer Max
+        drawRightAlignedString("Buffer Max:", 125, 40);
+        drawString(dFormat.format(te.maxEnergyBuffer), 130, 40);
+
+        // Naquadah Units
+        drawRightAlignedString("Naquadah:", 125, 60);
+        drawString(dFormat.format(naquadahUnits), 130, 60);
+
+        // Naquadah Power Units
+        drawRightAlignedString("Available Power Units:", 125, 70);
+        drawString(dFormat.format(naquadahUnits * SGBaseTE.energyPerFuelItem), 130, 70);
+
         if (this.te.numFuelSlots > 0)
             drawString("Fuel", 150, 96);
     }
