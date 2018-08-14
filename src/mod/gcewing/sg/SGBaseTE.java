@@ -7,6 +7,7 @@
 package gcewing.sg;
 
 import com.google.common.collect.Sets;
+import gcewing.sg.cc.CCInterfaceTE;
 import gcewing.sg.ic2.zpm.ZpmAddon;
 import gcewing.sg.ic2.IC2PowerTE;
 import gcewing.sg.ic2.zpm.ZpmInterfaceCartTE;
@@ -76,6 +77,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static gcewing.sg.BaseBlockUtils.getWorldTileEntity;
+import static gcewing.sg.BaseMod.isModLoaded;
 import static gcewing.sg.BaseUtils.max;
 import static gcewing.sg.BaseUtils.min;
 
@@ -984,7 +986,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     List<ISGEnergySource> findEnergySources(boolean requireZPM) {
-        debugEnergyUse = true;
+
+        boolean ccLoaded = isModLoaded("computercraft");
+        boolean ocLoaded = isModLoaded("opencomputers");
+        boolean ic2Loaded = isModLoaded("ic2");
+        boolean rsfLoaded = isModLoaded("redstoneflux");
+        boolean useDHD = true;
+
         if (debugEnergyUse) {
             System.out.printf("SGBaseTe.findEnergySources: for %s\n", getSoundPos());
         }
@@ -1005,8 +1013,15 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 //System.out.printf("SGBaseTE.findEnergySources: %s at %s\n", nte, nearPos);
             }
 
+            // make a another energy source required instead of DHD if a computer interface is attached.
+            if ((ccLoaded && nte instanceof CCInterfaceTE) || (ocLoaded && nte instanceof OCInterfaceTE)) {
+                if (isModLoaded("ic2") || isModLoaded("redstoneflux")) {
+                    useDHD = false;
+                }
+            }
+
             if (nte instanceof ISGEnergySource) { // Specifically exclude the ZPM Interface.
-                if (nte instanceof IC2PowerTE) {
+                if (ic2Loaded && nte instanceof IC2PowerTE) {
                     result.add((ISGEnergySource) nte);
                     if (debugEnergyUse) {
                         System.out.println("Found IC2PowerTE at: " + nte.getPos());
@@ -1019,14 +1034,14 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     }
                 }
 
-                if (nte instanceof RFPowerTE) {
+                if (rsfLoaded && nte instanceof RFPowerTE) {
                     result.add((ISGEnergySource) nte);
                     if (debugEnergyUse) {
                         System.out.println("Found RFPowerTE at: " + nte.getPos());
                     }
                 }
 
-                if (nte instanceof OCInterfaceTE) {
+                if (ocLoaded && nte instanceof OCInterfaceTE) {
                     result.add((ISGEnergySource) nte);
                     if (debugEnergyUse) {
                         System.out.println("Found OCInterfaceTE at: " + nte.getPos());
@@ -1034,20 +1049,27 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 }
             }
         }
+
         DHDTE te = getLinkedControllerTE();
         if (te != null) {
-            if (!requireZPM) {
-                result.add(te);
-                if (debugEnergyUse) {
-                    System.out.println("Found DHDTE at: " + te.getPos());
+            if (useDHD) {
+                if (!requireZPM) {
+                    result.add(te);
+                    if (debugEnergyUse) {
+                        System.out.println("Found DHDTE at: " + te.getPos());
+                    }
+                } else {
+                    if (debugEnergyUse) {
+                        System.out.println("Found DHDTE at: " + te.getPos() + " but was not added because destination requires ZPM");
+                    }
                 }
             } else {
                 if (debugEnergyUse) {
-                    System.out.println("Found DHDTE at: " + te.getPos() + " but was not added because destination requires ZPM");
+                    System.out.println("Found DHDTE at: " + te.getPos() + " but was not added because a computer interface is attached to the gate");
                 }
             }
         }
-        //debugEnergyUse = false;
+
         return result;
     }
 
