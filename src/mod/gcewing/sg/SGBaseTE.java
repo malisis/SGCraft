@@ -8,7 +8,11 @@ package gcewing.sg;
 
 import com.google.common.collect.Sets;
 import gcewing.sg.almura.AlmuraAddon;
+import gcewing.sg.ic2.IC2PowerTE;
+import gcewing.sg.ic2.zpm.ZpmInterfaceCartTE;
+import gcewing.sg.oc.OCInterfaceTE;
 import gcewing.sg.oc.OCWirelessEndpoint;
+import gcewing.sg.rf.RFPowerTE;
 import io.netty.channel.ChannelFutureListener;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockSlab;
@@ -197,6 +201,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     // ZPM Implementation
     public boolean zpmPowered = false;
+    public boolean destinationRequiresZPM = false;
 
     double ehGrid[][][];
     private static Set<UUID> messagesQueue = Sets.newHashSet();
@@ -672,20 +677,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
         distanceFactor = distanceFactorForCoordDifference(this, targetGate);
         if (debugEnergyUse) {
-            System.out.printf("SGBaseTE: distanceFactor = %s\n", distanceFactor);
+            //System.out.printf("SGBaseTE: distanceFactor = %s\n", distanceFactor);
         }
 
         //Reset this value:
         energyToOpen = energyPerFuelItem / gateOpeningsPerFuelItem;
 
-        if (!energyIsAvailable(energyToOpen * distanceFactor)) {
-            if (debugEnergyUse) {
-                System.out.println("SGBaseTE: Not enough energy: " + energyToOpen * distanceFactor);
-            }
-            return diallingFailure(player, "insufficientEnergy");
-        }
-
-        // Almura Start
+        // Zpm
         String originName = this.getWorld().getWorldInfo().getWorldName().toLowerCase();
         String destinationName = targetGate.getWorld().getWorldInfo().getWorldName().toLowerCase();
         if (AlmuraAddon.worldRequiresZPM(originName, destinationName)) {
@@ -698,16 +696,22 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 }
             }
             this.syncAwaitTime = 30; // Sets longer connect delay due to distance
-
-            if (this.debugZPM) {
-                System.out.println("ZPM Power Required: " + energyToOpen * distanceFactor + " , distance factor: " + distanceFactor);
-            }
+            this.destinationRequiresZPM = true;
 
         } else {
             this.syncAwaitTime = 10; // Sets short connect delay for in-world Stargates
+            this.destinationRequiresZPM = false;
         }
-        // Almura End
 
+        // Final Power check before dial
+        if (!energyIsAvailable(energyToOpen * distanceFactor)) {
+            if (debugEnergyUse) {
+                System.out.println("SGBaseTE: Not enough energy: " + energyToOpen * distanceFactor);
+            }
+
+            return diallingFailure(player, "insufficientEnergy");
+        }
+        
         startDiallingStargate(address, targetGate, true, immediate);
         targetGate.enterState(SGState.attemptToDial, 0); // Force remote gate immediate change state to help chunk stay loaded
         targetGate.startDiallingStargate(homeAddress, this, false, immediate);
@@ -920,13 +924,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     double availableEnergy() {
-        List<ISGEnergySource> sources = findEnergySources();
+        List<ISGEnergySource> sources = findEnergySources(this.destinationRequiresZPM);
         return energyInBuffer + energyAvailableFrom(sources);
-    }
-
-    double availableTotalEnergy() {
-        List<ISGEnergySource> sources = findEnergySources();
-        return energyTotalAvailableFrom(sources);
     }
 
     boolean energyIsAvailable(double amount) {
@@ -937,41 +936,55 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     boolean useEnergy(double amount) {
-        if (debugEnergyUse)
+        if (debugEnergyUse) {
             //System.out.printf("SGBaseTE.useEnergy: %s; buffered: %s\n", amount, energyInBuffer);
-            if (amount <= energyInBuffer) {
-                energyInBuffer -= amount;
-                return true;
-            }
-        List<ISGEnergySource> sources = findEnergySources();
+        }
+
+        if (amount <= energyInBuffer) {
+            energyInBuffer -= amount;
+            return true;
+        }
+
+        debugEnergyUse = true;
+        SGBaseTE targetGate = SGBaseTE.at(connectedLocation);
+        List<ISGEnergySource> sources = findEnergySources(this.destinationRequiresZPM);
         double energyAvailable = energyInBuffer + energyAvailableFrom(sources);
 
-        if (debugEnergyUse)
+        if (debugEnergyUse) {
             System.out.printf("SGBaseTE.useEnergy: %s available\n", energyAvailable);
+        }
         if (amount > energyAvailable) {
             System.out.print("SGBaseTE: Not enough energy available\n");
             return false;
         }
+
         double desiredEnergy = max(amount, maxEnergyBuffer);
         double targetEnergy = min(desiredEnergy, energyAvailable);
         double energyRequired = targetEnergy - energyInBuffer;
-        if (debugEnergyUse)
+
+        if (debugEnergyUse) {
             System.out.printf("SGBaseTE.useEnergy: another %s required\n", energyRequired);
+        }
+
         double energyOnHand = energyInBuffer + drawEnergyFrom(sources, energyRequired);
-        if (debugEnergyUse)
-            System.out.printf("SGBaseTE.useEnergy: %s now on hand, need %s\n", energyOnHand, amount);
+
+        if (debugEnergyUse) {
+            //System.out.printf("SGBaseTE.useEnergy: %s now on hand, need %s\n", energyOnHand, amount);
+        }
+
         if (amount - 0.0001 > energyOnHand) {
-            System.out.printf("SGBaseTE: Energy sources only delivered %s of promised %s\n",
-                    energyOnHand - energyInBuffer, energyAvailable);
+            //System.out.printf("SGBaseTE: Energy sources only delivered %s of promised %s\n", energyOnHand - energyInBuffer, energyAvailable);
             return false;
         }
         setEnergyInBuffer(energyOnHand - amount);
-        if (debugEnergyUse)
-            System.out.printf("SGBaseTE.useEnergy: %s left over in buffer\n", energyInBuffer);
+        if (debugEnergyUse) {
+            // System.out.printf("SGBaseTE.useEnergy: %s left over in buffer\n", energyInBuffer);
+        }
         return true;
     }
 
-    List<ISGEnergySource> findEnergySources() {
+    List<ISGEnergySource> findEnergySources(boolean requireZPM) {
+        debugEnergyUse = true;
         if (debugEnergyUse) {
             System.out.printf("SGBaseTe.findEnergySources: for %s\n", getSoundPos());
         }
@@ -979,26 +992,62 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         Trans3 t = localToGlobalTransformation();
         //for (int i = -5; i <= 2; i++) {
         //BlockPos bp = t.p(i, -1, 0).blockPos();
-        int radius = 4;
+
+        int radius = 2;
+
         for (final BlockPos.MutableBlockPos nearPos : BlockPos.getAllInBoxMutable(
                 pos.add(-radius, -radius, -radius),
                 pos.add(radius, radius, radius)
         )) {
+
             TileEntity nte = world.getTileEntity(nearPos);
             if (debugEnergyUse) {
-                System.out.printf("SGBaseTE.findEnergySources: %s at %s\n", nte, nearPos);
+                //System.out.printf("SGBaseTE.findEnergySources: %s at %s\n", nte, nearPos);
             }
 
-            if (nte instanceof ISGEnergySource) {
-                result.add((ISGEnergySource) nte);
-                if (debugEnergyUse) {
-                    System.out.println("Found IC2 Power Source.");
+            if (nte instanceof ISGEnergySource) { // Specifically exclude the ZPM Interface.
+                if (nte instanceof IC2PowerTE) {
+                    result.add((ISGEnergySource) nte);
+                    if (debugEnergyUse) {
+                        System.out.println("Found IC2PowerTE at: " + nte.getPos());
+                    }
+                }
+
+                if(nte instanceof ZpmInterfaceCartTE) {
+                    if (debugEnergyUse) {
+                        System.out.println("Found ZpmInterfaceCartTE at: " + nte.getPos() + " but not added as source");
+                    }
+                }
+
+                if (nte instanceof RFPowerTE) {
+                    result.add((ISGEnergySource) nte);
+                    if (debugEnergyUse) {
+                        System.out.println("Found RFPowerTE at: " + nte.getPos());
+                    }
+                }
+
+                if (nte instanceof OCInterfaceTE) {
+                    result.add((ISGEnergySource) nte);
+                    if (debugEnergyUse) {
+                        System.out.println("Found OCInterfaceTE at: " + nte.getPos());
+                    }
                 }
             }
         }
         DHDTE te = getLinkedControllerTE();
-        if (te != null)
-            result.add(te);
+        if (te != null) {
+            if (!requireZPM) {
+                result.add(te);
+                if (debugEnergyUse) {
+                    System.out.println("Found DHDTE at: " + te.getPos());
+                }
+            } else {
+                if (debugEnergyUse) {
+                    System.out.println("Found DHDTE at: " + te.getPos() + " but was not added because destination requires ZPM");
+                }
+            }
+        }
+        //debugEnergyUse = false;
         return result;
     }
 
@@ -1032,8 +1081,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             if (total >= amount)
                 break;
             double e = source.drawEnergyDouble(amount - total);
-            if (debugEnergyUse)
-                System.out.printf("SGBaseTe.drawEnergyFrom: %s supplied %s\n", source, e);
+            if (debugEnergyUse) {
+                //System.out.printf("SGBaseTe.drawEnergyFrom: %s supplied %s\n", source, e);
+            }
             total += e;
         }
         if (total < amount)
@@ -1136,9 +1186,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     private void attemptToLockStargate() {
         if (!isInitiator || useEnergy(energyToOpen * distanceFactor)) {
-            if (debugEnergyUse) {
-                System.out.println("Energy to open gate: " + dFormat.format(energyToOpen) + " / " + dFormat.format(distanceFactor) + " = " + dFormat.format(energyToOpen * distanceFactor));
-            }
             enterState(SGState.EstablishingConnection, 30);
         } else {
             disconnect();
@@ -1856,6 +1903,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return max(baseCamouflageAt(0), baseCamouflageAt(4));
     }
 
+    @SuppressWarnings("deprecation")
     protected int baseCamouflageAt(int i) {
         ItemStack stack = getStackInSlot(i);
         if (stack != null) {

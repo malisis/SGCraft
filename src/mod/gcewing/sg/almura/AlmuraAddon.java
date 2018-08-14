@@ -11,6 +11,10 @@ public class AlmuraAddon {
     // Note: The following code has been added for support with specific added methods within SGBaseTE.
     final static boolean debugAddon = true;
 
+    public static boolean worldRequiresZPM(World origin, World destination) {
+        return worldRequiresZPM(origin.getWorldInfo().getWorldName().toLowerCase(), destination.getWorldInfo().getWorldName().toLowerCase());
+    }
+
     public static boolean worldRequiresZPM(String origin, String destination) {
         if (origin.equalsIgnoreCase(destination)) {
             return false;
@@ -54,7 +58,7 @@ public class AlmuraAddon {
             return 1000;
         }
 
-        return 0;
+        return 10;
     }
 
     public static double zpmPowerAvailable(World world, BlockPos pos, int radius, boolean debug) {

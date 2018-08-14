@@ -41,9 +41,8 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
     IInventory inventory = new InventoryBasic("DHD", false, numSlots);
     
     static AxisAlignedBB bounds;
-    static double maxEnergyBuffer;
-
-    double energyInBuffer;
+    public static double maxEnergyBuffer;
+    public double energyInBuffer;
 
     public boolean immediateDialDHD = false;//SGBaseTE.immediateDHDGateDial;
 
