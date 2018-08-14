@@ -953,10 +953,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         double energyAvailable = energyInBuffer + energyAvailableFrom(sources);
 
         if (debugEnergyUse) {
-            System.out.printf("SGBaseTE.useEnergy: %s available\n", energyAvailable);
+            //System.out.printf("SGBaseTE.useEnergy: %s available\n", energyAvailable);
         }
         if (amount > energyAvailable) {
-            System.out.print("SGBaseTE: Not enough energy available\n");
+            //System.out.print("SGBaseTE: Not enough energy available\n");
             return false;
         }
 
@@ -965,27 +965,27 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         double energyRequired = targetEnergy - energyInBuffer;
 
         if (debugEnergyUse) {
-            System.out.printf("SGBaseTE.useEnergy: another %s required\n", energyRequired);
+            //System.out.printf("SGBaseTE.useEnergy: another %s required\n", energyRequired);
         }
 
         double energyOnHand = energyInBuffer + drawEnergyFrom(sources, energyRequired);
 
         if (debugEnergyUse) {
-            //System.out.printf("SGBaseTE.useEnergy: %s now on hand, need %s\n", energyOnHand, amount);
+            System.out.printf("SGBaseTE.useEnergy: %s now on hand, need %s\n", energyOnHand, amount);
         }
 
         if (amount - 0.0001 > energyOnHand) {
-            //System.out.printf("SGBaseTE: Energy sources only delivered %s of promised %s\n", energyOnHand - energyInBuffer, energyAvailable);
+            System.out.printf("SGBaseTE: Energy sources only delivered %s of promised %s\n", energyOnHand - energyInBuffer, energyAvailable);
             return false;
         }
         setEnergyInBuffer(energyOnHand - amount);
         if (debugEnergyUse) {
-            // System.out.printf("SGBaseTE.useEnergy: %s left over in buffer\n", energyInBuffer);
+             System.out.printf("SGBaseTE.useEnergy: %s left over in buffer\n", energyInBuffer);
         }
         return true;
     }
 
-    List<ISGEnergySource> findEnergySources(boolean requireZPM) {
+    private List<ISGEnergySource> findEnergySources(boolean requireZPM) {
 
         boolean ccLoaded = isModLoaded("computercraft");
         boolean ocLoaded = isModLoaded("opencomputers");
@@ -1073,13 +1073,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return result;
     }
 
-    double energyAvailableFrom(List<ISGEnergySource> sources) {
+    private double energyAvailableFrom(List<ISGEnergySource> sources) {
         double energy = 0;
         for (ISGEnergySource source : sources) {
             double e = source.availableEnergy();
-            //System.out.println("Source: " + source.toString());
-            if (debugEnergyUse)
+            if (debugEnergyUse) {
                 System.out.printf("SGBaseTe.energyAvailableFrom: %s can supply %s\n", source, e);
+            }
             energy += e;
         }
         return energy;
@@ -1089,39 +1089,40 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         double energy = 0;
         for (ISGEnergySource source : sources) {
             double e = source.totalAvailableEnergy();
-            //System.out.println("Source: " + source.toString());
-            if (debugEnergyUse)
+            if (debugEnergyUse) {
                 System.out.printf("SGBaseTe.energyAvailableFrom: %s can supply %s\n", source, e);
+            }
             energy += e;
         }
         return energy;
     }
 
-    double drawEnergyFrom(List<ISGEnergySource> sources, double amount) {
+    private double drawEnergyFrom(List<ISGEnergySource> sources, double amount) {
         double total = 0;
         for (ISGEnergySource source : sources) {
             if (total >= amount)
                 break;
             double e = source.drawEnergyDouble(amount - total);
             if (debugEnergyUse) {
-                //System.out.printf("SGBaseTe.drawEnergyFrom: %s supplied %s\n", source, e);
+                System.out.printf("SGBaseTe.drawEnergyFrom: %s supplied %s\n", source, e);
             }
             total += e;
         }
         if (total < amount)
-            System.out.printf("SGCraft: Warning: Energy sources did not deliver promised energy " +
-                    "(%s requested, %s delivered)\n", amount, total);
+            if (debugEnergyUse) {
+                System.out.printf("SGCraft: Warning: Energy sources did not deliver promised energy (%s requested, %s delivered)\n", amount, total);
+            }
         return total;
     }
 
-    void setEnergyInBuffer(double amount) {
+    private void setEnergyInBuffer(double amount) {
         if (energyInBuffer != amount) {
             energyInBuffer = amount;
             markDirty();
         }
     }
 
-    void performTransientDamage() {
+    private void performTransientDamage() {
         Trans3 t = localToGlobalTransformation();
         Vector3 p0 = t.p(-1.5, 0.5, 0.5);
         Vector3 p1 = t.p(1.5, 3.5, 5.5);
@@ -1152,18 +1153,18 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    public boolean symbolsRemaining(boolean before) {
+    private boolean symbolsRemaining(boolean before) {
         int n = numEngagedChevrons;
         return n < dialledAddress.length() - (before ? 1 : 0);
     }
 
-    public void startDiallingNextSymbol() {
+    private void startDiallingNextSymbol() {
         if (debugState)
             System.out.printf("SGBaseTE.startDiallingNextSymbol: %s of %s\n", numEngagedChevrons, dialledAddress);
         startDiallingSymbol(dialledAddress.charAt(numEngagedChevrons));
     }
 
-    public void startDiallingSymbol(char c) {
+    private void startDiallingSymbol(char c) {
         int i = SGAddressing.charToSymbol(c);
         if (debugState)
             System.out.printf("SGBaseTE.startDiallingSymbol: %s\n", i);
@@ -1185,12 +1186,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    public void unsetSymbol(char symbol) {
+    private void unsetSymbol(char symbol) {
         postEvent("sgChevronUnset", numEngagedChevrons, symbol);
         --numEngagedChevrons;
     }
 
-    public void finishDiallingSymbol(char symbol, boolean outgoing, boolean changeState, boolean lastOne) {
+    private void finishDiallingSymbol(char symbol, boolean outgoing, boolean changeState, boolean lastOne) {
         ++numEngagedChevrons;
         postEvent("sgChevronEngaged", numEngagedChevrons, symbol);
         if (lastOne) {

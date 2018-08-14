@@ -18,6 +18,8 @@ import javax.annotation.Nullable;
 
 public class RFPowerTE extends PowerTE implements IEnergyStorage {
 
+    // Addon for Redstone Flux
+
     final static int maxEnergyBuffer = 4000000;
     final static double rfPerSGEnergyUnit = 80.0;
     private EnergyStorage storage = new EnergyStorage(maxEnergyBuffer);
