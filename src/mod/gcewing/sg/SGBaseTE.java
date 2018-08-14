@@ -7,7 +7,7 @@
 package gcewing.sg;
 
 import com.google.common.collect.Sets;
-import gcewing.sg.almura.AlmuraAddon;
+import gcewing.sg.ic2.zpm.ZpmAddon;
 import gcewing.sg.ic2.IC2PowerTE;
 import gcewing.sg.ic2.zpm.ZpmInterfaceCartTE;
 import gcewing.sg.oc.OCInterfaceTE;
@@ -686,8 +686,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         // Zpm
         String originName = this.getWorld().getWorldInfo().getWorldName().toLowerCase();
         String destinationName = targetGate.getWorld().getWorldInfo().getWorldName().toLowerCase();
-        if (AlmuraAddon.worldRequiresZPM(originName, destinationName)) {
-            long power = (long) AlmuraAddon.zpmPowerAvailable(world, this.pos, 4, false);
+        if (ZpmAddon.worldRequiresZPM(originName, destinationName)) {
+            long power = (long) ZpmAddon.zpmPowerAvailable(world, this.pos, 4, false);
             if (!(power > 0)) {
                 return diallingFailure(player, "zpmNotFound");
             } else {
@@ -739,8 +739,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             // Almura Start
             String originName = te1.getWorld().getWorldInfo().getWorldName().toLowerCase();
             String destinationName = te2.getWorld().getWorldInfo().getWorldName().toLowerCase();
-            if (AlmuraAddon.worldRequiresZPM(te1.getWorld().getWorldInfo().getWorldName().toLowerCase(), te2.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
-                f += AlmuraAddon.worldZpmMultiplier(originName, destinationName);
+            if (ZpmAddon.worldRequiresZPM(te1.getWorld().getWorldInfo().getWorldName().toLowerCase(), te2.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
+                f += ZpmAddon.worldZpmMultiplier(originName, destinationName);
             }
             // Almura End
         }
