@@ -47,6 +47,10 @@ public class RFPowerTE extends PowerTE implements IEnergyStorage {
             int energy = nbttagcompound.getInteger("energy");
             storage = new EnergyStorage(capacity, capacity, capacity, energy);
         }
+        if (nbttagcompound.hasKey("buffer")) {   // Protects against crash for already existing RFPowerTE's
+            maxEnergyBuffer = nbttagcompound.getInteger("buffer");
+            rfPerSGEnergyUnit = nbttagcompound.getDouble("units");
+        }
     }
 
     @Override
@@ -54,6 +58,8 @@ public class RFPowerTE extends PowerTE implements IEnergyStorage {
         super.writeContentsToNBT(nbttagcompound);
         nbttagcompound.setInteger("capacity", storage.getMaxEnergyStored());
         nbttagcompound.setInteger("energy", storage.getEnergyStored());
+        nbttagcompound.setInteger("buffer", maxEnergyBuffer);
+        nbttagcompound.setDouble("units", rfPerSGEnergyUnit);
     }
 
     @Override
