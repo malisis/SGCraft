@@ -84,7 +84,7 @@ import static gcewing.sg.BaseUtils.min;
 public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSoundSource {
 
     static boolean debugState = false;
-    static boolean debugEnergyUse = false;
+    static boolean debugEnergyUse = true;
     static boolean debugConnect = false;
     static boolean debugTransientDamage = false;
     static boolean debugTeleport = false;
@@ -642,6 +642,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     String connect(String address, EntityPlayer player, boolean immediate, boolean openIris) {
+        debugEnergyUse = false;
         if (state != SGState.Idle) {
             return diallingFailure(player, "selfBusy");
         }
@@ -705,10 +706,23 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             this.destinationRequiresZPM = false;
         }
 
+        System.out.println("-------------------   Power Usage Debug   --------------------------");
+        System.out.println("EnergyPerFuelItem: " + dFormat.format(energyPerFuelItem));
+        System.out.println("Gate Openings Per Fuel: " + gateOpeningsPerFuelItem);
+        System.out.println("SGPU Energy to Open with Distance Factor: " + dFormat.format(energyToOpen * distanceFactor));
+        System.out.println("--------------------------------------------------------------------");
+        System.out.println("IC2 Energy to Open with Distance Factor: " + dFormat.format((energyToOpen * distanceFactor) * SGCraft.Ic2euPerSGEnergyUnit));
+        System.out.println("--------------------------------------------------------------------");
+        System.out.println("Energy to Open: " + dFormat.format(energyToOpen));
+        System.out.println("Distance Factor: " + dFormat.format(distanceFactor));
+        System.out.println("Destination require ZPM: " + this.destinationRequiresZPM);
+        System.out.println("ZPM Multiplier: " + ZpmAddon.worldZpmMultiplier(originName, destinationName));
+        System.out.println("--------------------------------------------------------------------");
+
         // Final Power check before dial
         if (!energyIsAvailable(energyToOpen * distanceFactor)) {
             if (debugEnergyUse) {
-                System.out.println("SGBaseTE: Not enough energy: " + energyToOpen * distanceFactor);
+                //System.out.println("SGBaseTE: Not enough energy: " + energyToOpen * distanceFactor);
             }
 
             return diallingFailure(player, "insufficientEnergy");
@@ -743,6 +757,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             String destinationName = te2.getWorld().getWorldInfo().getWorldName().toLowerCase();
             if (ZpmAddon.worldRequiresZPM(te1.getWorld().getWorldInfo().getWorldName().toLowerCase(), te2.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
                 f += ZpmAddon.worldZpmMultiplier(originName, destinationName);
+                if (debugEnergyUse) {
+                    System.out.println("distanceFactorForCoordDifference: calculated zpm multiplier: " + f);
+                }
             }
             // Almura End
         }
@@ -947,7 +964,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             return true;
         }
 
-        debugEnergyUse = true;
         SGBaseTE targetGate = SGBaseTE.at(connectedLocation);
         List<ISGEnergySource> sources = findEnergySources(this.destinationRequiresZPM);
         double energyAvailable = energyInBuffer + energyAvailableFrom(sources);
