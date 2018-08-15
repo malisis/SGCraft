@@ -100,6 +100,15 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static boolean canHarvestSGBaseBlock = false;
     public static boolean canHarvestSGRingBlock = false;
 
+    // IC2 Options
+    public static int Ic2SafeInput = 2048;
+    public static int Ic2EnergyBuffer = 1000000;
+    public static double Ic2euPerSGEnergyUnit = 20.0;
+
+    // Redstone Flux Options
+    public static int RfEnergyBuffer = 4000000;
+    public static double RfPerSGEnergyUnit = 80.0;
+
     //Client Options
     public static boolean useHDEventHorizionTexture = true;
     public static boolean saveAddressToClipboard = false;
@@ -184,7 +193,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             zpm_interface_cart = newBlock("zpm_interface_cart", ZpmInterfaceCart.class);
         }
 
-        this.setupBlockHarvests();
+        this.setOptions();
     }
     
     @Override
@@ -402,9 +411,19 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         ModelLoader.setCustomModelResourceLocation(item, 0, new ModelResourceLocation(blockName, "inventory"));
     }
 
-    private void setupBlockHarvests() {
+    private void setOptions() {
+        // Block Harvests
         canHarvestDHD = config.getBoolean("block-harvest", "dhdBlock", canHarvestDHD);
         canHarvestSGBaseBlock  = config.getBoolean("block-harvest", "sgBaseBlock", canHarvestSGBaseBlock);
         canHarvestSGRingBlock  = config.getBoolean("block-harvest", "sgRingBlock", canHarvestSGRingBlock);
+
+        // IC2
+        Ic2SafeInput  = config.getInteger("ic2", "safeInputRate", Ic2SafeInput);
+        Ic2EnergyBuffer = config.getInteger("ic2", "energyBufferSize", Ic2EnergyBuffer);
+        Ic2euPerSGEnergyUnit = config.getDouble("ic2", "euPerSGEnergyUnit", Ic2euPerSGEnergyUnit);
+
+        // Redstone Flux
+        RfEnergyBuffer = config.getInteger("rf", "energyBufferSize", RfEnergyBuffer);
+        RfPerSGEnergyUnit = config.getDouble("rf", "rfPerSGEnergyUnit", RfPerSGEnergyUnit);
     }
 }
