@@ -123,16 +123,6 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
     public DHDBlock getBlock() {
         return (DHDBlock)getBlockType();
     }
-    
-//     public Trans3 localToGlobalTransformation() {
-//         World world = getSoundWorld();
-//         IBlockState state = world.getBlockState(pos);
-//         return getBlock().localToGlobalTransformation(world, pos, state);
-//     }
-    
-//     public int getRotation() {
-//         return getBlock().rotationInWorld(getBlockMetadata(), this);
-//     }
 
     @Override
     public void readFromNBT(NBTTagCompound nbt) {
@@ -144,6 +134,7 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
         int z = nbt.getInteger("linkedZ");
         linkedPos = new BlockPos(x, y, z);
         enteredAddress = nbt.getString("enteredAddress");
+        maxEnergyBuffer = nbt.getDouble("bufferSize");
     }
 
     @Override
@@ -155,6 +146,13 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
         nbt.setInteger("linkedY", linkedPos.getY());
         nbt.setInteger("linkedZ", linkedPos.getZ());
         nbt.setString("enteredAddress", enteredAddress);
+
+        // Todo: this may be wrong.
+        if (getLinkedStargateTE() != null) {
+            nbt.setDouble("bufferSize", getLinkedStargateTE().energyPerFuelItem);
+        } else {
+            nbt.setDouble("bufferSize", SGBaseTE.energyPerFuelItem);
+        }
         return nbt;
     }
 

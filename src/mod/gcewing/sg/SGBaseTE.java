@@ -394,6 +394,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         redstoneInput = nbt.getBoolean("redstoneInput");
         homeAddress = getStringOrNull(nbt, "address");
         addressError = nbt.getString("addressError");
+        maxEnergyBuffer = nbt.getDouble("maxEnergyBuffer");
+        energyPerFuelItem = nbt.getDouble("energyPerFuelItem");
     }
 
     protected String getStringOrNull(NBTTagCompound nbt, String name) {
@@ -416,8 +418,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setInteger("linkedY", linkedPos.getY());
         nbt.setInteger("linkedZ", linkedPos.getZ());
         nbt.setBoolean("hasChevronUpgrade", hasChevronUpgrade);
-        if (connectedLocation != null)
+        if (connectedLocation != null) {
             nbt.setTag("connectedLocation", connectedLocation.toNBT());
+        }
         nbt.setBoolean("isInitiator", isInitiator);
         nbt.setInteger("timeout", timeout);
         nbt.setInteger("maxTimeout", maxTimeout);
@@ -427,10 +430,14 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setInteger("irisState", irisState.ordinal());
         nbt.setInteger("irisPhase", irisPhase);
         nbt.setBoolean("redstoneInput", redstoneInput);
-        if (homeAddress != null)
+        if (homeAddress != null) {
             nbt.setString("address", homeAddress);
-        if (addressError != null)
+        }
+        if (addressError != null) {
             nbt.setString("addressError", addressError);
+        }
+        nbt.setDouble("maxEnergyBuffer", maxEnergyBuffer);
+        nbt.setDouble("energyPerFuelItem", energyPerFuelItem);
         return nbt;
     }
 

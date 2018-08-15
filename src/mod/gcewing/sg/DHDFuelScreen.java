@@ -28,18 +28,24 @@ public class DHDFuelScreen extends SGScreen {
     final static DecimalFormat dFormat = new DecimalFormat("###,###,###");
 
     DHDTE te;
+    SGBaseTE baseTe;
     
     public static DHDFuelScreen create(EntityPlayer player, World world, BlockPos pos) {
         DHDTE te = DHDTE.at(world, pos);
-        if (te != null)
+        if (te != null) {
             return new DHDFuelScreen(player, te);
-        else
+        } else {
             return null;
+        }
     }
 
     public DHDFuelScreen(EntityPlayer player, DHDTE te) {
         super(new DHDFuelContainer(player, te), guiWidth, guiHeight);
         this.te = te;
+        this.baseTe = te.getLinkedStargateTE();
+		//Todo: this might  be needed
+        //this.te.markDirty();
+        //this.baseTe.markDirty();
     }
     
     @Override
@@ -68,7 +74,7 @@ public class DHDFuelScreen extends SGScreen {
 
         // Naquadah Power Units
         drawRightAlignedString("Available Power Units:", 125, 70);
-        drawString(dFormat.format(naquadahUnits * SGBaseTE.energyPerFuelItem), 130, 70);
+        drawString(dFormat.format(naquadahUnits * baseTe.energyPerFuelItem), 130, 70);
 
         if (this.te.numFuelSlots > 0)
             drawString("Fuel", 150, 96);
