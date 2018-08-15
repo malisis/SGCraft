@@ -16,20 +16,20 @@ import java.text.DecimalFormat;
 
 public class DHDFuelScreen extends SGScreen {
 
-    static String screenTitle = "Stargate Controller";
-    static final int guiWidth = 256;
-    static final int guiHeight = 208;
-    static final int fuelGaugeWidth = 16;
-    static final int fuelGaugeHeight = 34;
-    static final int fuelGaugeX = 214;
-    static final int fuelGaugeY = 84;
-    static final int fuelGaugeU = 0;
-    static final int fuelGaugeV = 208;
-    final static DecimalFormat dFormat = new DecimalFormat("###,###,###");
+    private final String screenTitle = "Stargate Controller";
+    final static int guiWidth = 256;
+    final static int guiHeight = 208;
+    private final int fuelGaugeWidth = 16;
+    private final int fuelGaugeHeight = 34;
+    private final int fuelGaugeX = 214;
+    private final int fuelGaugeY = 84;
+    private final int fuelGaugeU = 0;
+    private final int fuelGaugeV = 208;
+    private final DecimalFormat dFormat = new DecimalFormat("###,###,###");
 
-    DHDTE te;
-    SGBaseTE baseTe;
-    double energyPerFuelItem = 0;
+    private DHDTE te;
+    private SGBaseTE baseTe;
+    private double energyPerFuelItem = 0;
     
     public static DHDFuelScreen create(EntityPlayer player, World world, BlockPos pos) {
         DHDTE te = DHDTE.at(world, pos);
@@ -41,7 +41,7 @@ public class DHDFuelScreen extends SGScreen {
     }
 
     public DHDFuelScreen(EntityPlayer player, DHDTE te) {
-        super(new DHDFuelContainer(player, te), this.guiWidth, this.guiHeight);
+        super(new DHDFuelContainer(player, te), guiWidth, guiHeight);
         this.te = te;
         this.baseTe = te.getLinkedStargateTE();
         if (this.baseTe != null) {
@@ -86,7 +86,7 @@ public class DHDFuelScreen extends SGScreen {
             drawString("Fuel", 150, 96);
     }
     
-    void drawFuelGauge() {
+    private void drawFuelGauge() {
         int level = (int)(this.fuelGaugeHeight * this.te.energyInBuffer / this.te.maxEnergyBuffer);
         if (level > this.fuelGaugeHeight)
             level = this.fuelGaugeHeight;
