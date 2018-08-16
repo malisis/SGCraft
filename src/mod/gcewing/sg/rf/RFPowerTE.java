@@ -22,12 +22,12 @@ public class RFPowerTE extends PowerTE implements IEnergyStorage {
     // Addon for Redstone Flux
 
     // The below is intended to set the classes first variables to config values.
-    static int maxEnergyBuffer = SGCraft.RfEnergyBuffer;
-    static double rfPerSGEnergyUnit = SGCraft.RfPerSGEnergyUnit;
+    int maxEnergyBuffer = SGCraft.RfEnergyBuffer;
+    double rfPerSGEnergyUnit = SGCraft.RfPerSGEnergyUnit;
     private EnergyStorage storage = new EnergyStorage(maxEnergyBuffer);
 
     public RFPowerTE() {
-        super(maxEnergyBuffer, rfPerSGEnergyUnit);
+        super(SGCraft.RfEnergyBuffer, SGCraft.RfPerSGEnergyUnit);
     }
 
     @Override
@@ -49,12 +49,12 @@ public class RFPowerTE extends PowerTE implements IEnergyStorage {
             storage = new EnergyStorage(capacity, capacity, capacity, energy);
         }
         if (nbttagcompound.hasKey("buffer")) {
-            maxEnergyBuffer = nbttagcompound.getInteger("buffer");
-            rfPerSGEnergyUnit = nbttagcompound.getDouble("units");
+            this.maxEnergyBuffer = nbttagcompound.getInteger("buffer");
+            this.rfPerSGEnergyUnit = nbttagcompound.getDouble("units");
             super.energyBuffer = maxEnergyBuffer;
         } else {
-            maxEnergyBuffer = SGCraft.RfEnergyBuffer;
-            rfPerSGEnergyUnit = SGCraft.RfPerSGEnergyUnit;
+            this.maxEnergyBuffer = SGCraft.RfEnergyBuffer;
+            this.rfPerSGEnergyUnit = SGCraft.RfPerSGEnergyUnit;
             super.energyBuffer = SGCraft.RfEnergyBuffer;
         }
     }
@@ -64,8 +64,8 @@ public class RFPowerTE extends PowerTE implements IEnergyStorage {
         super.writeContentsToNBT(nbttagcompound);
         nbttagcompound.setInteger("capacity", storage.getMaxEnergyStored());
         nbttagcompound.setInteger("energy", storage.getEnergyStored());
-        nbttagcompound.setInteger("buffer", maxEnergyBuffer);
-        nbttagcompound.setDouble("units", rfPerSGEnergyUnit);
+        nbttagcompound.setInteger("buffer", this.maxEnergyBuffer);
+        nbttagcompound.setDouble("units", this.rfPerSGEnergyUnit);
     }
 
     @Override
@@ -121,5 +121,9 @@ public class RFPowerTE extends PowerTE implements IEnergyStorage {
 
     @Override public double totalAvailableEnergy() {
         return energyBuffer;
+    }
+
+    public double getMaxBufferSize() {
+        return this.maxEnergyBuffer;
     }
 }

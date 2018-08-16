@@ -24,19 +24,17 @@ import net.minecraftforge.common.MinecraftForge;
 
 public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
 
-    boolean debugLoad = false;
-    boolean debugInput = false;
+    private boolean debugLoad = false;
+    private boolean debugInput = false;
 
     // The below is intended to set the classes first variables to config values.
-    static int maxSafeInput = SGCraft.Ic2SafeInput;
-    static int maxEnergyBuffer = SGCraft.Ic2EnergyBuffer;
-    static double euPerSGEnergyUnit = SGCraft.Ic2euPerSGEnergyUnit;
+    private int maxSafeInput = SGCraft.Ic2SafeInput;
+    private int powerTier = SGCraft.Ic2PowerTETier;
 
-    private int update = 0;
-    boolean loaded = false;
+    private boolean loaded = false;
 
     public IC2PowerTE() {
-        super(maxEnergyBuffer, euPerSGEnergyUnit);
+        super(SGCraft.Ic2EnergyBuffer, SGCraft.Ic2euPerSGEnergyUnit);
     }
 
     @Override
@@ -44,22 +42,15 @@ public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
         super.readContentsFromNBT(nbttagcompound);
         if (nbttagcompound.hasKey("input")) {
             maxSafeInput = nbttagcompound.getInteger("input");
-            maxEnergyBuffer = nbttagcompound.getInteger("buffer");
-            euPerSGEnergyUnit = nbttagcompound.getDouble("units");
-            super.energyMax = (double) this.maxEnergyBuffer;
-        } else {
-            maxEnergyBuffer = SGCraft.Ic2EnergyBuffer;
-            euPerSGEnergyUnit = SGCraft.Ic2euPerSGEnergyUnit;
-            super.energyMax = SGCraft.Ic2EnergyBuffer;
+            powerTier = nbttagcompound.getInteger("tier");
         }
     }
 
     @Override
     public void writeContentsToNBT(NBTTagCompound nbttagcompound) {
         super.writeContentsToNBT(nbttagcompound);
-        nbttagcompound.setInteger("input", this.maxSafeInput);
-        nbttagcompound.setInteger("buffer", this.maxEnergyBuffer);
-        nbttagcompound.setDouble("units", this.euPerSGEnergyUnit);
+        nbttagcompound.setInteger("input", maxSafeInput);
+        nbttagcompound.setInteger("tier", powerTier);
     }
 
 
@@ -121,7 +112,7 @@ public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
 
     @Override
     public double getDemandedEnergy() {
-        double eu = min(maxEnergyBuffer - energyBuffer, maxSafeInput);
+        double eu = min(energyMax - energyBuffer, maxSafeInput);
         if(debugInput)
             System.out.printf("SGCraft: IC2PowerTE: Demanding %s EU\n", eu);
         return eu;
@@ -138,7 +129,7 @@ public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
 
     @Override
     public int getSinkTier() {
-        return 3;  //HV
+        return powerTier;  //HV
     }
 
     @Override public double totalAvailableEnergy() {

@@ -51,7 +51,7 @@ public class PowerScreen extends BaseGui.Screen {
         drawRightAlignedString(this.dFormat.format(Math.min(Math.max(this.te.energyBuffer/this.te.energyPerSGEnergyUnit, 0), this.te.energyMax)), 141, 34);
         drawRightAlignedString("Max:", 90, 45);
         drawRightAlignedString(this.dFormat.format(this.te.energyMax), 141, 45);
-         drawPowerGauge();
+        drawPowerGauge();
     }
     
     private void drawPowerGauge() {

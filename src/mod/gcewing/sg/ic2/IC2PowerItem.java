@@ -16,7 +16,7 @@ import gcewing.sg.*;
 public class IC2PowerItem extends PowerItem {
 
     public IC2PowerItem(Block block) {
-        super(block, "EU", IC2PowerTE.maxEnergyBuffer);
+        super(block, "EU");
     }
 
 }

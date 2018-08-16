@@ -13,6 +13,7 @@ import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -110,5 +111,9 @@ public class DHDBlock extends BaseBlock<DHDTE> {
         else
             System.out.printf("DHDBlock.breakBlock: No tile entity at %d\n", pos);
     }
-    
+
+    @Override
+    public TileEntity createNewTileEntity(World world, int meta) {
+        return new DHDTE(DHDTE.cfgMaxEnergyBuffer);
+    }
 }

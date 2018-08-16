@@ -24,31 +24,39 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
     // Debug options
     public static boolean debugLink = false;
 
-    // Configuration options
+    // Static Configuration options
     public static int linkRangeX = 5; // either side
     public static int linkRangeY = 1; // up or down
     public static int linkRangeZ = 6; // in front
-
-    // Inventory slots
+    public static AxisAlignedBB bounds;
     public static final int firstFuelSlot = 0;
     public static final int numFuelSlots = 4;
-    public static final int numSlots = numFuelSlots;
+    private static final int numSlots = numFuelSlots;
 
-    // Persisted fields
+    public static double cfgMaxEnergyBuffer = 2500;
+
+
+    // Instanced Options
     public boolean isLinkedToStargate;
     public BlockPos linkedPos = new BlockPos(0, 0, 0);
     public String enteredAddress = "";
-    IInventory inventory = new InventoryBasic("DHD", false, numSlots);
+    public IInventory inventory = new InventoryBasic("DHD", false, numSlots);
+    public double maxEnergyBuffer = 2500;
+    public double energyInBuffer = 0;
 
-    static AxisAlignedBB bounds;
-    public static double maxEnergyBuffer;
-    public double energyInBuffer;
+    // Required
+    public DHDTE() {}
+
+    // Required to handle instanced variables
+    public DHDTE(final double maxEnergyBuffer) {
+        this.maxEnergyBuffer = maxEnergyBuffer;
+    }
 
     public static void configure(BaseConfiguration cfg) {
         linkRangeX = cfg.getInteger("dhd", "linkRangeX", linkRangeX);
         linkRangeY = cfg.getInteger("dhd", "linkRangeY", linkRangeY);
         linkRangeZ = cfg.getInteger("dhd", "linkRangeZ", linkRangeZ);
-        maxEnergyBuffer = cfg.getDouble("stargate", "maxEnergyBuffer", maxEnergyBuffer);
+        cfgMaxEnergyBuffer = cfg.getDouble("stargate", "bufferSize", cfgMaxEnergyBuffer);
     }
 
     public static DHDTE at(IBlockAccess world, BlockPos pos) {
@@ -115,7 +123,7 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
 
     @Override
     protected IInventory getInventory() {
-        return inventory;
+        return this.inventory;
     }
 
     public DHDBlock getBlock() {
@@ -135,8 +143,10 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
 
         if (nbt.hasKey("bufferSize")) {
             this.maxEnergyBuffer = nbt.getDouble("bufferSize");
+            System.out.println("DHDTE: read NBT: bufferSize: " + this.maxEnergyBuffer + " / " + cfgMaxEnergyBuffer);
         } else {
-            this.maxEnergyBuffer = SGBaseTE.getBaseMaxEnergyBuffer();
+            System.out.println("DHDTE: read STATIC bufferSize: " + cfgMaxEnergyBuffer);
+            this.maxEnergyBuffer = cfgMaxEnergyBuffer;
         }
     }
 
@@ -150,7 +160,7 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
         nbt.setInteger("linkedZ", this.linkedPos.getZ());
         nbt.setString("enteredAddress", this.enteredAddress);
         nbt.setDouble("bufferSize", this.maxEnergyBuffer);
-
+        System.out.println("DHDTE: write NBT: bufferSize: " + this.maxEnergyBuffer);
         return nbt;
     }
 

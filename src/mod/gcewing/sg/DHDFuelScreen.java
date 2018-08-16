@@ -29,7 +29,7 @@ public class DHDFuelScreen extends SGScreen {
 
     private DHDTE te;
     private SGBaseTE baseTe;
-    private double energyPerFuelItem = 0;
+    private double energyPerFuelItem;
     
     public static DHDFuelScreen create(EntityPlayer player, World world, BlockPos pos) {
         DHDTE te = DHDTE.at(world, pos);
@@ -43,15 +43,7 @@ public class DHDFuelScreen extends SGScreen {
     public DHDFuelScreen(EntityPlayer player, DHDTE te) {
         super(new DHDFuelContainer(player, te), guiWidth, guiHeight);
         this.te = te;
-        this.baseTe = te.getLinkedStargateTE();
-        if (this.baseTe != null) {
-            this.energyPerFuelItem = baseTe.energyPerFuelItem;
-        } else {
-            this.energyPerFuelItem = SGBaseTE.energyPerFuelItem;
-        }
-		//Todo: this might  be needed
-        //this.te.markDirty();
-        //this.baseTe.markDirty();
+        this.energyPerFuelItem = SGBaseTE.energyPerFuelItem;
     }
     
     @Override

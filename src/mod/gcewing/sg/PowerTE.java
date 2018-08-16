@@ -33,12 +33,16 @@ public abstract class PowerTE extends BaseTileEntity implements ISGEnergySource 
     @Override
     public void readContentsFromNBT(NBTTagCompound nbt) {
         super.readContentsFromNBT(nbt);
-        energyBuffer = nbt.getDouble("energyBuffer");
+        if (nbt.hasKey("energyBuffer")) {
+            energyBuffer = nbt.getDouble("energyBuffer");
+            energyMax = nbt.getDouble("energyMax");
+        }
     }
 
     public void writeContentsToNBT(NBTTagCompound nbt) {
         super.writeContentsToNBT(nbt);
         nbt.setDouble("energyBuffer", energyBuffer);
+        nbt.setDouble("energyMax", energyMax);
     }
 
     //------------------------- ISGEnergySource -------------------------

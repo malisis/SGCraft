@@ -401,8 +401,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         redstoneInput = nbt.getBoolean("redstoneInput");
         homeAddress = getStringOrNull(nbt, "address");
         addressError = nbt.getString("addressError");
-        maxEnergyBuffer = nbt.getDouble("maxEnergyBuffer");
-        energyPerFuelItem = nbt.getDouble("energyPerFuelItem");
     }
 
     protected String getStringOrNull(NBTTagCompound nbt, String name) {
@@ -443,8 +441,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (addressError != null) {
             nbt.setString("addressError", addressError);
         }
-        nbt.setDouble("maxEnergyBuffer", maxEnergyBuffer);
-        nbt.setDouble("energyPerFuelItem", energyPerFuelItem);
+
         return nbt;
     }
 

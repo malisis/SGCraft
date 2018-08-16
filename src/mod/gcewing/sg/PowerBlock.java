@@ -14,6 +14,7 @@ import net.minecraft.entity.*;
 import net.minecraft.entity.player.*;
 import net.minecraft.item.*;
 import net.minecraft.nbt.*;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.*;
 import net.minecraft.util.math.*;
 import net.minecraft.world.*;
@@ -35,11 +36,6 @@ public class PowerBlock<TE extends PowerTE> extends BaseBlock<TE> {
         return true;
     }
 
-//     @Override
-//     public String getRendererClassName() {
-//         return "BaseBlockRenderer";
-//     }
-    
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         lastRemovedTE = getTileEntity(world, pos);
@@ -79,5 +75,4 @@ public class PowerBlock<TE extends PowerTE> extends BaseBlock<TE> {
         if (te != null && nbt != null)
             te.readContentsFromNBT(nbt);
     }
-
 }

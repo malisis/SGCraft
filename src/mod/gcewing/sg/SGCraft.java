@@ -104,6 +104,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static int Ic2SafeInput = 2048;
     public static int Ic2EnergyBuffer = 1000000;
     public static double Ic2euPerSGEnergyUnit = 20.0;
+    public static int Ic2PowerTETier = 3;
 
     // Redstone Flux Options
     public static int RfEnergyBuffer = 4000000;
@@ -421,6 +422,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         Ic2SafeInput  = config.getInteger("ic2", "safeInputRate", Ic2SafeInput);
         Ic2EnergyBuffer = config.getInteger("ic2", "energyBufferSize", Ic2EnergyBuffer);
         Ic2euPerSGEnergyUnit = config.getDouble("ic2", "euPerSGEnergyUnit", Ic2euPerSGEnergyUnit);
+        Ic2PowerTETier = config.getInteger("ic2", "PowerTETier", Ic2PowerTETier);
 
         // Redstone Flux
         RfEnergyBuffer = config.getInteger("rf", "energyBufferSize", RfEnergyBuffer);
