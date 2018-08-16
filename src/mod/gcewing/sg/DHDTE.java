@@ -14,14 +14,10 @@ import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.InventoryBasic;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
-
-import javax.annotation.Nonnull;
 
 public class DHDTE extends BaseTileInventory implements ISGEnergySource {
 
@@ -136,7 +132,13 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
         int z = nbt.getInteger("linkedZ");
         this.linkedPos = new BlockPos(x, y, z);
         this.enteredAddress = nbt.getString("enteredAddress");
-        this.maxEnergyBuffer = nbt.getDouble("bufferSize");
+        if (nbt.hasKey("bufferSize")) {
+            if (getLinkedStargateTE() != null) {
+                nbt.setDouble("bufferSize", getLinkedStargateTE().getMaxEnergyBuffer());
+            } else {
+                nbt.setDouble("bufferSize", SGBaseTE.getBaseMaxEnergyBuffer());
+            }
+        }
     }
 
     @Override
@@ -280,24 +282,5 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
     @Override
     public boolean isItemValidForSlot(int slot, ItemStack stack) {
         return isValidFuelItem(stack);
-    }
-
-    @Override
-    @Nonnull
-    public SPacketUpdateTileEntity getUpdatePacket() {
-        return new SPacketUpdateTileEntity(this.pos, 1, this.getUpdateTag());
-    }
-
-    @Override
-    public NBTTagCompound getUpdateTag() {
-        final NBTTagCompound result = new NBTTagCompound();
-        this.writeToNBT(result);
-        return result;
-    }
-
-    @Override
-    public void onDataPacket(final NetworkManager net, final SPacketUpdateTileEntity packet) {
-        final NBTTagCompound tag = packet.getNbtCompound();
-        readFromNBT(tag);
     }
 }

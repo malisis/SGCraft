@@ -9,21 +9,19 @@ package gcewing.sg.rf;
 import gcewing.sg.PowerTE;
 import gcewing.sg.SGCraft;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.EnergyStorage;
 import net.minecraftforge.energy.IEnergyStorage;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class RFPowerTE extends PowerTE implements IEnergyStorage {
 
     // Addon for Redstone Flux
 
+    // The below is intended to set the classes first variables to config values.
     static int maxEnergyBuffer = SGCraft.RfEnergyBuffer;
     static double rfPerSGEnergyUnit = SGCraft.RfPerSGEnergyUnit;
     private EnergyStorage storage = new EnergyStorage(maxEnergyBuffer);
@@ -31,12 +29,12 @@ public class RFPowerTE extends PowerTE implements IEnergyStorage {
     public RFPowerTE() {
         super(maxEnergyBuffer, rfPerSGEnergyUnit);
     }
-    
+
     @Override
     public String getScreenTitle() {
         return "RF SGPU";
     }
-    
+
     @Override
     public String getUnitName() {
         return "RF";
@@ -49,9 +47,15 @@ public class RFPowerTE extends PowerTE implements IEnergyStorage {
             int capacity = nbttagcompound.getInteger("capacity");
             int energy = nbttagcompound.getInteger("energy");
             storage = new EnergyStorage(capacity, capacity, capacity, energy);
+        }
+        if (nbttagcompound.hasKey("buffer")) {
             maxEnergyBuffer = nbttagcompound.getInteger("buffer");
             rfPerSGEnergyUnit = nbttagcompound.getDouble("units");
-            super.energyMax = (double) this.maxEnergyBuffer;
+            super.energyBuffer = maxEnergyBuffer;
+        } else {
+            maxEnergyBuffer = SGCraft.RfEnergyBuffer;
+            rfPerSGEnergyUnit = SGCraft.RfPerSGEnergyUnit;
+            super.energyBuffer = SGCraft.RfEnergyBuffer;
         }
     }
 
@@ -77,7 +81,7 @@ public class RFPowerTE extends PowerTE implements IEnergyStorage {
         return super.getCapability(capability, facing);
     }
 
-//------------------------ IEnergyStorage ---------------------------
+    //------------------------ IEnergyStorage ---------------------------
 
     @Override
     public int receiveEnergy(int maxReceive, boolean simulate) {
@@ -117,24 +121,5 @@ public class RFPowerTE extends PowerTE implements IEnergyStorage {
 
     @Override public double totalAvailableEnergy() {
         return energyBuffer;
-    }
-
-    @Override
-    @Nonnull
-    public SPacketUpdateTileEntity getUpdatePacket() {
-        return new SPacketUpdateTileEntity(this.pos, 1, this.getUpdateTag());
-    }
-
-    @Override
-    public NBTTagCompound getUpdateTag() {
-        final NBTTagCompound result = new NBTTagCompound();
-        this.writeContentsToNBT(result);
-        return result;
-    }
-
-    @Override
-    public void onDataPacket(final NetworkManager net, final SPacketUpdateTileEntity packet) {
-        final NBTTagCompound tag = packet.getNbtCompound();
-        readContentsFromNBT(tag);
     }
 }

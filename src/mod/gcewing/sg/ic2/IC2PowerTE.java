@@ -15,8 +15,6 @@ import ic2.api.energy.event.EnergyTileUnloadEvent;
 import ic2.api.energy.tile.IEnergyEmitter;
 import ic2.api.energy.tile.IEnergySink;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
@@ -24,13 +22,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.MinecraftForge;
 
-import javax.annotation.Nonnull;
-
 public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
 
     boolean debugLoad = false;
     boolean debugInput = false;
 
+    // The below is intended to set the classes first variables to config values.
     static int maxSafeInput = SGCraft.Ic2SafeInput;
     static int maxEnergyBuffer = SGCraft.Ic2EnergyBuffer;
     static double euPerSGEnergyUnit = SGCraft.Ic2euPerSGEnergyUnit;
@@ -46,10 +43,14 @@ public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
     public void readContentsFromNBT(NBTTagCompound nbttagcompound) {
         super.readContentsFromNBT(nbttagcompound);
         if (nbttagcompound.hasKey("input")) {
-            this.maxSafeInput = nbttagcompound.getInteger("input");
-            this.maxEnergyBuffer = nbttagcompound.getInteger("buffer");
-            this.euPerSGEnergyUnit = nbttagcompound.getDouble("units");
+            maxSafeInput = nbttagcompound.getInteger("input");
+            maxEnergyBuffer = nbttagcompound.getInteger("buffer");
+            euPerSGEnergyUnit = nbttagcompound.getDouble("units");
             super.energyMax = (double) this.maxEnergyBuffer;
+        } else {
+            maxEnergyBuffer = SGCraft.Ic2EnergyBuffer;
+            euPerSGEnergyUnit = SGCraft.Ic2euPerSGEnergyUnit;
+            super.energyMax = SGCraft.Ic2EnergyBuffer;
         }
     }
 
@@ -142,24 +143,5 @@ public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
 
     @Override public double totalAvailableEnergy() {
         return energyBuffer;
-    }
-
-    @Override
-    @Nonnull
-    public SPacketUpdateTileEntity getUpdatePacket() {
-        return new SPacketUpdateTileEntity(this.pos, 1, this.getUpdateTag());
-    }
-
-    @Override
-    public NBTTagCompound getUpdateTag() {
-        final NBTTagCompound result = new NBTTagCompound();
-        this.writeContentsToNBT(result);
-        return result;
-    }
-
-    @Override
-    public void onDataPacket(final NetworkManager net, final SPacketUpdateTileEntity packet) {
-        final NBTTagCompound tag = packet.getNbtCompound();
-        readContentsFromNBT(tag);
     }
 }
