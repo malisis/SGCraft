@@ -42,7 +42,7 @@ public class PowerScreen extends BaseGui.Screen {
 
     protected void drawBackgroundLayer() {
         bindTexture(SGCraft.mod.resourceLocation("textures/gui/power_gui.png"), 148, 64);
-        drawTexturedRect(0, 0, this.width, this.height, 0, 0);
+        drawTexturedRect(0, 0, guiWidth, guiHeight, 0, 0);
         int cx = this.xSize / 2;
         drawCenteredString(te.getScreenTitle(), cx, 8);
         drawRightAlignedString(te.getUnitName()+":", 90, 23);

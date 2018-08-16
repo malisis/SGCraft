@@ -22,10 +22,10 @@ public class SGBaseScreen extends SGScreen {
     static final int fuelGaugeU = 0;
     static final int fuelGaugeV = 208;
     
-    SGBaseTE te;
-    String address;
-    String formattedAddress;
-    boolean addressValid;
+    private SGBaseTE te;
+    private String address;
+    private String formattedAddress;
+    private boolean addressValid;
     
     public static SGBaseScreen create(EntityPlayer player, World world, BlockPos pos) {
         SGBaseTE te = SGBaseTE.at(world, pos);
@@ -35,14 +35,15 @@ public class SGBaseScreen extends SGScreen {
             return null;
     }
 
-    public SGBaseScreen(EntityPlayer player, SGBaseTE te) {
+    private SGBaseScreen(EntityPlayer player, SGBaseTE te) {
         super(new SGBaseContainer(player, te), guiWidth, guiHeight);
         this.te = te;
+        this.te.markBlockForUpdate();
         getAddress();
-        if (addressValid) {
+        if (this.addressValid) {
             //System.out.printf("SGBaseScreen: Copying address %s to clipboard\n", formattedAddress);
             if (SGCraft.saveAddressToClipboard) {
-                setClipboardString(formattedAddress);
+                setClipboardString(this.formattedAddress);
             }
         }
     }
@@ -51,75 +52,38 @@ public class SGBaseScreen extends SGScreen {
     public boolean doesGuiPauseGame() {
         return false;
     }
-    
-//  @Override
-//  protected void keyTyped(char c, int key) {
-//      if (key == Keyboard.KEY_ESCAPE)
-//          close();
-//      else if (key == Keyboard.KEY_BACK || key == Keyboard.KEY_DELETE) {
-//          int n = te.homeAddress.length();
-//          if (n > 0)
-//              setAddress(te.homeAddress.substring(0, n - 1));
-//      }
-//      else {
-//          String s = String.valueOf(c).toUpperCase();
-//          if (SGBaseTE.isValidSymbolChar(s) && te.homeAddress.length() < 7)
-//              setAddress(te.homeAddress + s);
-//      }
-//  }
-    
+
     @Override
     protected void drawBackgroundLayer() {
         bindTexture(SGCraft.mod.resourceLocation("textures/gui/sg_gui.png"), 256, 256);
         drawTexturedRect(0, 0, guiWidth, guiHeight, 0, 0);
-        //drawFuelGauge();
-        int cx = xSize / 2;
-        if (addressValid)
-            drawAddressSymbols(cx, 22, address);
+        int cx = this.xSize / 2;
+        if (this.addressValid)
+            drawAddressSymbols(cx, 22, this.address);
         setTextColor(0x004c66);
-        drawCenteredString(screenTitle, cx, 8);
-        drawCenteredString(formattedAddress, cx, 72);
-//      if (this.te.numFuelSlots > 0)
-//          drawString("Fuel", 150, 96);
-//      if (this.te.numUpgradeSlots > 0)
-//          drawCenteredString("Upgrade", 56, 102);
+        drawCenteredString(this.screenTitle, cx, 8);
+        drawCenteredString(this.formattedAddress, cx, 72);
         if (this.te.numCamouflageSlots > 0)
             drawCenteredString("Base Camouflage", 92, 92);
     }
-    
-//  void drawFuelGauge() {
-//      //System.out.printf("SGBaseScreen.drawFuelGauge: energyInBuffer = %s, maxEnergyBuffer = %s\n",
-//      //  te.energyInBuffer, te.maxEnergyBuffer);
-//      double level = fuelGaugeHeight * te.energyInBuffer / te.maxEnergyBuffer;
-//      if (level > fuelGaugeHeight)
-//          level = fuelGaugeHeight;
-//      //System.out.printf("SGBaseScreen.drawFuelGauge: level = %s\n", level);
-//      GL11.glEnable(GL11.GL_BLEND);
-//      drawTexturedRect(fuelGaugeX, fuelGaugeY + fuelGaugeHeight - level,
-//          fuelGaugeWidth, level, fuelGaugeU, fuelGaugeV);
-//      GL11.glDisable(GL11.GL_BLEND);
-//  }
-    
-//  String getAddress() {
-//      try {
-//          return te.getHomeAddress();
-//      }
-//      catch (SGAddressing.AddressingError e) {
-//          return e.getMessage();
-//      }
-//  }
-    
-    void getAddress() {
-        if (te.homeAddress != null) {
-            address = te.homeAddress;
-            formattedAddress = SGAddressing.formatAddress(address, "-", "-");
-            addressValid = true;
+
+    private void getAddress() {
+        // Fix if a gate is constructed but the base block is removed, then replaced, the home address isn't getting properly set again.
+        try {
+            this.te.homeAddress = this.te.getHomeAddress();
+        } catch (SGAddressing.AddressingError addressingError) {
+            addressingError.printStackTrace();
+        }
+
+        if (this.te.homeAddress != null) {
+            this.address = this.te.homeAddress;
+            this.formattedAddress = SGAddressing.formatAddress(this.address, "-", "-");
+            this.addressValid = true;
         }
         else {
-            address = "";
-            formattedAddress = te.addressError;
-            addressValid = false;
+            this.address = "";
+            this.formattedAddress = this.te.addressError;
+            this.addressValid = false;
         }
     }
-
 }
