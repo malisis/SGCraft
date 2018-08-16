@@ -51,6 +51,7 @@ public class RFPowerTE extends PowerTE implements IEnergyStorage {
             storage = new EnergyStorage(capacity, capacity, capacity, energy);
             maxEnergyBuffer = nbttagcompound.getInteger("buffer");
             rfPerSGEnergyUnit = nbttagcompound.getDouble("units");
+            super.energyMax = (double) this.maxEnergyBuffer;
         }
     }
 
