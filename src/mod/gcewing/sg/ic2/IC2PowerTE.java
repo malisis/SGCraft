@@ -15,9 +15,16 @@ import ic2.api.energy.event.EnergyTileUnloadEvent;
 import ic2.api.energy.tile.IEnergyEmitter;
 import ic2.api.energy.tile.IEnergySink;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ITickable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.MinecraftForge;
+
+import javax.annotation.Nonnull;
 
 public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
 
@@ -28,6 +35,7 @@ public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
     static int maxEnergyBuffer = SGCraft.Ic2EnergyBuffer;
     static double euPerSGEnergyUnit = SGCraft.Ic2euPerSGEnergyUnit;
 
+    private int update = 0;
     boolean loaded = false;
 
     public IC2PowerTE() {
@@ -38,23 +46,36 @@ public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
     public void readContentsFromNBT(NBTTagCompound nbttagcompound) {
         super.readContentsFromNBT(nbttagcompound);
         if (nbttagcompound.hasKey("input")) {
-            maxSafeInput = nbttagcompound.getInteger("input");
-            maxEnergyBuffer = nbttagcompound.getInteger("buffer");
-            euPerSGEnergyUnit = nbttagcompound.getDouble("units");
+            this.maxSafeInput = nbttagcompound.getInteger("input");
+            this.maxEnergyBuffer = nbttagcompound.getInteger("buffer");
+            this.euPerSGEnergyUnit = nbttagcompound.getDouble("units");
+            super.energyMax = (double) this.maxEnergyBuffer;
         }
     }
 
     @Override
     public void writeContentsToNBT(NBTTagCompound nbttagcompound) {
         super.writeContentsToNBT(nbttagcompound);
-        nbttagcompound.setInteger("input", maxSafeInput);
-        nbttagcompound.setInteger("buffer", maxEnergyBuffer);
-        nbttagcompound.setDouble("units", euPerSGEnergyUnit);
+        nbttagcompound.setInteger("input", this.maxSafeInput);
+        nbttagcompound.setInteger("buffer", this.maxEnergyBuffer);
+        nbttagcompound.setDouble("units", this.euPerSGEnergyUnit);
     }
+
 
     @Override
     public String getScreenTitle() {
         return "IC2 SGPU";
+    }
+
+    @Override
+    public void update() {
+        if (!world.isRemote && !loaded) {
+            if(debugLoad) {
+                System.out.printf("SGCraft: IC2PowerTE: Adding to energy network\n");
+            }
+            loaded = true;
+            MinecraftForge.EVENT_BUS.post(new EnergyTileLoadEvent(this));
+        }
     }
 
     @Override
@@ -74,14 +95,9 @@ public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
         super.onChunkUnload();
     }
 
-    @Override
-    public void update() {
-        if (!world.isRemote && !loaded) {
-            if(debugLoad)
-                System.out.printf("SGCraft: IC2PowerTE: Adding to energy network\n");
-            loaded = true;
-            MinecraftForge.EVENT_BUS.post(new EnergyTileLoadEvent(this));
-        }
+    public static IC2PowerTE at(IBlockAccess world, BlockPos pos) {
+        TileEntity te = world.getTileEntity(pos);
+        return te instanceof IC2PowerTE ? (IC2PowerTE) te : null;
     }
 
     void unload() {
@@ -126,5 +142,24 @@ public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
 
     @Override public double totalAvailableEnergy() {
         return energyBuffer;
+    }
+
+    @Override
+    @Nonnull
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return new SPacketUpdateTileEntity(this.pos, 1, this.getUpdateTag());
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        final NBTTagCompound result = new NBTTagCompound();
+        this.writeContentsToNBT(result);
+        return result;
+    }
+
+    @Override
+    public void onDataPacket(final NetworkManager net, final SPacketUpdateTileEntity packet) {
+        final NBTTagCompound tag = packet.getNbtCompound();
+        readContentsFromNBT(tag);
     }
 }

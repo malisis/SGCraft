@@ -9,12 +9,15 @@ package gcewing.sg.rf;
 import gcewing.sg.PowerTE;
 import gcewing.sg.SGCraft;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.EnergyStorage;
 import net.minecraftforge.energy.IEnergyStorage;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class RFPowerTE extends PowerTE implements IEnergyStorage {
@@ -113,5 +116,24 @@ public class RFPowerTE extends PowerTE implements IEnergyStorage {
 
     @Override public double totalAvailableEnergy() {
         return energyBuffer;
+    }
+
+    @Override
+    @Nonnull
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return new SPacketUpdateTileEntity(this.pos, 1, this.getUpdateTag());
+    }
+
+    @Override
+    public NBTTagCompound getUpdateTag() {
+        final NBTTagCompound result = new NBTTagCompound();
+        this.writeContentsToNBT(result);
+        return result;
+    }
+
+    @Override
+    public void onDataPacket(final NetworkManager net, final SPacketUpdateTileEntity packet) {
+        final NBTTagCompound tag = packet.getNbtCompound();
+        readContentsFromNBT(tag);
     }
 }

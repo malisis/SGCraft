@@ -65,5 +65,4 @@ public abstract class PowerTE extends BaseTileEntity implements ISGEnergySource 
             System.out.printf("SGCraft: PowerTE: Supplying %s SGU of %s requested\n", supply, request);
         return supply;
     }
-
 }

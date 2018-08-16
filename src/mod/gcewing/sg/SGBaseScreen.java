@@ -69,18 +69,19 @@ public class SGBaseScreen extends SGScreen {
 
     private void getAddress() {
         // Fix if a gate is constructed but the base block is removed, then replaced, the home address isn't getting properly set again.
-        try {
-            this.te.homeAddress = this.te.getHomeAddress();
-        } catch (SGAddressing.AddressingError addressingError) {
-            addressingError.printStackTrace();
+        if (this.te == null) {
+            try {
+                this.te.homeAddress = this.te.getHomeAddress();
+            } catch (SGAddressing.AddressingError addressingError) {
+                addressingError.printStackTrace();
+            }
         }
 
         if (this.te.homeAddress != null) {
             this.address = this.te.homeAddress;
             this.formattedAddress = SGAddressing.formatAddress(this.address, "-", "-");
             this.addressValid = true;
-        }
-        else {
+        } else {
             this.address = "";
             this.formattedAddress = this.te.addressError;
             this.addressValid = false;

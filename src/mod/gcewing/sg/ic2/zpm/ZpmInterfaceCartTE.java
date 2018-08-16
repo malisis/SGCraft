@@ -59,6 +59,7 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
         if (this.world == null || this.world.isRemote) {
             return;
         }
+
         if (update++ > 10) {
             world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
             world.scheduleBlockUpdate(pos, this.getBlockType(), 0, 0);
