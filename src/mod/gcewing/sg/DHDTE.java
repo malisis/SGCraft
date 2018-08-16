@@ -132,12 +132,11 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
         int z = nbt.getInteger("linkedZ");
         this.linkedPos = new BlockPos(x, y, z);
         this.enteredAddress = nbt.getString("enteredAddress");
+
         if (nbt.hasKey("bufferSize")) {
-            if (getLinkedStargateTE() != null) {
-                nbt.setDouble("bufferSize", getLinkedStargateTE().getMaxEnergyBuffer());
-            } else {
-                nbt.setDouble("bufferSize", SGBaseTE.getBaseMaxEnergyBuffer());
-            }
+            this.maxEnergyBuffer = nbt.getDouble("bufferSize");
+        } else {
+            this.maxEnergyBuffer = SGBaseTE.getBaseMaxEnergyBuffer();
         }
     }
 
@@ -150,12 +149,8 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
         nbt.setInteger("linkedY", this.linkedPos.getY());
         nbt.setInteger("linkedZ", this.linkedPos.getZ());
         nbt.setString("enteredAddress", this.enteredAddress);
+        nbt.setDouble("bufferSize", this.maxEnergyBuffer);
 
-        if (getLinkedStargateTE() != null) {
-            nbt.setDouble("bufferSize", getLinkedStargateTE().getMaxEnergyBuffer());
-        } else {
-            nbt.setDouble("bufferSize", SGBaseTE.getBaseMaxEnergyBuffer());
-        }
         return nbt;
     }
 
