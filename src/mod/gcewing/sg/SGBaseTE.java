@@ -980,7 +980,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             return true;
         }
 
-        SGBaseTE targetGate = SGBaseTE.at(connectedLocation);
         List<ISGEnergySource> sources = findEnergySources(this.destinationRequiresZPM);
         double energyAvailable = energyInBuffer + energyAvailableFrom(sources);
 
@@ -1024,6 +1023,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         boolean ic2Loaded = isModLoaded("ic2");
         boolean rsfLoaded = isModLoaded("redstoneflux");
         boolean useDHD = true;
+        DHDTE te = getLinkedControllerTE();
 
         if (debugEnergyUse) {
             System.out.printf("SGBaseTe.findEnergySources: for %s\n", getSoundPos());
@@ -1082,7 +1082,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             }
         }
 
-        DHDTE te = getLinkedControllerTE();
         if (te != null) {
             if (useDHD) {
                 if (!requireZPM) {
