@@ -141,12 +141,11 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
         this.linkedPos = new BlockPos(x, y, z);
         this.enteredAddress = nbt.getString("enteredAddress");
 
-        if (nbt.hasKey("bufferSize")) {
-            this.maxEnergyBuffer = nbt.getDouble("bufferSize");
-            System.out.println("DHDTE: read NBT: bufferSize: " + this.maxEnergyBuffer + " / " + cfgMaxEnergyBuffer);
-        } else {
-            System.out.println("DHDTE: read STATIC bufferSize: " + cfgMaxEnergyBuffer);
+        // Check if Key doesn't exist or if Admin is trying to update all the DHD's with new values.
+        if (!nbt.hasKey("bufferSize") || SGCraft.forceDHDCfgUpdate) {
             this.maxEnergyBuffer = cfgMaxEnergyBuffer;
+        } else {
+            this.maxEnergyBuffer = nbt.getDouble("bufferSize");
         }
     }
 
@@ -160,7 +159,6 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
         nbt.setInteger("linkedZ", this.linkedPos.getZ());
         nbt.setString("enteredAddress", this.enteredAddress);
         nbt.setDouble("bufferSize", this.maxEnergyBuffer);
-        System.out.println("DHDTE: write NBT: bufferSize: " + this.maxEnergyBuffer);
         return nbt;
     }
 

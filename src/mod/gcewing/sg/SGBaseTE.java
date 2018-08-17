@@ -207,6 +207,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     int timeout, maxTimeout;
     double energyInBuffer, distanceFactor; // all energy use is multiplied by this
     public String homeAddress, addressError;
+    private int updated = 0;
 
     IInventory inventory = new InventoryBasic("Stargate", false, numInventorySlots);
 
@@ -972,6 +973,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         if (amount <= energyInBuffer) {
             energyInBuffer -= amount;
+
+            if (updated++ > 10) {
+                // Send energy update to client for diag/gui purposes
+                markChanged();
+                updated = 0;
+            }
             return true;
         }
 
@@ -1134,10 +1141,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             }
             total += e;
         }
-        if (total < amount)
+        if (total < amount) {
             if (debugEnergyUse) {
                 System.out.printf("SGCraft: Warning: Energy sources did not deliver promised energy (%s requested, %s delivered)\n", amount, total);
             }
+        }
+
         return total;
     }
 

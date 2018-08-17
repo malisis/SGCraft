@@ -30,7 +30,7 @@ public class DHDFuelScreen extends SGScreen {
     private DHDTE te;
     private SGBaseTE baseTe;
     private double energyPerFuelItem;
-    
+
     public static DHDFuelScreen create(EntityPlayer player, World world, BlockPos pos) {
         DHDTE te = DHDTE.at(world, pos);
         if (te != null) {
@@ -43,9 +43,10 @@ public class DHDFuelScreen extends SGScreen {
     public DHDFuelScreen(EntityPlayer player, DHDTE te) {
         super(new DHDFuelContainer(player, te), guiWidth, guiHeight);
         this.te = te;
+        this.baseTe = te.getLinkedStargateTE();
         this.energyPerFuelItem = SGBaseTE.energyPerFuelItem;
     }
-    
+
     @Override
     protected void drawBackgroundLayer() {
         bindTexture(SGCraft.mod.resourceLocation("textures/gui/dhd_fuel_gui.png"), 256, 256);
@@ -58,21 +59,29 @@ public class DHDFuelScreen extends SGScreen {
 
         int naquadahUnits = this.te.getInventory().getStackInSlot(0).getCount() + this.te.getInventory().getStackInSlot(1).getCount() + this.te.getInventory().getStackInSlot(2).getCount() + this.te.getInventory().getStackInSlot(3).getCount();
 
-        // Buffer Available
-        drawRightAlignedString("DHD Buffer:", 125, 30);
-        drawString(dFormat.format(Math.min(Math.max(this.te.energyInBuffer, 0), this.te.maxEnergyBuffer)), 130, 30);
+        if (SGCraft.displayGuiPowerDebug) {
+            if (this.baseTe != null) {
+                // DHD Buffer Available
+                drawRightAlignedString("Gate Buffer:", 125, 30);
+                drawString(dFormat.format(Math.min(Math.max(this.baseTe.energyInBuffer, 0), this.baseTe.maxEnergyBuffer)), 130, 30);
+            }
 
-        // Buffer Max
-        drawRightAlignedString("Buffer Max:", 125, 40);
-        drawString(dFormat.format(this.te.maxEnergyBuffer), 130, 40);
+            // DHD Buffer Available
+            drawRightAlignedString("DHD Buffer:", 125, 40);
+            drawString(dFormat.format(Math.min(Math.max(this.te.energyInBuffer, 0), this.te.maxEnergyBuffer)), 130, 40);
 
-        // Naquadah Units
-        drawRightAlignedString("Naquadah:", 125, 60);
-        drawString(dFormat.format(naquadahUnits), 130, 60);
+            // Buffer Max
+            drawRightAlignedString("Buffer Max:", 125, 50);
+            drawString(dFormat.format(this.te.maxEnergyBuffer), 130, 50);
 
-        // Naquadah Power Units
-        drawRightAlignedString("Available Power Units:", 125, 70);
-        drawString(dFormat.format(naquadahUnits * this.energyPerFuelItem), 130, 70);
+            // Naquadah Units
+            drawRightAlignedString("Naquadah:", 125, 60);
+            drawString(dFormat.format(naquadahUnits), 130, 60);
+
+            // Naquadah Power Units
+            drawRightAlignedString("Available Power Units:", 125, 70);
+            drawString(dFormat.format(naquadahUnits * this.energyPerFuelItem), 130, 70);
+        }
 
         if (this.te.numFuelSlots > 0)
             drawString("Fuel", 150, 96);

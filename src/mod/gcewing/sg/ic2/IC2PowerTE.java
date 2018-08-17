@@ -30,17 +30,23 @@ public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
     // The below is intended to set the classes first variables to config values.
     private int maxSafeInput = SGCraft.Ic2SafeInput;
     private int powerTier = SGCraft.Ic2PowerTETier;
-
+    private int update = 0;
     private boolean loaded = false;
 
     public IC2PowerTE() {
-        super(SGCraft.Ic2EnergyBuffer, SGCraft.Ic2euPerSGEnergyUnit);
+        super(SGCraft.Ic2MaxEnergyBuffer, SGCraft.Ic2euPerSGEnergyUnit);
     }
 
     @Override
     public void readContentsFromNBT(NBTTagCompound nbttagcompound) {
         super.readContentsFromNBT(nbttagcompound);
-        if (nbttagcompound.hasKey("input")) {
+        // Check if Key doesn't exist or if Admin is trying to update all the DHD's with new values.
+        if (!nbttagcompound.hasKey("input") || SGCraft.forceIC2CfgUpdate) {
+            maxSafeInput = SGCraft.Ic2SafeInput;
+            powerTier = SGCraft.Ic2PowerTETier;
+            energyMax = SGCraft.Ic2MaxEnergyBuffer;
+            energyPerSGEnergyUnit = SGCraft.Ic2euPerSGEnergyUnit;
+        } else {
             maxSafeInput = nbttagcompound.getInteger("input");
             powerTier = nbttagcompound.getInteger("tier");
         }
@@ -94,8 +100,9 @@ public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
 
     void unload() {
         if (!world.isRemote && loaded) {
-            if(debugLoad)
+            if(debugLoad) {
                 System.out.printf("SGCraft: IC2PowerTE: Removing from energy network\n");
+            }
             MinecraftForge.EVENT_BUS.post(new EnergyTileUnloadEvent(this));
             loaded = false;
         }
@@ -113,17 +120,22 @@ public class IC2PowerTE extends PowerTE implements IEnergySink, ITickable {
     @Override
     public double getDemandedEnergy() {
         double eu = min(energyMax - energyBuffer, maxSafeInput);
-        if(debugInput)
+        if(debugInput) {
             System.out.printf("SGCraft: IC2PowerTE: Demanding %s EU\n", eu);
+        }
         return eu;
     }
 
     @Override
     public double injectEnergy(EnumFacing directionFrom, double amount, double voltage) {
         energyBuffer += amount;
-        markChanged();
-        if(debugInput)
+        if (update++ > 10) { // We dont' need 20 packets per second to the client....
+            markChanged();
+            update = 0;
+        }
+        if(debugInput) {
             System.out.printf("SGCraft: IC2PowerTE: Injected %s EU giving %s\n", amount, energyBuffer);
+        }
         return 0;
     }
 

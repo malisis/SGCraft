@@ -6,11 +6,19 @@
 
 package gcewing.sg;
 
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.GL_BLEND;
+import static org.lwjgl.opengl.GL11.GL_CURRENT_BIT;
+import static org.lwjgl.opengl.GL11.GL_ENABLE_BIT;
+import static org.lwjgl.opengl.GL11.GL_ONE;
+import static org.lwjgl.opengl.GL11.GL_ZERO;
+import static org.lwjgl.opengl.GL11.glBlendFunc;
+import static org.lwjgl.opengl.GL11.glEnable;
+import static org.lwjgl.opengl.GL11.glPopAttrib;
+import static org.lwjgl.opengl.GL11.glPushAttrib;
 
-import net.minecraft.entity.player.*;
-import net.minecraft.util.math.*;
-import net.minecraft.world.*;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import java.text.DecimalFormat;
 
@@ -21,7 +29,7 @@ public class PowerScreen extends BaseGui.Screen {
     private final DecimalFormat dFormat = new DecimalFormat("###,###,###");
 
     private PowerTE te;
-    
+
     public static PowerScreen create(EntityPlayer player, World world, BlockPos pos) {
         PowerContainer container = PowerContainer.create(player, world, pos);
         if (container != null)
@@ -29,12 +37,12 @@ public class PowerScreen extends BaseGui.Screen {
         else
             return null;
     }
-    
+
     private PowerScreen(PowerContainer container) {
         super(container, guiWidth, guiHeight);
         this.te = container.te;
     }
-    
+
     @Override
     public boolean doesGuiPauseGame() {
         return false;
@@ -45,15 +53,17 @@ public class PowerScreen extends BaseGui.Screen {
         drawTexturedRect(0, 0, guiWidth, guiHeight, 0, 0);
         int cx = this.xSize / 2;
         drawCenteredString(te.getScreenTitle(), cx, 8);
-        drawRightAlignedString(te.getUnitName()+":", 90, 23);
+        drawRightAlignedString(te.getUnitName() + ":", 90, 23);
         drawRightAlignedString(this.dFormat.format(Math.min(Math.max(this.te.energyBuffer, 0), this.te.energyMax)), 141, 23);
-        drawRightAlignedString("SGPU:", 90, 34);
-        drawRightAlignedString(this.dFormat.format(Math.min(Math.max(this.te.energyBuffer/this.te.energyPerSGEnergyUnit, 0), this.te.energyMax)), 141, 34);
+        if (SGCraft.displayGuiPowerDebug) {
+            drawRightAlignedString("SGPU:", 90, 34);
+            drawRightAlignedString(this.dFormat.format(Math.min(Math.max(this.te.energyBuffer / this.te.energyPerSGEnergyUnit, 0), this.te.energyMax)), 141, 34);
+        }
         drawRightAlignedString("Max:", 90, 45);
         drawRightAlignedString(this.dFormat.format(this.te.energyMax), 141, 45);
         drawPowerGauge();
     }
-    
+
     private void drawPowerGauge() {
         gSave();
         glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
