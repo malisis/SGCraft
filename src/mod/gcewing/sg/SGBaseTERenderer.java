@@ -53,6 +53,7 @@ class SGBaseTERenderer extends BaseTileEntityRenderer {
     static double s[] = new double[numRingSegments + 1];
     static double c[] = new double[numRingSegments + 1];
     
+
     static {
         for (int i = 0; i <= numRingSegments; i++) {
             double a = 2 * Math.PI * i / numRingSegments;
@@ -159,11 +160,18 @@ class SGBaseTERenderer extends BaseTileEntityRenderer {
     void renderChevrons(SGBaseTE te) {
         int numChevrons = te.getNumChevrons();
         int i0 = numChevrons > 7 ? 0 : 1;
-        int k = te.dialledAddress.length() > 7 ? 1 : 0;
+        int k = 0;
+        if (te.state == SGState.Disconnecting) {
+            // Notes:
+            // Keep previously locked chevrons because te.dialledAddress.length = 0 when disconnecting, thus only 7 show locked.
+            k = te.numEngagedChevrons > 7 ? 1: 0;
+        } else {
+            k = te.dialledAddress.length() > 7 ? 1 : 0;
+        }
         float a = te.angleBetweenChevrons();
         for (int i = i0; i < i0 + numChevrons; i++) {
             int j = chevronEngagementSequences[k][i];
-            boolean engaged = te.chevronIsEngaged(j); 
+            boolean engaged = te.chevronIsEngaged(j);
             renderChevronAtPosition(i, a, engaged);
         }
     }
