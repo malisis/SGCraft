@@ -81,6 +81,8 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
                 if (fastLockChevron) {
                     boolean last = enteredAddress.length() == gate.getNumChevrons();
                     gate.finishDiallingSymbol(symbol, true, false, last);
+                    gate.dialledAddress = enteredAddress;
+                    gate.numEngagedChevrons = enteredAddress.length()-1;
                     gate.markChanged();
                 }
             }
@@ -100,6 +102,8 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
                 }
                 if (fastLockChevron) {
                     gate.unsetSymbol(symbol);
+                    gate.dialledAddress = enteredAddress;
+                    gate.numEngagedChevrons = enteredAddress.length()-1;
                     gate.markChanged();
                 }
             }
