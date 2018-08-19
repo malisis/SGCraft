@@ -40,6 +40,7 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.lwjgl.opengl.GLContext;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -207,7 +208,7 @@ public class BaseRenderingManager<MOD extends BaseMod<? extends BaseModClient>> 
                     rend = getCustomRendererForState(block.getDefaultState());
             }
             if (rend != null) {
-                GlStateManager.shadeModel(GL_SMOOTH);
+                //GlStateManager.shadeModel(GL_SMOOTH); // Removed this to fix GLContext (no context at current thread client crash).
                 BaseBakedRenderTarget target = new BaseBakedRenderTarget();
                 rend.renderItemStack(stack, target, itemTrans);
                 return target.getBakedModel();
