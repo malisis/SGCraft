@@ -215,6 +215,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public boolean zpmPowered = false;
     public boolean destinationRequiresZPM = false;
 
+    // Retain current irisState prior to opening
+    public boolean wasIrisClosed = false;
+
     double ehGrid[][][];
     private static Set<UUID> messagesQueue = Sets.newHashSet();
 
@@ -643,6 +646,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         boolean canDisconnect = disconnectionAllowed();
         SGBaseTE dte = getConnectedStargateTE();
         boolean validConnection = dte != null && !dte.isInvalid() && dte.getConnectedStargateTE() == this;
+
         if (canDisconnect || !validConnection) {
             if (state != SGState.Disconnecting)
                 disconnect();
@@ -743,14 +747,33 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             return diallingFailure(player, "insufficientEnergy");
         }
 
+        // Handle auto-open of Iris at current gate and destination
+        if (this.hasIrisUpgrade) {
+            if (this.irisIsClosed()) {
+                this.wasIrisClosed = true;
+            } else {
+                this.wasIrisClosed = false;
+            }
+            if (openIris) {
+                this.openIris();
+            }
+        }
+        if (targetGate.hasIrisUpgrade) {
+            if (targetGate.irisIsClosed()) {
+                targetGate.wasIrisClosed = true;
+            } else {
+                targetGate.wasIrisClosed = false;
+            }
+            if (openIris) {
+                targetGate.openIris();
+            }
+        }
+
         startDiallingStargate(address, targetGate, true, immediate);
         targetGate.enterState(SGState.attemptToDial, 0); // Force remote gate immediate change state to help chunk stay loaded
         targetGate.startDiallingStargate(homeAddress, this, false, immediate);
 
 
-        if (targetGate.irisIsClosed() && openIris) { // Open Remote Iris if GDO says so.
-            targetGate.openIris();
-        }
 
         return null;
     }
@@ -818,6 +841,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (debugConnect)
             System.out.printf("SGBaseTE: %s: disconnect()\n", side());
         SGBaseTE dte = SGBaseTE.at(connectedLocation);
+
         if (dte != null)
             dte.clearConnection();
         clearConnection();
@@ -833,6 +857,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 enterState(SGState.Disconnecting, disconnectTime);
                 //sendClientEvent(SGEvent.StartDisconnecting, 0);
                 playSGSoundEffect(disconnectSound, 1F, 1F);
+
             } else {
                 numEngagedChevrons = 0;
                 if (state != SGState.Idle && state != SGState.Disconnecting)
@@ -943,6 +968,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     case Disconnecting:
                         numEngagedChevrons = 0;
                         enterState(SGState.Idle, 0);
+
+                        if (this.hasIrisUpgrade) {
+                            if (this.wasIrisClosed) {
+                                this.closeIris();
+                            }
+                        }
+
                         break;
                 }
             }
