@@ -97,7 +97,9 @@ public class DHDBlock extends BaseBlock<DHDTE> {
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float cx, float cy, float cz) {
         // Check to see if player is right-clicking DHD to read whether or not the destinations stargate iris is open or closed.
-        if (player != null && !player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().getItem().equals(SGCraft.gdo)) {
+        // Requires GDO in off-hand, player sneaking, connected gate with destination gate having the iris upgrade.
+
+        if (player != null && player.isSneaking() && !player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().getItem().equals(SGCraft.gdo)) {
             DHDTE cte = getTileEntity(world, pos);
             if (cte.isLinkedToStargate) {
                 if (cte.getLinkedStargateTE().isConnected()) {
@@ -107,10 +109,10 @@ public class DHDBlock extends BaseBlock<DHDTE> {
                         } else {
                             System.out.println("Connected DHD Iris is open");
                         }
+                          return true;
                     }
                 }
             }
-            return true;
         }
 
         SGGui id = cy > 0.5 ? SGGui.SGController : SGGui.DHDFuel;
