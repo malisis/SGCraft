@@ -1683,7 +1683,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         int i = entity.chunkCoordX;
         int j = entity.chunkCoordZ;
         if (entity.addedToChunk && ((ChunkProviderServer)world.getChunkProvider()).chunkExists(i, j))
-            world.getChunkFromChunkCoords(i, j).removeEntity(entity);
+            world.getChunk(i, j).removeEntity(entity);
         world.loadedEntityList.remove(entity);
         //BaseReflectionUtils.call(world, onEntityRemoved, entity);
         world.onEntityRemoved(entity);
@@ -1692,7 +1692,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     static void checkChunk(World world, Entity entity) {
         int cx = MathHelper.floor(entity.posX / 16.0D);
         int cy = MathHelper.floor(entity.posZ / 16.0D);
-        Chunk chunk = world.getChunkFromChunkCoords(cx, cy);
+        Chunk chunk = world.getChunk(cx, cy);
     }
 
     protected static int yawSign(Entity entity) {

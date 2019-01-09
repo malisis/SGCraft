@@ -129,8 +129,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     @Override
     public void preInit(FMLPreInitializationEvent e) {
         this.creativeTab = new CreativeTabs("sgcraft:sgcraft") {
-            @Override
-            public ItemStack getTabIconItem() {
+            @Override public ItemStack createIcon() {
                 return new ItemStack(Item.getItemFromBlock(sgBaseBlock));
             }
         };
