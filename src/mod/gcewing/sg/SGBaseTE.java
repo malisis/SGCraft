@@ -6,11 +6,7 @@
 
 package gcewing.sg;
 
-import static gcewing.sg.BaseBlockUtils.getWorldTileEntity;
-import static gcewing.sg.BaseUtils.max;
-import static gcewing.sg.BaseUtils.min;
-
-import com.google.common.collect.Sets;
+import gcewing.sg.oc.OCIntegration;
 import gcewing.sg.oc.OCWirelessEndpoint;
 import io.netty.channel.ChannelFutureListener;
 import net.minecraft.block.Block;
@@ -38,11 +34,7 @@ import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.management.PlayerList;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.DamageSource;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.ITickable;
-import net.minecraft.util.SoundCategory;
-import net.minecraft.util.SoundEvent;
+import net.minecraft.util.*;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -64,23 +56,15 @@ import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.entity.Transform;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.event.entity.MoveEntityEvent;
-import org.spongepowered.api.scheduler.Task;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.common.entity.EntityUtil;
-import org.spongepowered.common.interfaces.entity.IMixinEntity;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-import java.util.function.Consumer;
+
+import static gcewing.sg.BaseBlockUtils.getWorldTileEntity;
+import static gcewing.sg.BaseUtils.max;
+import static gcewing.sg.BaseUtils.min;
 
 public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSoundSource {
 
@@ -91,19 +75,21 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     static boolean debugTeleport = false;
 
     static SoundEvent
-            dialFailSound,
-            connectSound,
-            disconnectSound,
-            irisOpenSound,
-            irisCloseSound,
-            irisHitSound,
-            dhdPressSound,
-            dhdDialSound,
-            chevronOutgoingSound,
-            chevronIncomingSound,
-            lockOutgoingSound,
-            lockIncomingSound,
-            gateRollSound;
+        dialFailSound,
+        connectSound,
+        disconnectSound,
+        irisOpenSound,
+        irisCloseSound,
+        irisHitSound,
+        dhdPressSound,
+        dhdDialSound,
+        chevronOutgoingSound,
+        chevronIncomingSound,
+        lockOutgoingSound,
+        lockIncomingSound,
+        gateRollSound,
+        eventHorizonSound,
+        teleportSound;
 
     public static void registerSounds(SGCraft mod) {
         dialFailSound = mod.newSound("dial_fail");
@@ -119,6 +105,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         lockOutgoingSound = mod.newSound("lock_outgoing");
         lockIncomingSound = mod.newSound("lock_incoming");
         gateRollSound = mod.newSound("gate_roll");
+        eventHorizonSound = mod.newSound("event_horizon");
+        teleportSound = mod.newSound("teleport");
     }
 
     public final static String symbolChars = SGAddressing.symbolChars;
@@ -207,9 +195,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     IInventory inventory = new InventoryBasic("Stargate", false, numInventorySlots);
 
     double ehGrid[][][];
-    // Sponge API-7
-    private static Set<UUID> messagesQueue = Sets.newHashSet();
-    // End Sponge API-7
 
     public static void configure(BaseConfiguration cfg) {
         energyPerFuelItem = cfg.getDouble("stargate", "energyPerFuelItem", energyPerFuelItem);
@@ -293,7 +278,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     @Override
     public boolean isSoundActive(SoundEvent sound) {
-        if (this.isInvalid()) {
+        if (this.isInvalid() || !this.world.isBlockLoaded(this.pos) || this.world.getTileEntity(this.pos) != this) {
             return false;
         }
         if (sound == gateRollSound) {
@@ -302,6 +287,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             return irisState == IrisState.Opening;
         } else if (sound == irisCloseSound) {
             return irisState == IrisState.Closing;
+        } else if (sound == eventHorizonSound) {
+            return state == SGState.Connected;
         } else {
             return false;
         }
@@ -348,6 +335,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     Logger log = LogManager.getLogger();
                     String action = isMerged ? "ADDED" : "REMOVED";
                     String name = getWorld().getWorldInfo().getWorldName();
+                    if (isMerged) {
+                        this.homeAddress = address;
+                    }
                     log.info(String.format("STARGATE %s %s %s %s", action, name, pos, address));
                 }
             }
@@ -363,14 +353,16 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    public int dimension() {
-        return world != null ? world.provider.getDimension() : -999;
+    @Override
+    protected void setWorldCreate(World world) {
+        this.world = world;
     }
 
     @Override
     public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
         isMerged = nbt.getBoolean("isMerged");
+        SGState oldState = state;
         state = SGState.values()[nbt.getInteger("state")];
         ringAngle = nbt.getDouble("ringAngle");
         startRingAngle = nbt.getDouble("startRingAngle");
@@ -397,6 +389,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         redstoneInput = nbt.getBoolean("redstoneInput");
         homeAddress = getStringOrNull(nbt, "address");
         addressError = nbt.getString("addressError");
+        if (oldState != state && state == SGState.Connected && world.isRemote) {
+            SGCraft.playSound(this, eventHorizonSound);
+        }
     }
 
     protected String getStringOrNull(NBTTagCompound nbt, String name) {
@@ -437,10 +432,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return nbt;
     }
 
-    public boolean isActive() {
-        return state != SGState.Idle && state != SGState.Disconnecting;
-    }
-
     static boolean isValidSymbolChar(String c) {
         return SGAddressing.isValidSymbolChar(c);
     }
@@ -455,6 +446,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     static int charToSymbol(String c) {
         return SGAddressing.charToSymbol(c);
+    }
+
+    public boolean isActive() {
+        return state != SGState.Idle && state != SGState.Disconnecting;
     }
 
     public EnumActionResult applyChevronUpgrade(ItemStack stack, EntityPlayer player) {
@@ -761,6 +756,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 numEngagedChevrons = 0;
                 if (state != SGState.Idle && state != SGState.Disconnecting)
                     playSGSoundEffect(dialFailSound, 1F, 1F);
+                else
+                    playSGSoundEffect(chevronOutgoingSound, 1F, 1F);
                 enterState(SGState.Idle, 0);
                 //sendClientEvent(SGEvent.FinishDisconnecting, 0);
             }
@@ -800,7 +797,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 addressError = e.getMessage();
             }
             if (SGCraft.ocIntegration != null) { //[OC]
-                SGCraft.ocIntegration.onSGBaseTEAdded(this);
+                ((OCIntegration)SGCraft.ocIntegration).onSGBaseTEAdded(this);
             }
         }
         if (isMerged) {
@@ -1058,12 +1055,16 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             if (changeState) {
                 enterState(SGState.SyncAwait, syncAwaitTime);
             }
-            playSGSoundEffect(outgoing ? lockOutgoingSound : lockIncomingSound, 1F, 1F);
+            if (!world.isRemote) {
+                playSGSoundEffect(outgoing ? lockOutgoingSound : lockIncomingSound, 1F, 1F);
+            }
         } else {
             if (changeState) {
                 enterState(SGState.InterDialing, interDiallingTime);
             }
-            playSGSoundEffect(outgoing ? chevronOutgoingSound : chevronIncomingSound, 1F, 1F);
+            if (!world.isRemote) {
+                playSGSoundEffect(outgoing ? chevronOutgoingSound : chevronIncomingSound, 1F, 1F);
+            }
         }
     }
 
@@ -1089,7 +1090,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return isInitiator || !oneWayTravel;
     }
 
-    static String repr(Entity entity) {
+    String repr(Entity entity) {
         if (entity != null) {
             String s = String.format("%s#%s", entity.getClass().getSimpleName(), entity.getEntityId());
             if (entity.isDead)
@@ -1199,7 +1200,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     // Break any leash connections to or from the given entity. That happens anyway
     // when the entity is teleported, but without this it drops an extra leash item.
-    protected static void unleashEntity(Entity entity) {
+    protected void unleashEntity(Entity entity) {
         if (entity instanceof EntityLiving)
             ((EntityLiving)entity).clearLeashed(true, false);
         for (EntityLiving entity2 : entitiesWithinLeashRange(entity))
@@ -1207,21 +1208,14 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 entity2.clearLeashed(true, false);
     }
 
-    protected static List<EntityLiving> entitiesWithinLeashRange(Entity entity) {
+    protected List<EntityLiving> entitiesWithinLeashRange(Entity entity) {
         AxisAlignedBB box = new AxisAlignedBB(
                 entity.posX - 7.0D, entity.posY - 7.0D, entity.posZ - 7.0D,
                 entity.posX + 7.0D, entity.posY + 7.0D, entity.posZ + 7.0D);
         return entity.world.getEntitiesWithinAABB(EntityLiving.class, box);
     }
 
-    // Sponge Addon
-    static Consumer<Task> clearMessageQueue(Player player) {
-        return task -> {
-            messagesQueue.remove(player.getUniqueId());
-        };
-    }
-
-    static Entity teleportEntity(Entity entity, Trans3 t1, Trans3 t2, int dimension, boolean destBlocked) {
+    Entity teleportEntity(Entity entity, Trans3 t1, Trans3 t2, int dimension, boolean destBlocked) {
         Entity newEntity = null;
         if (debugTeleport) {
             System.out.printf("SGBaseTE.teleportEntity: %s (in dimension %d)  to dimension %d\n",
@@ -1232,39 +1226,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     entity.lastTickPosX, entity.lastTickPosY, entity.lastTickPosZ,
                     entity.rotationPitch, entity.rotationYaw);
         }
-
-        /***
-         *  The following is for checking permissions prior to teleport
-         *  since SGCraft doesn't respect the proper handling of teleporting
-         *  between dimension or within worlds
-         ***/
-
-        // Sponge API-7
-        // ToDo: Better Sponge compatibility
-        // ToDo: For some reason I am getting here twice if the player walks normally through the gate.
-        // If the player approaches slowly the double trigger does not appear.
-
-        if (entity instanceof EntityPlayerMP) {
-            Player spongePlayer = (Player) entity;
-            if (spongePlayer != null) {
-                MinecraftServer server = BaseUtils.getMinecraftServer();
-                WorldServer newWorld = server.getWorld(dimension);
-                if (!spongePlayer.hasPermission("sgcraft.worlds." + newWorld.getWorldInfo().getWorldName())) {
-                    if (!messagesQueue.contains(spongePlayer.getUniqueId())) {
-                        spongePlayer.sendMessage(Text.of(TextColors.RED, "SGCraft - Teleport permission denied."));
-                        messagesQueue.add(spongePlayer.getUniqueId());
-                        Sponge.getScheduler().createTaskBuilder().delayTicks(10).execute(clearMessageQueue(spongePlayer)).submit(SGCraft.mod);
-                    }
-                    if (debugTeleport) {
-                        System.out.println("SGCraft: - TeleportEntity denied for: " + spongePlayer.getName() + " to world: " + newWorld.getWorldInfo().getWorldName());
-                        System.out.println("SGCraft: - Player lacks permission: sgcraft.worlds." + newWorld.getWorldInfo().getWorldName());
-                    }
-                    return null;
-                }
-            }
-        }
-        // End Sponge API-7
-
         Vector3 p = t1.ip(entity.posX, entity.posY, entity.posZ); // local position
         Vector3 v = t1.iv(entity.motionX, entity.motionY, entity.motionZ); // local velocity
         Vector3 r = t1.iv(yawVector(entity)); // local facing
@@ -1277,6 +1238,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (debugTeleport)
             System.out.printf("SGBaseTE.teleportEntity: new yaw %.2f\n", a);
         if (!destBlocked) {
+            playTeleportSound(entity.getEntityWorld(), new Vector3(entity.getPositionVector()), entity);
             if (entity.dimension == dimension)
                 newEntity = teleportWithinDimension(entity, q, u, a, destBlocked);
             else {
@@ -1292,12 +1254,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
         else {
             terminateEntityByIrisImpact(entity);
-            playIrisHitSound(worldForDimension(dimension), q, entity);
+            playIrisHitSound(SGAddressing.getWorld(dimension), q, entity);
         }
         return newEntity;
     }
 
-    static void terminateEntityByIrisImpact(Entity entity) {
+    void terminateEntityByIrisImpact(Entity entity) {
         if (entity instanceof EntityPlayer) {
             terminatePlayerByIrisImpact((EntityPlayer)entity);
         } else {
@@ -1305,7 +1267,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    static void terminatePlayerByIrisImpact(EntityPlayer player) {
+    void terminatePlayerByIrisImpact(EntityPlayer player) {
         if (player.capabilities.isCreativeMode)
             sendErrorMsg(player, "irisAtDestination");
         else {
@@ -1315,33 +1277,37 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    static WorldServer worldForDimension(int dimension) {
-        return SGAddressing.getWorld(dimension);
-    }
-
-    static void playIrisHitSound(World world, Vector3 pos, Entity entity) {
-        double volume = min(entity.width * entity.height, 1.0);
-        double pitch = 2.0 - volume;
+    void playIrisHitSound(World world, Vector3 pos, Entity entity) {
+        float volume = (float) min(entity.width * entity.height, 1.0);
+        float pitch = 2F - volume;
         if (debugTeleport)
             System.out.printf("SGBaseTE.playIrisHitSound: at (%.3f,%.3f,%.3f) volume %.3f pitch %.3f\n", pos.x, pos.y, pos.z, volume, pitch);
-        world.playSound(pos.x, pos.y, pos.z, irisHitSound, SoundCategory.NEUTRAL, (float)volume, (float)pitch, false);
+        playSoundEffect(world, pos.x, pos.y, pos.z, irisHitSound, volume * soundVolume, pitch);
     }
 
-    static Entity teleportWithinDimension(Entity entity, Vector3 p, Vector3 v, double a, boolean destBlocked) {
+    void playTeleportSound(World world, Vector3 pos, Entity entity) {
+        float volume = (float) min(entity.width * entity.height, 1.0);
+        float pitch = 2F - volume;
+        if (debugTeleport)
+            System.out.printf("SGBaseTE.playTeleportSound: at (%.3f,%.3f,%.3f) volume %.3f pitch %.3f\n", pos.x, pos.y, pos.z, volume, pitch);
+        playSoundEffect(world, pos.x, pos.y, pos.z, teleportSound, volume * soundVolume, pitch);
+    }
+
+    Entity teleportWithinDimension(Entity entity, Vector3 p, Vector3 v, double a, boolean destBlocked) {
         if (entity instanceof EntityPlayerMP)
             return teleportPlayerWithinDimension((EntityPlayerMP)entity, p, v, a);
         else
             return teleportEntityToWorld(entity, p, v, a, (WorldServer)entity.world, destBlocked);
     }
 
-    static Entity teleportPlayerWithinDimension(EntityPlayerMP entity, Vector3 p, Vector3 v, double a) {
+    Entity teleportPlayerWithinDimension(EntityPlayerMP entity, Vector3 p, Vector3 v, double a) {
         entity.rotationYaw = (float)a;
         entity.setPositionAndUpdate(p.x, p.y, p.z);
         entity.world.updateEntityWithOptionalForce(entity, false);
         return entity;
     }
 
-    static Entity teleportToOtherDimension(Entity entity, Vector3 p, Vector3 v, double a, int dimension, boolean destBlocked) {
+    Entity teleportToOtherDimension(Entity entity, Vector3 p, Vector3 v, double a, int dimension, boolean destBlocked) {
         if (entity instanceof EntityPlayerMP) {
             EntityPlayerMP player = (EntityPlayerMP)entity;
             Vector3 q = p.add(yawVector(a));
@@ -1352,7 +1318,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    static void sendDimensionRegister(EntityPlayerMP player, int dimensionID) {
+    void sendDimensionRegister(EntityPlayerMP player, int dimensionID) {
         DimensionType providerID = DimensionManager.getProviderType(dimensionID);
         ForgeMessage msg = new ForgeMessage.DimensionRegisterMessage(dimensionID, providerID.toString());
         FMLEmbeddedChannel channel = NetworkRegistry.INSTANCE.getChannel("FORGE", Side.SERVER);
@@ -1362,13 +1328,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
 
-    static void transferPlayerToDimension(EntityPlayerMP player, int newDimension, Vector3 p, double a) {
+    void transferPlayerToDimension(EntityPlayerMP player, int newDimension, Vector3 p, double a) {
         //System.out.printf("SGBaseTE.transferPlayerToDimension: %s to dimension %d\n", repr(player), newDimension);
         MinecraftServer server = BaseUtils.getMinecraftServer();
         PlayerList scm = server.getPlayerList();
-        // Sponge API-7 -> Generate Teleport Event FROM
-        Transform<org.spongepowered.api.world.World> fromTransform = ((IMixinEntity)player).getTransform();
-        // End Sponge API-7
         int oldDimension = player.dimension;
         player.dimension = newDimension;
         WorldServer oldWorld = server.getWorld(oldDimension);
@@ -1400,23 +1363,17 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
         player.connection.sendPacket(new SPacketSetExperience(player.experience, player.experienceTotal, player.experienceLevel));
         FMLCommonHandler.instance().firePlayerChangedDimensionEvent(player, oldDimension, newDimension);
-        // Sponge API-7 -> Generate Teleport Event TO
-        Transform<org.spongepowered.api.world.World> toTransform = ((IMixinEntity)player).getTransform();
-        // Fire Fake event to allow for GUI update.
-        MoveEntityEvent.Teleport event = EntityUtil.handleDisplaceEntityTeleportEvent(player,fromTransform, toTransform);
-        // End Sponge API-7
-
         //System.out.printf("SGBaseTE.transferPlayerToDimension: Transferred %s\n", repr(player));
     }
 
-    static Entity teleportEntityToDimension(Entity entity, Vector3 p, Vector3 v, double a, int dimension, boolean destBlocked) {
+    Entity teleportEntityToDimension(Entity entity, Vector3 p, Vector3 v, double a, int dimension, boolean destBlocked) {
         //System.out.printf("SGBaseTE.teleportEntityToDimension: %s to dimension %d\n", repr(entity), dimension);
         MinecraftServer server = BaseUtils.getMinecraftServer();
         WorldServer world = server.getWorld(dimension);
         return teleportEntityToWorld(entity, p, v, a, world, destBlocked);
     }
 
-    static Entity teleportEntityToWorld(Entity oldEntity, Vector3 p, Vector3 v, double a, WorldServer newWorld, boolean destBlocked) {
+    Entity teleportEntityToWorld(Entity oldEntity, Vector3 p, Vector3 v, double a, WorldServer newWorld, boolean destBlocked) {
         if (debugTeleport)
             System.out.printf("SGBaseTE.teleportEntityToWorld: %s to %s, destBlocked = %s\n", repr(oldEntity), newWorld, destBlocked);
         WorldServer oldWorld = (WorldServer)oldEntity.world;
@@ -1477,7 +1434,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         entity.motionZ = v.z;
     }
 
-    static void extractEntityFromWorld(World world, Entity entity) {
+    void extractEntityFromWorld(World world, Entity entity) {
         // Immediately remove entity from world without calling setDead(), which has
         // undesirable side effects on some entities.
         if (entity instanceof EntityPlayer) {
@@ -1487,34 +1444,34 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         int i = entity.chunkCoordX;
         int j = entity.chunkCoordZ;
         if (entity.addedToChunk && ((ChunkProviderServer)world.getChunkProvider()).chunkExists(i, j))
-            world.getChunkFromChunkCoords(i, j).removeEntity(entity);
+            world.getChunk(i, j).removeEntity(entity);
         world.loadedEntityList.remove(entity);
         //BaseReflectionUtils.call(world, onEntityRemoved, entity);
         world.onEntityRemoved(entity);
     }
 
-    static void checkChunk(World world, Entity entity) {
+    void checkChunk(World world, Entity entity) {
         int cx = MathHelper.floor(entity.posX / 16.0D);
         int cy = MathHelper.floor(entity.posZ / 16.0D);
-        Chunk chunk = world.getChunkFromChunkCoords(cx, cy);
+        Chunk chunk = world.getChunk(cx, cy);
     }
 
-    protected static int yawSign(Entity entity) {
+    protected int yawSign(Entity entity) {
         return entity instanceof EntityArrow ? -1 : 1;
     }
 
-    static Vector3 yawVector(Entity entity) {
+    Vector3 yawVector(Entity entity) {
         return yawVector(yawSign(entity) * entity.rotationYaw);
     }
 
-    static Vector3 yawVector(double yaw) {
+    Vector3 yawVector(double yaw) {
         double a = Math.toRadians(yaw);
         Vector3 v = new Vector3(-Math.sin(a), 0, Math.cos(a));
         //System.out.printf("SGBaseTE.yawVector: %.2f --> (%.3f, %.3f)\n", yaw, v.x, v.z);
         return v;
     }
 
-    static double yawAngle(Vector3 v, Entity entity) {
+    double yawAngle(Vector3 v, Entity entity) {
         double a = Math.atan2(-v.x, v.z);
         double d = Math.toDegrees(a);
         //System.out.printf("SGBaseTE.yawAngle: (%.3f, %.3f) --> %.2f\n", v.x, v.z, d);
@@ -1821,16 +1778,14 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     static int rdx[] = {1, 0, -1, 0};
     static int rdz[] = {0, -1, 0, 1};
 
-    // Find locations of tile entities that could connect to the stargate ring.
-    // TODO: Cache this
-    public Collection<BlockRef> adjacentTiles() {
-        Collection<BlockRef> result = new ArrayList<>();
+    public Collection<TileEntity> adjacentTiles() {
+        Collection<TileEntity> result = new ArrayList<>();
         Trans3 t = localToGlobalTransformation();
         for (int i = -2; i <= 2; i++) {
             BlockPos bp = t.p(i, -1, 0).blockPos();
             TileEntity te = getWorldTileEntity(world, bp);
             if (te != null)
-                result.add(new BlockRef(te));
+                result.add(te);
         }
         return result;
     }
@@ -1844,8 +1799,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     void rebroadcastNetworkPacket(Object packet) {
-        for (BlockRef ref : adjacentTiles()) {
-            TileEntity te = ref.getTileEntity();
+        for (TileEntity te : adjacentTiles()) {
             if (te instanceof SGInterfaceTE)
                 ((SGInterfaceTE)te).rebroadcastNetworkPacket(packet);
         }
@@ -1864,8 +1818,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     void postEvent(String name, Object... args) {
         //System.out.printf("SGBaseTE.postEvent: %s from (%s,%s,%s)\n", name,
         //  xCoord, yCoord, zCoord);
-        for (BlockRef b : adjacentTiles()) {
-            TileEntity te = b.getTileEntity();
+        for (TileEntity te : adjacentTiles()) {
             if (te instanceof IComputerInterface) {
                 //System.out.printf("SGBaseTE.postEvent: to TE at (%s,%s,%s)\n",
                 //  b.xCoord, b.yCoord, b.zCoord);
@@ -1878,7 +1831,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return sgStateDescription(state);
     }
 
-    static String sgStateDescription(SGState state) {
+    String sgStateDescription(SGState state) {
         switch (state) {
             case Idle: return "Idle";
             case Dialing:
@@ -1895,7 +1848,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return irisStateDescription(irisState);
     }
 
-    static String irisStateDescription(IrisState state) {
+    String irisStateDescription(IrisState state) {
         return state.toString();
     }
 
@@ -1909,27 +1862,5 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     public static double getBaseMaxEnergyBuffer() {
         return SGBaseTE.maxEnergyBuffer;
-    }
-}
-
-//------------------------------------------------------------------------------------------------
-
-class BlockRef {
-    public IBlockAccess world;
-    BlockPos pos;
-
-    public BlockRef(TileEntity te) {
-        this(te.getWorld(), te.getPos());
-    }
-
-    public BlockRef(IBlockAccess world, BlockPos pos) {
-        this.world = world;
-        this.pos = pos;
-    }
-
-    public TileEntity getTileEntity() {
-        if (world == null || pos == null)
-            return null;
-        return world.getTileEntity(pos);
     }
 }
