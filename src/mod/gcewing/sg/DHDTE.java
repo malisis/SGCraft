@@ -75,7 +75,7 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
             if (enteredAddress.length() < gate.getNumChevrons()) {
                 enteredAddress += symbol;
                 boolean fastLockChevron = false;
-                if (player != null && !player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().item.equals(SGCraft.gdo)) {
+                if (player != null && !player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().getItem().equals(SGCraft.gdo)) {
                     fastLockChevron = true;
                 }
                 if (fastLockChevron) {
@@ -97,7 +97,7 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
                 enteredAddress = enteredAddress.substring(0, enteredAddress.length() - 1);
                 //if (SGBaseTE.immediateDHDGateDial) {
                 boolean fastLockChevron = false;
-                if (player != null && !player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().item.equals(SGCraft.gdo)) {
+                if (player != null && !player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().getItem().equals(SGCraft.gdo)) {
                     fastLockChevron = true;
                 }
                 if (fastLockChevron) {
