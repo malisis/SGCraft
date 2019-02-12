@@ -37,6 +37,8 @@ public class DHDScreen extends SGScreen {
     private int dhdTop, dhdCentreX, dhdCentreY;
     private int closingDelay = 0;
     private int addressLength;
+
+    private boolean debugDialing = false;
     
     public DHDScreen(EntityPlayer player, World world, BlockPos pos) {
         this.world = world;
@@ -189,7 +191,9 @@ public class DHDScreen extends SGScreen {
     }
     
     private void sendConnectOrDisconnect(SGBaseTE te, String address) {
-        System.out.println("dial address: " + address);
+        if (debugDialing) {
+            System.out.println("dial address: " + address);
+        }
         SGChannel.sendConnectOrDisconnectToServer(te, address);
         closeAfterDelay(10);
     }
