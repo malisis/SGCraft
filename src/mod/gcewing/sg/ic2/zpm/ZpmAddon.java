@@ -11,7 +11,7 @@ import java.text.DecimalFormat;
 public class ZpmAddon {
 
     // Note: The following code has been added for support with specific added methods within SGBaseTE.
-    final static boolean debugAddon = true;
+    final static boolean debugAddon = false;
     final static DecimalFormat dFormat = new DecimalFormat("###,###,###,##0");
 
     // Todo:  make this entire lookup configurable via Config instead of this static lookup.
@@ -84,7 +84,7 @@ public class ZpmAddon {
             if (nte != null) {
                 if (nte instanceof ZpmInterfaceCartTE) {
                     if (debugAddon) {
-                        //System.out.printf("SGBaseTE.zpmInterfaceCartNear: %s at %s\n", nte, nearPos);
+                        System.out.printf("SGBaseTE.zpmInterfaceCartNear: %s at %s\n", nte, nearPos);
                         zpmPower = ((ISGEnergySource) nte).totalAvailableEnergy();
                     }
                     break;
