@@ -49,7 +49,6 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.ITickable;
-import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
@@ -98,7 +97,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     static boolean debugConnect = false;
     static boolean debugTransientDamage = false;
     static boolean debugTeleport = false;
-    static boolean debugZPM = false;
+    static boolean debugZPM = true;
     final static DecimalFormat dFormat = new DecimalFormat("###,###,###,##0");
 
     static SoundEvent
@@ -223,6 +222,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     // Retain current irisState prior to opening
     public boolean wasIrisClosed = false;
+
+    // Gate Type
+    public int gateType = 1; //1 = Milky way 2 = Pegasus
+
 
     double ehGrid[][][];
     private static Set<UUID> messagesQueue = Sets.newHashSet();
@@ -423,6 +426,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         redstoneInput = nbt.getBoolean("redstoneInput");
         homeAddress = getStringOrNull(nbt, "address");
         addressError = nbt.getString("addressError");
+        gateType = nbt.getInteger("gateType");
 
         if (oldState != state && state == SGState.Connected && world.isRemote) {
             SGCraft.playSound(this, eventHorizonSound);
@@ -467,6 +471,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (addressError != null) {
             nbt.setString("addressError", addressError);
         }
+        nbt.setInteger("gateType", gateType);
 
         return nbt;
     }
@@ -681,7 +686,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     String connect(String address, EntityPlayer player, boolean immediate, boolean openIris) {
-        debugEnergyUse = false;
         if (state != SGState.Idle) {
             return diallingFailure(player, "selfBusy");
         }
@@ -728,7 +732,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         // Zpm
         String originName = this.getWorld().getWorldInfo().getWorldName().toLowerCase();
         String destinationName = targetGate.getWorld().getWorldInfo().getWorldName().toLowerCase();
-        if (ZpmAddon.worldRequiresZPM(originName, destinationName)) {
+
+        if (ZpmAddon.routeRequiresZpm(originName, destinationName)) {
             long power = (long) ZpmAddon.zpmPowerAvailable(world, this.pos, 4, false);
             if (!(power > 0)) {
                 return diallingFailure(player, "zpmNotFound");
@@ -745,7 +750,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             this.destinationRequiresZPM = false;
         }
 
-        if (debugEnergyUse) {
+        if (debugEnergyUse || debugZPM) {
             System.out.println("-------------------   Power Usage Debug   --------------------------");
             System.out.println("EnergyPerFuelItem: " + dFormat.format(energyPerFuelItem));
             System.out.println("Gate Openings Per Fuel: " + gateOpeningsPerFuelItem);
@@ -753,19 +758,22 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             System.out.println("--------------------------------------------------------------------");
             System.out.println("IC2 Energy to Open with Distance Factor: " + dFormat.format((energyToOpen * distanceFactor) * SGCraft.Ic2euPerSGEnergyUnit));
             System.out.println("--------------------------------------------------------------------");
-            System.out.println("Energy to Open: " + dFormat.format(energyToOpen));
-            System.out.println("Distance Factor: " + dFormat.format(distanceFactor));
-            System.out.println("Destination require ZPM: " + this.destinationRequiresZPM);
-            System.out.println("ZPM Multiplier: " + ZpmAddon.worldZpmMultiplier(originName, destinationName));
+            System.out.println("ZPM Required: " + this.destinationRequiresZPM);
+            System.out.println("ZPM Multiplier: " + ZpmAddon.routeZpmMultiplier(originName, destinationName));
             System.out.println("--------------------------------------------------------------------");
+            System.out.println("Energy to Open: " + energyToOpen);
+            System.out.println("Distance Factor: " + distanceFactor);
+            System.out.println("--------------------------------------------------------------------");
+            System.out.println("Energy Available: " + availableEnergy());
+            System.out.println("Energy Required: " + (energyToOpen * distanceFactor));
+            System.out.println("Energy per Tick: " + energyUsePerTick);
+            System.out.println("Energy Used per Tick: " + (energyUsePerTick * distanceFactor));
+            System.out.println("--------------------------------------------------------------------");
+            this.gateType = 2;
         }
 
         // Final Power check before dial
         if (!energyIsAvailable(energyToOpen * distanceFactor)) {
-            if (debugEnergyUse) {
-                //System.out.println("SGBaseTE: Not enough energy: " + energyToOpen * distanceFactor);
-            }
-
             return diallingFailure(player, "insufficientEnergy");
         }
 
@@ -795,8 +803,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         targetGate.enterState(SGState.attemptToDial, 0); // Force remote gate immediate change state to help chunk stay loaded
         targetGate.startDiallingStargate(homeAddress, this, false, immediate);
 
-
-
         return null;
     }
 
@@ -815,17 +821,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         double f = 1 + 14 * distanceFactorMultiplier * lr * lr;
         if (te1.getWorld() != te2.getWorld()) {
             f *= distanceFactorMultiplier;
-            // Almura Start
-            // Todo: seperate this.
             String originName = te1.getWorld().getWorldInfo().getWorldName().toLowerCase();
             String destinationName = te2.getWorld().getWorldInfo().getWorldName().toLowerCase();
-            if (ZpmAddon.worldRequiresZPM(te1.getWorld().getWorldInfo().getWorldName().toLowerCase(), te2.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
-                f += ZpmAddon.worldZpmMultiplier(originName, destinationName);
-                if (debugEnergyUse) {
-                    System.out.println("distanceFactorForCoordDifference: calculated zpm multiplier: " + f);
-                }
+
+            if (ZpmAddon.routeRequiresZpm(te1.getWorld().getWorldInfo().getWorldName().toLowerCase(), te2.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
+                f += ZpmAddon.routeZpmMultiplier(originName, destinationName);
             }
-            // Almura End
         }
         return f;
     }
@@ -969,8 +970,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                         break;
                     case Dialling:
                         if (isInitiator) {
-                            char targetSymbol = dialledAddress.charAt(numEngagedChevrons);
-                            char ownSymbol = homeAddress.charAt(numEngagedChevrons);
+                            char charTargetSymbol = dialledAddress.charAt(numEngagedChevrons);
+                            char charOwnSymbol = homeAddress.charAt(numEngagedChevrons);
+                            String targetSymbol = Character.toString(charTargetSymbol);
+                            String ownSymbol = Character.toString(charOwnSymbol);
+                            // Note:  CC interfaces can't use CHAR!
                             finishDiallingSymbol(targetSymbol, true, true, !symbolsRemaining(true));
                             SGBaseTE targetGate = SGBaseTE.at(connectedLocation);
                             targetGate.finishDiallingSymbol(ownSymbol, false, true, !targetGate.symbolsRemaining(true));
@@ -1306,7 +1310,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         postEvent("sgChevronUnset", numEngagedChevrons, symbol);
     }
 
-    void finishDiallingSymbol(char symbol, boolean outgoing, boolean changeState, boolean lastOne) {
+    void finishDiallingSymbol(String symbol, boolean outgoing, boolean changeState, boolean lastOne) {
         ++numEngagedChevrons;
         postEvent("sgChevronEngaged", numEngagedChevrons, symbol);
 

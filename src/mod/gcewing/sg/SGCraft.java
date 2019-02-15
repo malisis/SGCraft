@@ -8,9 +8,11 @@ package gcewing.sg;
 
 import gcewing.sg.ic2.gdo.GDOItem;
 import gcewing.sg.ic2.zpm.ZPMItem;
+import gcewing.sg.ic2.zpm.ZPMMultiplierRegistry;
 import gcewing.sg.ic2.zpm.ZpmContainer;
 import gcewing.sg.ic2.zpm.ZpmInterfaceCart;
 import gcewing.sg.ic2.zpm.ZpmInterfaceCartTE;
+import gcewing.sg.villagers.TokraVillagerWorldRegistry;
 import gcewing.sg.oc.OCIntegration;
 import gcewing.sg.rf.RFIntegration;
 import net.minecraft.block.Block;
@@ -47,10 +49,15 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import ninja.leaping.configurate.ConfigurationNode;
 
 import static java.util.Objects.requireNonNull;
 import static net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerCareer;
 import static net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerProfession;
+
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Optional;
 
 // import dan200.computercraft.api.*; //[CC]
 
@@ -180,6 +187,24 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         useHDEventHorizionTexture = config.getBoolean("client", "useHDEventHorizonTexture", useHDEventHorizionTexture);
         saveAddressToClipboard = config.getBoolean("client", "saveAddressToClipboard", saveAddressToClipboard);
         displayGuiPowerDebug = config.getBoolean("client", "showPowerValuesOnGui", displayGuiPowerDebug);
+
+        // ZPM multiplier configuration loader
+        final ConfigurationNode rootNode;
+        try {
+            rootNode = ZPMMultiplierRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "zpm.yml"));
+            ZPMMultiplierRegistry.populateMultipliers(rootNode);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // Tokra Villager World configuration loader
+        final ConfigurationNode tokraNode;
+        try {
+            tokraNode = TokraVillagerWorldRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "tokra.yml"));
+            TokraVillagerWorldRegistry.populateTokraVillagerWorlds(tokraNode);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }       
 
     @Override

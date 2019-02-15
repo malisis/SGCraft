@@ -86,7 +86,12 @@ class SGBaseTERenderer extends BaseTileEntityRenderer {
 
     void renderStargate(SGBaseTE gate, float partialTicks) {
         BaseGLUtils.glMultMatrix(gate.localToGlobalTransformation(Vector3.zero));
-        bindTexture(SGCraft.mod.resourceLocation("textures/tileentity/stargate.png"));
+        if (gate.gateType <= 1) {
+            bindTexture(SGCraft.mod.resourceLocation("textures/tileentity/milkyway/stargate.png"));
+        } else {
+            bindTexture(SGCraft.mod.resourceLocation("textures/tileentity/pegasus/stargate.png"));
+        }
+
         glNormal3f(0, 1, 0);
         renderRing(ringMidRadius - ringOverlap, ringOuterRadius, RingType.Outer, ringZOffset);
         renderInnerRing(gate, partialTicks);
@@ -345,7 +350,11 @@ class SGBaseTERenderer extends BaseTileEntityRenderer {
     }       
     
     void renderIris(SGBaseTE te, double t) {
-        bindTexture(SGCraft.mod.resourceLocation("textures/tileentity/iris.png"));
+        if (te.gateType <= 1) {
+            bindTexture(SGCraft.mod.resourceLocation("textures/tileentity/milkyway/iris.png"));
+        } else {
+            bindTexture(SGCraft.mod.resourceLocation("textures/tileentity/pegasus/iris.png"));
+        }
         double a = 0.8 * te.getIrisAperture(t);
         for (int i = 0; i < numIrisBlades; i++) {
             glPushMatrix();
