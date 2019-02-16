@@ -20,7 +20,6 @@ import gcewing.sg.oc.OCIntegration;
 import gcewing.sg.oc.OCInterfaceTE;
 import gcewing.sg.oc.OCWirelessEndpoint;
 import gcewing.sg.rf.RFPowerTE;
-import io.netty.channel.ChannelFutureListener;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.block.state.IBlockState;
@@ -38,13 +37,8 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketEntityEffect;
-import net.minecraft.network.play.server.SPacketRespawn;
-import net.minecraft.network.play.server.SPacketSetExperience;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
-import net.minecraft.potion.PotionEffect;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.management.PlayerList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumActionResult;
@@ -52,34 +46,14 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraft.world.DimensionType;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.gen.ChunkProviderServer;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.common.network.ForgeMessage;
-import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.network.FMLEmbeddedChannel;
-import net.minecraftforge.fml.common.network.FMLOutboundHandler;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.relauncher.Side;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.spongepowered.api.Sponge;
-import org.spongepowered.api.entity.Transform;
-import org.spongepowered.api.entity.living.player.Player;
-import org.spongepowered.api.event.entity.MoveEntityEvent;
-import org.spongepowered.api.scheduler.Task;
-import org.spongepowered.api.text.Text;
-import org.spongepowered.api.text.format.TextColors;
-import org.spongepowered.common.entity.EntityUtil;
-import org.spongepowered.common.interfaces.entity.IMixinEntity;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -88,7 +62,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSoundSource {
 
@@ -1481,13 +1454,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return entity.world.getEntitiesWithinAABB(EntityLiving.class, box);
     }
 
-    // Sponge Addon
-    static Consumer<Task> clearMessageQueue(Player player) {
-        return task -> {
-            messagesQueue.remove(player.getUniqueId());
-        };
-    }
-
     Entity teleportEntity(Entity entity, Trans3 t1, Trans3 t2, int dimension, boolean destBlocked) {
         Entity newEntity = null;
         if (debugTeleport) {
@@ -1500,70 +1466,39 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     entity.rotationPitch, entity.rotationYaw);
         }
 
-        /***
-         *  The following is for checking permissions prior to teleport
-         *  since SGCraft doesn't respect the proper handling of teleporting
-         *  between dimension or within worlds
-         ***/
-
-        // ToDo: Better Sponge compatibility
-        // ToDo: For some reason I am getting here twice if the player walks normally through the gate.
-        // If the player approaches slowly the double trigger does not appear.
-
-        if (entity instanceof EntityPlayerMP) {
-            Player spongePlayer = (Player) entity;
-            if (spongePlayer != null) {
-                MinecraftServer server = BaseUtils.getMinecraftServer();
-                WorldServer newWorld = server.getWorld(dimension);
-                if (!spongePlayer.hasPermission("sgcraft.worlds." + newWorld.getWorldInfo().getWorldName())) {
-                    if (!messagesQueue.contains(spongePlayer.getUniqueId())) {
-                        spongePlayer.sendMessage(Text.of(TextColors.RED, "SGCraft - Teleport permission denied."));
-                        messagesQueue.add(spongePlayer.getUniqueId());
-                        Sponge.getScheduler().createTaskBuilder().delayTicks(10).execute(clearMessageQueue(spongePlayer)).submit(SGCraft.mod);
-                    }
-                    if (debugTeleport) {
-                        System.out.println("SGCraft: - TeleportEntity denied for: " + spongePlayer.getName() + " to world: " + newWorld.getWorldInfo().getWorldName());
-                        System.out.println("SGCraft: - Player lacks permission: sgcraft.worlds." + newWorld.getWorldInfo().getWorldName());
-                    }
-                    return null;
-                }
-            }
-        }
-
         Vector3 p = t1.ip(entity.posX, entity.posY, entity.posZ); // local position
         Vector3 v = t1.iv(entity.motionX, entity.motionY, entity.motionZ); // local velocity
         Vector3 r = t1.iv(yawVector(entity)); // local facing
         Vector3 q = t2.p(-p.x, p.y, -p.z); // new global position
         Vector3 u = t2.v(-v.x, v.y, -v.z); // new global velocity
         Vector3 s = t2.v(r.mul(-1)); // new global facing
-        if (debugTeleport)
+        if (debugTeleport) {
             System.out.printf("SGBaseTE.teleportEntity: Facing old %s new %s\n", r, s);
+        }
+
         double a = yawAngle(s, entity); // new global yaw angle
-        if (debugTeleport)
+
+        if (debugTeleport) {
             System.out.printf("SGBaseTE.teleportEntity: new yaw %.2f\n", a);
+        }
+
+        System.out.println("Firing this event");
+
         if (!destBlocked) {
             // Play sound from point of origin gate.
             playTeleportSound(entity.getEntityWorld(), new Vector3(entity.getPositionVector()), entity);
-            if (entity.dimension == dimension)
-                newEntity = teleportWithinDimension(entity, q, u, a, destBlocked);
-            else {
-                newEntity = teleportToOtherDimension(entity, q, u, a, dimension, destBlocked);
-                if (newEntity != null) {
-                    newEntity.dimension = dimension;
-                }
-                //else
-                //  System.out.printf("SGBaseTE.teleportEntity: teleportToOtherDimension returned null for %s\n",
-                //      entity);
+            if (entity.dimension == dimension) {
+                teleportWithinDimension(entity, q, u, a, destBlocked);
+            } else {
+                teleportToOtherDimension(entity, q, u, a, dimension, destBlocked);
             }
-            //if (entity != newEntity)
-            //  System.out.printf("SGBaseTE.teleportEntity: %s is now %s\n", repr(entity), repr(newEntity));
         } else {
             terminateEntityByIrisImpact(entity);
             playIrisHitSound(worldForDimension(dimension), q, entity);
         }
         // Play sound at destination gate.
         playTeleportSound(entity.getEntityWorld(), new Vector3(entity.getPositionVector()), entity);
-        return newEntity;
+        return entity;
     }
 
     static void terminateEntityByIrisImpact(Entity entity) {
@@ -1632,53 +1567,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    void sendDimensionRegister(EntityPlayerMP player, int dimensionID) {
-        DimensionType providerID = DimensionManager.getProviderType(dimensionID);
-        ForgeMessage msg = new ForgeMessage.DimensionRegisterMessage(dimensionID, providerID.toString());
-        FMLEmbeddedChannel channel = NetworkRegistry.INSTANCE.getChannel("FORGE", Side.SERVER);
-        channel.attr(FMLOutboundHandler.FML_MESSAGETARGET).set(FMLOutboundHandler.OutboundTarget.PLAYER);
-        channel.attr(FMLOutboundHandler.FML_MESSAGETARGETARGS).set(player);
-        channel.writeAndFlush(msg).addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
-    }
-
-
     void transferPlayerToDimension(EntityPlayerMP player, int newDimension, Vector3 p, double a) {
-        //System.out.printf("SGBaseTE.transferPlayerToDimension: %s to dimension %d\n", repr(player), newDimension);
-        MinecraftServer server = BaseUtils.getMinecraftServer();
-        PlayerList scm = server.getPlayerList();
-        // Sponge Addon -> Generate Teleport Event FROM
-        Transform<org.spongepowered.api.world.World> fromTransform = ((IMixinEntity)player).getTransform();
-        int oldDimension = player.dimension;
-        player.dimension = newDimension;
-        WorldServer oldWorld = server.getWorld(oldDimension);
-        WorldServer newWorld = server.getWorld(newDimension);
+        player.changeDimension(newDimension);
 
-        sendDimensionRegister(player, newDimension);
-
-        player.closeScreen();
-        player.connection.sendPacket(new SPacketRespawn(player.dimension,
-                player.world.getDifficulty(), newWorld.getWorldInfo().getTerrainType(),
-                player.interactionManager.getGameType()));
-        oldWorld.removeEntityDangerously(player); // Removes player right now instead of waiting for next tick
-        player.isDead = false;
-        player.setLocationAndAngles(p.x, p.y, p.z, (float)a, player.rotationPitch);
-        newWorld.spawnEntity(player);
-        player.setWorld(newWorld);
-        scm.preparePlayer(player, oldWorld);
-        player.connection.setPlayerLocation(p.x, p.y, p.z, (float)a, player.rotationPitch);
-        player.interactionManager.setWorld(newWorld);
-        scm.updateTimeAndWeatherForPlayer(player, newWorld);
-        scm.syncPlayerInventory(player);
-        for (PotionEffect effect : player.getActivePotionEffects()) {
-            player.connection.sendPacket(new SPacketEntityEffect(player.getEntityId(), effect));
+        // Now check to see if the player made it through the above server method, if it did, then update their location.
+        if (player.dimension == newDimension) {
+            player.connection.setPlayerLocation(p.x, p.y, p.z, (float) a, player.rotationPitch);
         }
-        player.connection.sendPacket(new SPacketSetExperience(player.experience, player.experienceTotal, player.experienceLevel));
-        FMLCommonHandler.instance().firePlayerChangedDimensionEvent(player, oldDimension, newDimension);
-        // Sponge Addon -> Generate Teleport Event TO
-        Transform<org.spongepowered.api.world.World> toTransform = ((IMixinEntity)player).getTransform();
-        // Fire Fake event to allow for GUI update.
-        MoveEntityEvent.Teleport event = EntityUtil.handleDisplaceEntityTeleportEvent(player,fromTransform, toTransform);
-        //System.out.printf("SGBaseTE.transferPlayerToDimension: Transferred %s\n", repr(player));
     }
 
     Entity teleportEntityToDimension(Entity entity, Vector3 p, Vector3 v, double a, int dimension, boolean destBlocked) {
@@ -1688,87 +1583,20 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return teleportEntityToWorld(entity, p, v, a, world, destBlocked);
     }
 
-    Entity teleportEntityToWorld(Entity oldEntity, Vector3 p, Vector3 v, double a, WorldServer newWorld, boolean destBlocked) {
-        if (debugTeleport)
-            System.out.printf("SGBaseTE.teleportEntityToWorld: %s to %s, destBlocked = %s\n", repr(oldEntity), newWorld, destBlocked);
-        WorldServer oldWorld = (WorldServer)oldEntity.world;
-        NBTTagCompound nbt = new NBTTagCompound();
-        oldEntity.writeToNBT(nbt);
-        extractEntityFromWorld(oldWorld, oldEntity);
+    Entity teleportEntityToWorld(Entity entity, Vector3 p, Vector3 v, double a, WorldServer newWorld, boolean destBlocked) {
+
         if (destBlocked) {
-            if (!(oldEntity instanceof EntityLivingBase))
+            if (!(entity instanceof EntityLivingBase))
                 return null;
         }
-        Entity newEntity = instantiateEntityFromNBT(oldEntity.getClass(), nbt, newWorld);
-        if (newEntity != null) {
-            if (oldEntity instanceof EntityLiving)
-                copyMoreEntityData((EntityLiving)oldEntity, (EntityLiving)newEntity);
-            setVelocity(newEntity, v);
-            newEntity.setLocationAndAngles(p.x, p.y, p.z, (float)a, oldEntity.rotationPitch);
-            checkChunk(newWorld, newEntity);
-            //System.out.printf("SGBaseTE.teleportEntityToWorld: Spawning %s in %s\n", repr(newEntity), newWorld);
-            newEntity.forceSpawn = true; // Force spawn packet to be sent as soon as possible
-            newWorld.spawnEntity(newEntity);
-            newEntity.setWorld(newWorld);
-            if (debugTeleport)
-                System.out.printf(
-                        "SGBaseTE.teleportEntityToWorld: Spawned %s pos (%.2f, %.2f, %.2f) vel (%.2f, %.2f, %.2f) pitch %.2f (%.2f) yaw %.2f (%.2f)\n",
-                        repr(newEntity),
-                        newEntity.posX, newEntity.posY, newEntity.posZ,
-                        newEntity.motionX, newEntity.motionY, newEntity.motionZ,
-                        newEntity.rotationPitch, newEntity.prevRotationPitch,
-                        newEntity.rotationYaw, newEntity.prevRotationYaw);
+
+        entity.changeDimension(newWorld.provider.getDimension());
+
+        // Now check to see if the entity made it through the above server method, if it did, then update their location.
+        if (entity.dimension == newWorld.provider.getDimension()) {
+            entity.setLocationAndAngles(p.x, p.y, p.z, (float) a, entity.rotationPitch);
         }
-        oldWorld.resetUpdateEntityTick();
-        if (oldWorld != newWorld)
-            newWorld.resetUpdateEntityTick();
-        return newEntity;
-    }
-
-    static Entity instantiateEntityFromNBT(Class cls, NBTTagCompound nbt, WorldServer world) {
-        try {
-            Entity entity = (Entity)cls.getConstructor(World.class).newInstance(world);
-            entity.readFromNBT(nbt);
-            return entity;
-        } catch (Exception e) {
-            System.out.printf("SGCraft: SGBaseTE.instantiateEntityFromNBT: Could not instantiate %s: %s\n", cls, e);
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    static void copyMoreEntityData(EntityLiving oldEntity, EntityLiving newEntity) {
-        float s = oldEntity.getAIMoveSpeed();
-        if (s != 0)
-            newEntity.setAIMoveSpeed(s);
-    }
-
-    static void setVelocity(Entity entity, Vector3 v) {
-        entity.motionX = v.x;
-        entity.motionY = v.y;
-        entity.motionZ = v.z;
-    }
-
-    void extractEntityFromWorld(World world, Entity entity) {
-        // Immediately remove entity from world without calling setDead(), which has
-        // undesirable side effects on some entities.
-        if (entity instanceof EntityPlayer) {
-            world.playerEntities.remove(entity);
-            world.updateAllPlayersSleepingFlag();
-        }
-        int i = entity.chunkCoordX;
-        int j = entity.chunkCoordZ;
-        if (entity.addedToChunk && ((ChunkProviderServer)world.getChunkProvider()).chunkExists(i, j))
-            world.getChunk(i, j).removeEntity(entity);
-        world.loadedEntityList.remove(entity);
-        //BaseReflectionUtils.call(world, onEntityRemoved, entity);
-        world.onEntityRemoved(entity);
-    }
-
-    void checkChunk(World world, Entity entity) {
-        int cx = MathHelper.floor(entity.posX / 16.0D);
-        int cy = MathHelper.floor(entity.posZ / 16.0D);
-        Chunk chunk = world.getChunk(cx, cy);
+        return entity;
     }
 
     protected static int yawSign(Entity entity) {
