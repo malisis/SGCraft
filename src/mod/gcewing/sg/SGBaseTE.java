@@ -70,7 +70,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     static boolean debugConnect = false;
     static boolean debugTransientDamage = false;
     static boolean debugTeleport = false;
-    static boolean debugZPM = true;
+    static boolean debugZPM = false;
     final static DecimalFormat dFormat = new DecimalFormat("###,###,###,##0");
 
     static SoundEvent
@@ -742,7 +742,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             System.out.println("Energy per Tick: " + energyUsePerTick);
             System.out.println("Energy Used per Tick: " + (energyUsePerTick * distanceFactor));
             System.out.println("--------------------------------------------------------------------");
-            this.gateType = 2;
         }
 
         // Final Power check before dial
