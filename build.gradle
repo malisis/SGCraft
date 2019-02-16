@@ -21,32 +21,14 @@ buildscript {
     }
 }
 
-// Gradle default tasks
-defaultTasks 'build', 'install'
-
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'org.spongepowered.mixin'
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
-
-archivesBaseName = project.name.toLowerCase()
-
-minecraft {
-    version = "1.12.2-14.23.5.2768"
-    runDir = "run"
-    mappings = 'snapshot_20180808'
-    useDepAts = true
-    makeObfSourceJar = false
-}
 
 mixin {
     add sourceSets.main, "mixins.sgcraft.refmap.json"
 }
-
-deobfMcMCP { failOnAtError = false }
-deobfMcSRG { failOnAtError = false }
 
 jar {
     manifest.attributes(
@@ -57,6 +39,8 @@ jar {
     )
     classifier = 'original'
 }
+
+archivesBaseName = jarName
 
 repositories {
     maven { url = "http://files.minecraftforge.net/maven" } // spongeforge
@@ -82,19 +66,21 @@ dependencies {
     }
 }
 
-if (JavaVersion.current().isJava8Compatible() || JavaVersion.current().isJava9Compatible()) {
-    tasks.withType(Javadoc) {
-        // disable the crazy super-strict doclint tool in Java 8
-        options.addStringOption('Xdoclint:none', '-quiet')
-    }
+deobfMcMCP { failOnAtError = false }
+deobfMcSRG { failOnAtError = false }
+
+minecraft {
+    version = "1.12.2-14.23.5.2768"
+    runDir = "run"
+    mappings = 'snapshot_20180808'
+    useDepAts = true
+    makeObfSourceJar = false
 }
 
-compileJava {
-    options.compilerArgs += [
-            '-Xlint:-processing',
-    ]
-    options.deprecation = false
-    options.encoding = 'utf8'
+sourceSets.main {
+    compileClasspath += files("lib")
+    java.srcDirs "src/base", "src/mod"
+    resources.srcDirs "src/resources"
 }
 
 processResources {
@@ -106,8 +92,11 @@ processResources {
     // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
+
+        // replace version and mcversion
+        expand 'version':project.version, 'mcversion':project.minecraft.version, 'modid':project.jarName
     }
-        
+
     // copy everything else, thats not the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
@@ -125,6 +114,7 @@ shadowJar {
     dependencies {
         include dependency('org.spongepowered:configurate-core')
         include dependency('org.spongepowered:configurate-yaml')
+        include dependency('org.yaml:snakeyaml')
         include dependency('org.spongepowered:mixin')
     }
     afterEvaluate {
@@ -135,11 +125,3 @@ shadowJar {
 artifacts {
     archives shadowJar
 }
-
-sourceSets.main {
-	compileClasspath += files("lib")
-	java.srcDirs "src/base", "src/mod"
-	resources.srcDirs "src/resources"
-}
-
-

@@ -11,6 +11,6 @@
     "logoFile": "",
     "screenshots": [],
     "dependencies": [],
-    "requiredMods": ["forge@14.23.5.2768", "spongeforge@7.1.6-RC3566", "IC2@2.8.96-ex112", "malisiscore@1.12.2-6.4.2"]
+    "requiredMods": ["forge@14.23.5.2768", "IC2@2.8.96-ex112", "malisiscore@1.12.2-6.4.2"]
   }
 ]
