@@ -15,19 +15,38 @@ buildscript {
         }
     }
     dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
         classpath 'org.spongepowered:mixingradle:0.6+'
     }
 }
 
+// Gradle default tasks
+defaultTasks 'build', 'install'
+
 apply plugin: 'net.minecraftforge.gradle.forge'
+apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'org.spongepowered.mixin'
 
-sourceSets {
-    main {
-        refMap = "mixins.sgcraft.refmap.json"
-    }
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+archivesBaseName = project.name.toLowerCase()
+
+minecraft {
+    version = "1.12.2-14.23.5.2768"
+    runDir = "run"
+    mappings = 'snapshot_20180808'
+    useDepAts = true
+    makeObfSourceJar = false
 }
+
+mixin {
+    add sourceSets.main, "mixins.sgcraft.refmap.json"
+}
+
+deobfMcMCP { failOnAtError = false }
+deobfMcSRG { failOnAtError = false }
 
 jar {
     manifest.attributes(
@@ -36,9 +55,8 @@ jar {
             'FMLCorePluginContainsFMLMod': 'true',
             'ForceLoadAsMod': true
     )
+    classifier = 'original'
 }
-
-archivesBaseName = jarName
 
 repositories {
     maven { url = "http://files.minecraftforge.net/maven" } // spongeforge
@@ -53,10 +71,9 @@ repositories {
 }
 
 dependencies {
-    compile ("org.spongepowered:spongeforge:1.12.2-2768-7.1.6-RC3566:dev") {
-        exclude module: 'testplugins'
-        exclude module: 'testmods'
-    }
+    compile "org.spongepowered:mixin:0.7.11-SNAPSHOT"
+    compile 'org.spongepowered:configurate-yaml:3.6'
+    compile 'org.spongepowered:configurate-core:3.6'
     compile "li.cil.oc:OpenComputers:MC1.12.1-1.7.1.52"
     compile "net.industrial-craft:industrialcraft-2:2.8.93-ex112:api"
     deobfCompile "dan200.computercraft:ComputerCraft:1.80pr1-build4"
@@ -65,20 +82,19 @@ dependencies {
     }
 }
 
-deobfMcMCP { failOnAtError = false }
-deobfMcSRG { failOnAtError = false }
-
-minecraft {
-    version = "1.12.2-14.23.5.2768"
-    runDir = "run"
-    mappings = 'snapshot_20180808'
-    useDepAts = true
+if (JavaVersion.current().isJava8Compatible() || JavaVersion.current().isJava9Compatible()) {
+    tasks.withType(Javadoc) {
+        // disable the crazy super-strict doclint tool in Java 8
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
 }
 
-sourceSets.main {
-	compileClasspath += files("lib")
-	java.srcDirs "src/base", "src/mod"
-	resources.srcDirs "src/resources"
+compileJava {
+    options.compilerArgs += [
+            '-Xlint:-processing',
+    ]
+    options.deprecation = false
+    options.encoding = 'utf8'
 }
 
 processResources {
@@ -90,9 +106,6 @@ processResources {
     // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
         include 'mcmod.info'
-                
-        // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version, 'modid':project.jarName
     }
         
     // copy everything else, thats not the mcmod.info
@@ -100,3 +113,33 @@ processResources {
         exclude 'mcmod.info'
     }
 }
+
+shadowJar {
+    mainSpec.sourcePaths.clear()
+    dependsOn reobfJar
+
+    classifier ''
+
+    exclude 'dummyThing'
+    relocate 'com.typesafe.config', 'configurate.typesafe.config'
+    dependencies {
+        include dependency('org.spongepowered:configurate-core')
+        include dependency('org.spongepowered:configurate-yaml')
+        include dependency('org.spongepowered:mixin')
+    }
+    afterEvaluate {
+        from zipTree(reobfJar.jar)
+    }
+}
+
+artifacts {
+    archives shadowJar
+}
+
+sourceSets.main {
+	compileClasspath += files("lib")
+	java.srcDirs "src/base", "src/mod"
+	resources.srcDirs "src/resources"
+}
+
+
