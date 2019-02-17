@@ -1415,14 +1415,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     Entity teleportEntityAndRiders(Entity entity, Trans3 t1, Trans3 t2, int dimension, boolean destBlocked) {
-        if (debugTeleport)
+        if (debugTeleport) {
             System.out.printf("SGBaseTE.teleportEntityAndRiders: destBlocked = %s\n", destBlocked);
-        //Entity rider = entity.riddenByEntity;
+        }
+
         List<Entity> riders = entity.getPassengers();
         for (int i = 0; i < riders.size(); i++) {
             Entity rider = riders.get(i);
-            //System.out.printf("SGBaseTE.teleportEntityAndRider: Unmounting %s from %s\n",
-            //  repr(rider), repr(entity));
             rider.dismountRidingEntity();
             rider = teleportEntityAndRiders(rider, t1, t2, dimension, destBlocked);
             riders.set(i, rider);
@@ -1432,8 +1431,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (entity != null && !entity.isDead) {
             for (Entity rider : riders) {
                 if (rider != null && !rider.isDead) {
-                    //System.out.printf("SGBaseTE.teleportEntityAndRider: Mounting %s on %s\n",
-                    //  repr(rider), repr(entity));
                     rider.startRiding(entity, true);
                 }
             }
@@ -1503,9 +1500,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             // Play sound from point of origin gate.
             playTeleportSound(entity.getEntityWorld(), new Vector3(entity.getPositionVector()), entity);
             if (entity.dimension == dimension) {
-                teleportWithinDimension(entity, q, u, a, destBlocked);
+                newEntity = teleportWithinDimension(entity, q, u, a, destBlocked);
             } else {
-                teleportToOtherDimension(entity, q, u, a, dimension, destBlocked);
+                newEntity = teleportToOtherDimension(entity, q, u, a, dimension, destBlocked);
             }
         } else {
             terminateEntityByIrisImpact(entity);
@@ -1513,7 +1510,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
         // Play sound at destination gate.
         playTeleportSound(entity.getEntityWorld(), new Vector3(entity.getPositionVector()), entity);
-        return entity;
+        return newEntity;
     }
 
     static void terminateEntityByIrisImpact(Entity entity) {
@@ -1596,6 +1593,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             transferPlayerToDimension(player, dimension, q, a);
             return player;
         } else {
+            setVelocity(entity,v); // Make sure riding entity exits at the same speed they entered otherwise event horizon will kill them.
             return teleportEntityToDimension(entity, p, v, a, dimension, destBlocked);
         }
     }
