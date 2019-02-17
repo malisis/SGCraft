@@ -150,6 +150,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     static int minutesOpenPerFuelItem = 80;
     static int secondsToStayOpen = 5 * 60;
     static boolean oneWayTravel = true;
+    static boolean reverseWormholeKills = false;
     static boolean closeFromEitherEnd = true;
     static int chunkLoadingRange = 1;
     static boolean logStargateEvents = false;
@@ -210,6 +211,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         minutesOpenPerFuelItem = cfg.getInteger("stargate", "minutesOpenPerFuelItem", minutesOpenPerFuelItem);
         secondsToStayOpen = cfg.getInteger("stargate", "secondsToStayOpen", secondsToStayOpen);
         oneWayTravel = cfg.getBoolean("stargate", "oneWayTravel", oneWayTravel);
+        reverseWormholeKills = cfg.getBoolean("stargate", "reverseWormholeKills", reverseWormholeKills);
         closeFromEitherEnd = cfg.getBoolean("stargate", "closeFromEitherEnd", closeFromEitherEnd);
         maxEnergyBuffer = cfg.getDouble("stargate", "maxEnergyBuffer", maxEnergyBuffer);
         energyToOpen = energyPerFuelItem / gateOpeningsPerFuelItem;
@@ -1357,8 +1359,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 entityInPortal(trk.entity, trk.lastPos);
             }
             trackedEntities.clear();
-            Vector3 p0 = new Vector3(-1.5, 0.5, -3.5);
-            Vector3 p1 = new Vector3(1.5, 3.5, 3.5);
+            Vector3 p0 = new Vector3(-1.5, 0.5, -1.5);
+            Vector3 p1 = new Vector3(1.5, 3.5, 1.5);
             Trans3 t = localToGlobalTransformation();
             AxisAlignedBB box = t.box(p0, p1);
             //System.out.printf("SGBaseTE.checkForEntitiesInPortal: %s\n", box);
@@ -1379,7 +1381,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     public void entityInPortal(Entity entity, Vector3 prevPos) {
-        if (!entity.isDead && state == SGState.Connected && canTravelFromThisEnd()) {
+        if (!entity.isDead && state == SGState.Connected) {
             Trans3 t = localToGlobalTransformation();
             double vx = entity.posX - prevPos.x;
             double vy = entity.posY - prevPos.y;
@@ -1400,6 +1402,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 //  entity.posX, entity.posY, entity.posZ,
                 //  prevPos.x, prevPos.y, prevPos.z,
                 //  entity.motionX, entity.motionY, entity.motionZ);
+
                 SGBaseTE dte = getConnectedStargateTE();
                 if (dte != null) {
                     Trans3 dt = dte.localToGlobalTransformation();
@@ -1486,7 +1489,17 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             System.out.printf("SGBaseTE.teleportEntity: new yaw %.2f\n", a);
         }
 
-        if (!destBlocked) {
+        if (!canTravelFromThisEnd() && !isInitiator) {
+            if (reverseWormholeKills) { // Player attempting to reverse travel through one-way wormhole.
+                terminateEntityByReverseWormhole(entity);
+                return entity;
+            } else {
+                // Player attempted to reverse travel but config option for reverseWormholleKills is disabled, return entity, display nothing.
+                return entity;
+            }
+        }
+
+        if (!destBlocked) { // destBlocked == closed iris.
             // Play sound from point of origin gate.
             playTeleportSound(entity.getEntityWorld(), new Vector3(entity.getPositionVector()), entity);
             if (entity.dimension == dimension) {
@@ -1518,6 +1531,24 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             if (!(preserveInventory || player.world.getGameRules().getBoolean("keepInventory")))
                 player.inventory.clear();
             player.attackEntityFrom(irisDamageSource, irisDamageAmount);
+        }
+    }
+
+    static void terminateEntityByReverseWormhole(Entity entity) {
+        if (entity instanceof EntityPlayer) {
+            terminatePlayerByReverseWormhole((EntityPlayer)entity);
+        } else {
+            entity.setDead();
+        }
+    }
+
+    static void terminatePlayerByReverseWormhole(EntityPlayer player) {
+        if (player.capabilities.isCreativeMode) {
+            sendErrorMsg(player, "reverseWormhole");
+        } else {
+            if (!(preserveInventory || player.world.getGameRules().getBoolean("keepInventory")))
+                player.inventory.clear();
+            player.attackEntityFrom(transientDamage, irisDamageAmount);
         }
     }
 
