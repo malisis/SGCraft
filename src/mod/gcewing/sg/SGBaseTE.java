@@ -702,46 +702,48 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         //Reset this value:
         energyToOpen = energyPerFuelItem / gateOpeningsPerFuelItem;
 
-        // Zpm
-        String originName = this.getWorld().getWorldInfo().getWorldName().toLowerCase();
-        String destinationName = targetGate.getWorld().getWorldInfo().getWorldName().toLowerCase();
+        if (isModLoaded("ic2")) {
+            // Zpm
+            String originName = this.getWorld().getWorldInfo().getWorldName().toLowerCase();
+            String destinationName = targetGate.getWorld().getWorldInfo().getWorldName().toLowerCase();
 
-        if (ZpmAddon.routeRequiresZpm(originName, destinationName)) {
-            long power = (long) ZpmAddon.zpmPowerAvailable(world, this.pos, 4, false);
-            if (!(power > 0)) {
-                return diallingFailure(player, "zpmNotFound");
-            } else {
-                if (!(power > energyToOpen * distanceFactor)) {
-                    return diallingFailure(player, "zpmLowPower");
+            if (ZpmAddon.routeRequiresZpm(originName, destinationName)) {
+                long power = (long) ZpmAddon.zpmPowerAvailable(world, this.pos, 4, false);
+                if (!(power > 0)) {
+                    return diallingFailure(player, "zpmNotFound");
+                } else {
+                    if (!(power > energyToOpen * distanceFactor)) {
+                        return diallingFailure(player, "zpmLowPower");
+                    }
                 }
+                this.syncAwaitTime = 30; // Sets longer connect delay due to distance
+                this.destinationRequiresZPM = true;
+
+            } else {
+                this.syncAwaitTime = 10; // Sets short connect delay for in-world Stargates
+                this.destinationRequiresZPM = false;
             }
-            this.syncAwaitTime = 30; // Sets longer connect delay due to distance
-            this.destinationRequiresZPM = true;
 
-        } else {
-            this.syncAwaitTime = 10; // Sets short connect delay for in-world Stargates
-            this.destinationRequiresZPM = false;
-        }
-
-        if (debugEnergyUse || debugZPM) {
-            System.out.println("-------------------   Power Usage Debug   --------------------------");
-            System.out.println("EnergyPerFuelItem: " + dFormat.format(energyPerFuelItem));
-            System.out.println("Gate Openings Per Fuel: " + gateOpeningsPerFuelItem);
-            System.out.println("SGPU Energy to Open with Distance Factor: " + dFormat.format(energyToOpen * distanceFactor));
-            System.out.println("--------------------------------------------------------------------");
-            System.out.println("IC2 Energy to Open with Distance Factor: " + dFormat.format((energyToOpen * distanceFactor) * SGCraft.Ic2euPerSGEnergyUnit));
-            System.out.println("--------------------------------------------------------------------");
-            System.out.println("ZPM Required: " + this.destinationRequiresZPM);
-            System.out.println("ZPM Multiplier: " + ZpmAddon.routeZpmMultiplier(originName, destinationName));
-            System.out.println("--------------------------------------------------------------------");
-            System.out.println("Energy to Open: " + energyToOpen);
-            System.out.println("Distance Factor: " + distanceFactor);
-            System.out.println("--------------------------------------------------------------------");
-            System.out.println("Energy Available: " + availableEnergy());
-            System.out.println("Energy Required: " + (energyToOpen * distanceFactor));
-            System.out.println("Energy per Tick: " + energyUsePerTick);
-            System.out.println("Energy Used per Tick: " + (energyUsePerTick * distanceFactor));
-            System.out.println("--------------------------------------------------------------------");
+            if (debugEnergyUse || debugZPM) {
+                System.out.println("-------------------   Power Usage Debug   --------------------------");
+                System.out.println("EnergyPerFuelItem: " + dFormat.format(energyPerFuelItem));
+                System.out.println("Gate Openings Per Fuel: " + gateOpeningsPerFuelItem);
+                System.out.println("SGPU Energy to Open with Distance Factor: " + dFormat.format(energyToOpen * distanceFactor));
+                System.out.println("--------------------------------------------------------------------");
+                System.out.println("IC2 Energy to Open with Distance Factor: " + dFormat.format((energyToOpen * distanceFactor) * SGCraft.Ic2euPerSGEnergyUnit));
+                System.out.println("--------------------------------------------------------------------");
+                System.out.println("ZPM Required: " + this.destinationRequiresZPM);
+                System.out.println("ZPM Multiplier: " + ZpmAddon.routeZpmMultiplier(originName, destinationName));
+                System.out.println("--------------------------------------------------------------------");
+                System.out.println("Energy to Open: " + energyToOpen);
+                System.out.println("Distance Factor: " + distanceFactor);
+                System.out.println("--------------------------------------------------------------------");
+                System.out.println("Energy Available: " + availableEnergy());
+                System.out.println("Energy Required: " + (energyToOpen * distanceFactor));
+                System.out.println("Energy per Tick: " + energyUsePerTick);
+                System.out.println("Energy Used per Tick: " + (energyUsePerTick * distanceFactor));
+                System.out.println("--------------------------------------------------------------------");
+            }
         }
 
         // Final Power check before dial
@@ -793,11 +795,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         double f = 1 + 14 * distanceFactorMultiplier * lr * lr;
         if (te1.getWorld() != te2.getWorld()) {
             f *= distanceFactorMultiplier;
-            String originName = te1.getWorld().getWorldInfo().getWorldName().toLowerCase();
-            String destinationName = te2.getWorld().getWorldInfo().getWorldName().toLowerCase();
+            if (isModLoaded("ic2")) {
+                String originName = te1.getWorld().getWorldInfo().getWorldName().toLowerCase();
+                String destinationName = te2.getWorld().getWorldInfo().getWorldName().toLowerCase();
 
-            if (ZpmAddon.routeRequiresZpm(te1.getWorld().getWorldInfo().getWorldName().toLowerCase(), te2.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
-                f += ZpmAddon.routeZpmMultiplier(originName, destinationName);
+                if (ZpmAddon.routeRequiresZpm(te1.getWorld().getWorldInfo().getWorldName().toLowerCase(), te2.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
+                    f += ZpmAddon.routeZpmMultiplier(originName, destinationName);
+                }
             }
         }
         return f;
@@ -1113,7 +1117,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     }
                 }
 
-                if(nte instanceof ZpmInterfaceCartTE) {
+                if(ic2Loaded && nte instanceof ZpmInterfaceCartTE) {
                     if (debugEnergyUse) {
                         System.out.println("Found ZpmInterfaceCartTE at: " + nte.getPos() + " but not added as source");
                     }
@@ -1480,8 +1484,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (debugTeleport) {
             System.out.printf("SGBaseTE.teleportEntity: new yaw %.2f\n", a);
         }
-
-        System.out.println("Firing this event");
 
         if (!destBlocked) {
             // Play sound from point of origin gate.

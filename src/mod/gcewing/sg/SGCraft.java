@@ -57,9 +57,6 @@ import static net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerPr
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.util.Optional;
-
-// import dan200.computercraft.api.*; //[CC]
 
 @Mod(modid = Info.modID, name = Info.modName, version = Info.versionNumber,
     acceptableRemoteVersions = Info.versionBounds, dependencies = "after:opencomputers;after:ic2;after:computercraft")
@@ -147,7 +144,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         ocIntegration = (OCIntegration)integrateWithMod("opencomputers", "gcewing.sg.oc.OCIntegration"); //[OC]
 //         mystcraftIntegration = (MystcraftIntegration)integrateWithMod("Mystcraft", "gcewing.sg.MystcraftIntegration"); //[MYST]
 
-        GameRegistry.registerTileEntity(ZpmInterfaceCartTE.class, new ResourceLocation(this.modID));
+        if (isModLoaded("ic2")) {
+            GameRegistry.registerTileEntity(ZpmInterfaceCartTE.class, new ResourceLocation(this.modID));
+        }
         super.preInit(e);
     }
     
@@ -188,22 +187,24 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         saveAddressToClipboard = config.getBoolean("client", "saveAddressToClipboard", saveAddressToClipboard);
         displayGuiPowerDebug = config.getBoolean("client", "showPowerValuesOnGui", displayGuiPowerDebug);
 
-        // ZPM multiplier configuration loader
-        final ConfigurationNode rootNode;
-        try {
-            rootNode = ZPMMultiplierRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "zpm.yml"));
-            ZPMMultiplierRegistry.populateMultipliers(rootNode);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        if (isModLoaded("ic2")) {
+            // ZPM multiplier configuration loader
+            final ConfigurationNode rootNode;
+            try {
+                rootNode = ZPMMultiplierRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "zpm.yml"));
+                ZPMMultiplierRegistry.populateMultipliers(rootNode);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
-        // Tokra Villager World configuration loader
-        final ConfigurationNode tokraNode;
-        try {
-            tokraNode = TokraVillagerWorldRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "tokra.yml"));
-            TokraVillagerWorldRegistry.populateTokraVillagerWorlds(tokraNode);
-        } catch (IOException e) {
-            e.printStackTrace();
+            // Tokra Villager World configuration loader
+            final ConfigurationNode tokraNode;
+            try {
+                tokraNode = TokraVillagerWorldRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "tokra.yml"));
+                TokraVillagerWorldRegistry.populateTokraVillagerWorlds(tokraNode);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }       
 
@@ -332,8 +333,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             newRecipe("sgcontrollercrystal", sgControllerCrystal, 1, "roo", "odr", "oor", 'o', orangeDye, 'r', Items.REDSTONE, 'd', Items.DIAMOND);
         }
 
-        if (!isModLoaded("ic2"))
+        if (!isModLoaded("ic2")) {
             addGenericCapacitorRecipe();
+        }
     }
     
     protected void addGenericCapacitorRecipe() {

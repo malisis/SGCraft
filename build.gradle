@@ -58,6 +58,7 @@ dependencies {
     compile "org.spongepowered:mixin:0.7.11-SNAPSHOT"
     compile 'org.spongepowered:configurate-yaml:3.6'
     compile 'org.spongepowered:configurate-core:3.6'
+    compile 'com.google.code.gson:gson:2.8'
     compile "li.cil.oc:OpenComputers:MC1.12.1-1.7.1.52"
     compile "net.industrial-craft:industrialcraft-2:2.8.93-ex112:api"
     deobfCompile "dan200.computercraft:ComputerCraft:1.80pr1-build4"
@@ -70,7 +71,7 @@ deobfMcMCP { failOnAtError = false }
 deobfMcSRG { failOnAtError = false }
 
 minecraft {
-    version = "1.12.2-14.23.5.2768"
+    version = "1.12.2-14.23.5.2815"
     runDir = "run"
     mappings = 'snapshot_20180808'
     useDepAts = true
