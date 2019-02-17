@@ -20,6 +20,7 @@ import gcewing.sg.oc.OCIntegration;
 import gcewing.sg.oc.OCInterfaceTE;
 import gcewing.sg.oc.OCWirelessEndpoint;
 import gcewing.sg.rf.RFPowerTE;
+import gcewing.sg.teleporter.FakeTeleporter;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.block.state.IBlockState;
@@ -1569,7 +1570,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     void transferPlayerToDimension(EntityPlayerMP player, int newDimension, Vector3 p, double a) {
-        player.changeDimension(newDimension);
+        FakeTeleporter fakeTeleporter = new FakeTeleporter();
+        player.changeDimension(newDimension, fakeTeleporter);
 
         // Now check to see if the player made it through the above server method, if it did, then update their location.
         if (player.dimension == newDimension) {
@@ -1578,26 +1580,27 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     Entity teleportEntityToDimension(Entity entity, Vector3 p, Vector3 v, double a, int dimension, boolean destBlocked) {
-        //System.out.printf("SGBaseTE.teleportEntityToDimension: %s to dimension %d\n", repr(entity), dimension);
         MinecraftServer server = BaseUtils.getMinecraftServer();
         WorldServer world = server.getWorld(dimension);
         return teleportEntityToWorld(entity, p, v, a, world, destBlocked);
     }
 
-    Entity teleportEntityToWorld(Entity entity, Vector3 p, Vector3 v, double a, WorldServer newWorld, boolean destBlocked) {
-
+    Entity teleportEntityToWorld(Entity oldEntity, Vector3 p, Vector3 v, double a, WorldServer newWorld, boolean destBlocked) {
         if (destBlocked) {
-            if (!(entity instanceof EntityLivingBase))
+            if (!(oldEntity instanceof EntityLivingBase))
                 return null;
         }
 
-        entity.changeDimension(newWorld.provider.getDimension());
+        FakeTeleporter fakeTeleporter = new FakeTeleporter();
+        Entity newEntity = oldEntity.changeDimension(newWorld.provider.getDimension(), fakeTeleporter);
 
         // Now check to see if the entity made it through the above server method, if it did, then update their location.
-        if (entity.dimension == newWorld.provider.getDimension()) {
-            entity.setLocationAndAngles(p.x, p.y, p.z, (float) a, entity.rotationPitch);
+        if (newEntity.dimension == newWorld.provider.getDimension()) {
+            setVelocity(newEntity,v); //Set velocity so that items exist at the same rate they did when they entered the event horizon.
+            newEntity.setLocationAndAngles(p.x, p.y, p.z, (float) a, oldEntity.rotationPitch);
         }
-        return entity;
+
+        return newEntity;
     }
 
     protected static int yawSign(Entity entity) {
@@ -1624,6 +1627,18 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     public SGBaseTE getConnectedStargateTE() {
         return isConnected() && connectedLocation != null ? connectedLocation.getStargateTE() : null;
+    }
+
+    static void copyMoreEntityData(EntityLiving oldEntity, EntityLiving newEntity) {
+        float s = oldEntity.getAIMoveSpeed();
+        if (s != 0)
+            newEntity.setAIMoveSpeed(s);
+    }
+
+    static void setVelocity(Entity entity, Vector3 v) {
+        entity.motionX = v.x;
+        entity.motionY = v.y;
+        entity.motionZ = v.z;
     }
 
     //------------------------------------   Client   --------------------------------------------
