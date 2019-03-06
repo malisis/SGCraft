@@ -225,5 +225,4 @@ public class BaseTileEntity extends TileEntity
     public ItemStack newItemStack(int size) {
         return blockStackWithTileEntity(getBlockType(), size, this);
     }
-
 }

@@ -105,6 +105,34 @@ public class BaseBlock<TE extends TileEntity>
         if (orient == null)
             orient = orient1Way;
         this.orientationHandler = orient;
+        // TE Fixer:
+        // The following is designed to fix the fact that when gcewing registered TE's he used the full class name in the registration
+        // So after I re-packaged the TE classes it broke the world data registrations.
+
+        // Core TE's
+        if (teClass.getName().equalsIgnoreCase("gcewing.sg.tileentity.DHDTE"))
+            teID = "gcewing.sg.DHDTE";
+        if (teClass.getName().equalsIgnoreCase("gcewing.sg.tileentity.PowerTE"))
+            teID = "gcewing.sg.PowerTE";
+        if (teClass.getName().equalsIgnoreCase("gcewing.sg.tileentity.SGBaseTE"))
+            teID = "gcewing.sg.SGBaseTE";
+        if (teClass.getName().equalsIgnoreCase("gcewing.sg.tileentity.SGInterfaceTE"))
+            teID = "gcewing.sg.SGInterfaceTE";
+        if (teClass.getName().equalsIgnoreCase("gcewing.sg.tileentity.SGRingTE"))
+            teID = "gcewing.sg.SGRingTE";
+        // Addon TE's
+        if (teClass.getName().equalsIgnoreCase("gcewing.sg.features.ic2.IC2PowerTE"))
+            teID = "gcewing.sg.ic2.IC2PowerTE";
+        if (teClass.getName().equalsIgnoreCase("gcewing.sg.features.cc.CCInterfaceTE"))
+            teID = "gcewing.sg.cc.CCInterfaceTE";
+        if (teClass.getName().equalsIgnoreCase("gcewing.sg.features.oc.OCInterfaceTE"))
+            teID = "gcewing.sg.oc.OCInterfaceTE";
+        if (teClass.getName().equalsIgnoreCase("gcewing.sg.features.rf.RFPowerTE"))
+            teID = "gcewing.sg.rf.RFPowerTE";
+        if (teClass.getName().equalsIgnoreCase("gcewing.sg.features.ic2.zpm.ZPMInterfaceCartTE"))
+            teID = "gcewing.sg.ic2.zpm.ZPMInterfaceCartTE";
+        // End TE World Fixer.
+
         tileEntityClass = teClass;
         if (teClass != null) {
             if (teID == null)
@@ -259,8 +287,9 @@ public class BaseBlock<TE extends TileEntity>
     
     public String getQualifiedRendererClassName() {
         String name = getRendererClassName();
-        if (name != null)
-            name = getClass().getPackage().getName() + "." + name;
+        if (name != null) {
+            //name = getClass().getPackage().getName() + "." + name;
+        }
         return name;
     }
     

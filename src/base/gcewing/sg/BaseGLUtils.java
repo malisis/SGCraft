@@ -10,7 +10,7 @@ import java.nio.*;
 import org.lwjgl.opengl.GL11;
 import net.minecraft.client.renderer.GLAllocation;
 
-class BaseGLUtils {
+public class BaseGLUtils {
 
     public static void glMultMatrix(Trans3 t) {
         FloatBuffer b = GLAllocation.createDirectFloatBuffer(16);

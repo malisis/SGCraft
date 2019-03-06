@@ -89,6 +89,7 @@ public class BaseRenderingManager<MOD extends BaseMod<? extends BaseModClient>> 
             if (block instanceof IBlock) {
                 if (!blockRenderers.containsKey(block)) {
                     String name = ((IBlock)block).getQualifiedRendererClassName();
+                    System.out.println("Name: " + name);
                     if (name != null) {
                         try {
                             Class cls = Class.forName(name);

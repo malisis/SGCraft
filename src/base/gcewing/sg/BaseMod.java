@@ -10,6 +10,8 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import gcewing.sg.BaseModClient.IModel;
+import gcewing.sg.block.SGRingBlock;
+import gcewing.sg.item.SGRingItem;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;

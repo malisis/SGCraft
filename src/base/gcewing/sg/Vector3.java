@@ -36,7 +36,7 @@ public class Vector3 {
         return blockCenter.add(pos);
     }
 
-    double x, y, z;
+    public double x, y, z;
     
     public Vector3(double x, double y, double z) {
         this.x = x;

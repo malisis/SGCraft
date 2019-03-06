@@ -1,7 +1,7 @@
 package gcewing.sg.mixin;
 
 import gcewing.sg.SGCraft;
-import gcewing.sg.villagers.TokraVillagerWorldRegistry;
+import gcewing.sg.features.tokra.TokraVillagerWorldRegistry;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.world.gen.structure.StructureVillagePieces;
 import net.minecraftforge.fml.common.registry.VillagerRegistry;

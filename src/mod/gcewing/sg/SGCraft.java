@@ -6,15 +6,41 @@
 
 package gcewing.sg;
 
-import gcewing.sg.ic2.gdo.GDOItem;
-import gcewing.sg.ic2.zpm.ZPMItem;
-import gcewing.sg.ic2.zpm.ZPMMultiplierRegistry;
-import gcewing.sg.ic2.zpm.ZpmContainer;
-import gcewing.sg.ic2.zpm.ZpmInterfaceCart;
-import gcewing.sg.ic2.zpm.ZpmInterfaceCartTE;
-import gcewing.sg.villagers.TokraVillagerWorldRegistry;
-import gcewing.sg.oc.OCIntegration;
-import gcewing.sg.rf.RFIntegration;
+import gcewing.sg.block.DHDBlock;
+import gcewing.sg.block.NaquadahBlock;
+import gcewing.sg.block.NaquadahOreBlock;
+import gcewing.sg.block.SGBaseBlock;
+import gcewing.sg.block.SGRingBlock;
+import gcewing.sg.client.gui.SGGui;
+import gcewing.sg.container.DHDFuelContainer;
+import gcewing.sg.container.PowerContainer;
+import gcewing.sg.container.SGBaseContainer;
+import gcewing.sg.entity.EntityStargateIris;
+import gcewing.sg.entity.SGEntity;
+import gcewing.sg.features.gdo.GdoItem;
+import gcewing.sg.features.ic2.zpm.ZPMItem;
+import gcewing.sg.features.ic2.zpm.ZPMMultiplierRegistry;
+import gcewing.sg.features.ic2.zpm.ZpmContainer;
+import gcewing.sg.features.ic2.zpm.ZpmInterfaceCart;
+import gcewing.sg.features.ic2.zpm.ZpmInterfaceCartTE;
+import gcewing.sg.features.tokra.SGTradeHandler;
+import gcewing.sg.features.tokra.TokraVillagerWorldRegistry;
+import gcewing.sg.features.oc.OCIntegration;
+import gcewing.sg.features.rf.RFIntegration;
+import gcewing.sg.generator.FeatureGeneration;
+import gcewing.sg.generator.FeatureUnderDesertPyramid;
+import gcewing.sg.interfaces.IIntegration;
+import gcewing.sg.interfaces.SoundSource;
+import gcewing.sg.item.SGChevronUpgradeItem;
+import gcewing.sg.item.SGIrisUpgradeItem;
+import gcewing.sg.item.SGRingItem;
+import gcewing.sg.network.SGChannel;
+import gcewing.sg.generator.NaquadahOreWorldGen;
+import gcewing.sg.tileentity.DHDTE;
+import gcewing.sg.tileentity.SGBaseTE;
+import gcewing.sg.util.Info;
+import gcewing.sg.util.SGChunkData;
+import gcewing.sg.util.Sound;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
@@ -138,10 +164,10 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             }
         };
         FMLCommonHandler.instance().bus().register(this);
-        rfIntegration = (RFIntegration) integrateWithMod("redstoneflux", "gcewing.sg.rf.RFIntegration"); //[RF]
-        ic2Integration = integrateWithMod("ic2", "gcewing.sg.ic2.IC2Integration"); //[IC2]
-        ccIntegration = (IIntegration) integrateWithMod("computercraft", "gcewing.sg.cc.CCIntegration"); //[CC]
-        ocIntegration = (OCIntegration)integrateWithMod("opencomputers", "gcewing.sg.oc.OCIntegration"); //[OC]
+        rfIntegration = (RFIntegration) integrateWithMod("redstoneflux", "gcewing.sg.features.rf.RFIntegration"); //[RF]
+        ic2Integration = integrateWithMod("ic2", "gcewing.sg.features.ic2.IC2Integration"); //[IC2]
+        ccIntegration = (IIntegration) integrateWithMod("computercraft", "gcewing.sg.features.cc.CCIntegration"); //[CC]
+        ocIntegration = (OCIntegration)integrateWithMod("opencomputers", "gcewing.sg.features.oc.OCIntegration"); //[OC]
 //         mystcraftIntegration = (MystcraftIntegration)integrateWithMod("Mystcraft", "gcewing.sg.MystcraftIntegration"); //[MYST]
 
         if (isModLoaded("ic2")) {
@@ -243,7 +269,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             zpm = addItem(new ZPMItem(), "zpm");
         }
 
-        gdo = addItem(new GDOItem(), "gdo");
+        gdo = addItem(new GdoItem(), "gdo");
     }
 
     @SideOnly(Side.CLIENT)

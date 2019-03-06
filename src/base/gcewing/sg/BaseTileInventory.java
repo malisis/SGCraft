@@ -275,5 +275,4 @@ public class BaseTileInventory extends BaseTileEntity implements IInventory, ISi
         else
             return true;
     }
-
 }
