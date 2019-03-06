@@ -133,7 +133,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public final static double irisThickness = 0.2; //0.1;
     public final static DamageSource irisDamageSource = new DamageSource("sgcraft:iris");
     public final static float irisDamageAmount = 1000000;
-    public final static double ringRotationSpeed = 2.0;
+    public final static double ringRotationSpeed = 5.0; //2.0
 
     final static int interDiallingTime = 10; // ticks
     public int syncAwaitTime = 10; // ticks  // 10 - withinWorld, 30 - dimensional
@@ -165,8 +165,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     static double interDimensionMultiplier = 4.0;
     static int gateOpeningsPerFuelItem = 24;
     static int minutesOpenPerFuelItem = 80;
-    static int secondsToStayOpen = 5 * 60;
-    static boolean oneWayTravel = true;
+
     static boolean reverseWormholeKills = false;
     static boolean closeFromEitherEnd = true;
     static int chunkLoadingRange = 1;
@@ -178,7 +177,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     public static double energyToOpen;
     static double energyUsePerTick;
-    static int ticksToStayOpen;
+
     public static boolean transparency = true;
 
     static Random random = new Random();
@@ -205,6 +204,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public double energyInBuffer, distanceFactor; // all energy use is multiplied by this
     public String homeAddress, addressError;
     private int updated = 0;
+    private static BaseConfiguration cfg;
 
     IInventory inventory = new InventoryBasic("Stargate", false, numInventorySlots);
 
@@ -215,19 +215,22 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     // Retain current irisState prior to opening
     public boolean wasIrisClosed = false;
 
-    // Gate Type
+    // Unique Gate Configurator Options
     public int gateType = 1; //1 = Milky way 2 = Pegasus
-
+    public int secondsToStayOpen = 5 * 60;
+    public int ticksToStayOpen = 20 * secondsToStayOpen;
+    public boolean oneWayTravel = true;
 
     double ehGrid[][][];
     private static Set<UUID> messagesQueue = Sets.newHashSet();
 
     public static void configure(BaseConfiguration cfg) {
+        SGBaseTE.cfg = cfg;
         energyPerFuelItem = cfg.getDouble("stargate", "energyPerFuelItem", energyPerFuelItem);
         gateOpeningsPerFuelItem = cfg.getInteger("stargate", "gateOpeningsPerFuelItem", gateOpeningsPerFuelItem);
         minutesOpenPerFuelItem = cfg.getInteger("stargate", "minutesOpenPerFuelItem", minutesOpenPerFuelItem);
-        secondsToStayOpen = cfg.getInteger("stargate", "secondsToStayOpen", secondsToStayOpen);
-        oneWayTravel = cfg.getBoolean("stargate", "oneWayTravel", oneWayTravel);
+        //secondsToStayOpen = cfg.getInteger("stargate", "secondsToStayOpen", secondsToStayOpen);
+        //oneWayTravel = cfg.getBoolean("stargate", "oneWayTravel", oneWayTravel);
         reverseWormholeKills = cfg.getBoolean("stargate", "reverseWormholeKills", reverseWormholeKills);
         closeFromEitherEnd = cfg.getBoolean("stargate", "closeFromEitherEnd", closeFromEitherEnd);
         maxEnergyBuffer = cfg.getDouble("stargate", "maxEnergyBuffer", maxEnergyBuffer);
@@ -235,7 +238,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         energyUsePerTick = energyPerFuelItem / (minutesOpenPerFuelItem * 60 * 20);
         distanceFactorMultiplier = cfg.getDouble("stargate", "distanceFactorMultiplier", distanceFactorMultiplier);
         interDimensionMultiplier = cfg.getDouble("stargate", "interDimensionMultiplier", interDimensionMultiplier);
-        ticksToStayOpen = 20 * secondsToStayOpen;
+        //ticksToStayOpen = 20 * secondsToStayOpen;
         chunkLoadingRange = cfg.getInteger("options", "chunkLoadingRange", chunkLoadingRange);
         transparency = cfg.getBoolean("stargate", "transparency", transparency);
         logStargateEvents = cfg.getBoolean("options", "logStargateEvents", logStargateEvents);
@@ -424,6 +427,21 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (oldState != state && state == SGState.Connected && world.isRemote) {
             SGCraft.playSound(this, eventHorizonSound);
         }
+
+        // New per SGBaseTE Configuration Options
+        if (nbt.hasKey("secondsToStayOpen")) {
+            secondsToStayOpen = nbt.getInteger("secondsToStayOpen");
+            ticksToStayOpen = 20 * secondsToStayOpen;
+        } else {
+            secondsToStayOpen = cfg.getInteger("stargate", "secondsToStayOpen", secondsToStayOpen);
+            ticksToStayOpen = 20 * secondsToStayOpen;
+        }
+
+        if (nbt.hasKey("oneWayTravel")) {
+            oneWayTravel = nbt.getBoolean("oneWayTravel");
+        } else {
+            oneWayTravel = cfg.getBoolean("stargate", "oneWayTravel", oneWayTravel);
+        }
     }
 
     protected String getStringOrNull(NBTTagCompound nbt, String name) {
@@ -465,6 +483,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             nbt.setString("addressError", addressError);
         }
         nbt.setInteger("gateType", gateType);
+
+        //Todo: implement saving of : secondsToStayOpen, oneWayTravel
 
         return nbt;
     }

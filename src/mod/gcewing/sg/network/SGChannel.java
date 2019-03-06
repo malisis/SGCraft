@@ -114,8 +114,6 @@ public class SGChannel extends BaseDataChannel {
     public void handleGdoInputFromClient(EntityPlayer player, ChannelInput data) {
         BlockPos pos = readCoords(data);
         int function = data.readInt();
-        // Note:  1 == Local Open Iris, 2 == Local Close Iris, 3 == Local Disconnect, 4 == Remote Open Iris, 5 == Remote Close Iris
-        System.out.println("GDO Input Received: " + function + " / " + pos);
         SGBaseTE te = SGBaseTE.at(player.world, pos);
 
         if (te != null) {
@@ -143,7 +141,7 @@ public class SGChannel extends BaseDataChannel {
             } else if (function == 7) { // Test button functionality (varies)
                 //te.startDiallingStargate("ZFDDUR8", te, true, false);
                 //te.connect("PFKCMK3", player,true, false);
-                te.connect("ZFDDUR8", player,true, false);
+                te.connect("ZFDDUR8", player,false, false);
             }
         }
     }

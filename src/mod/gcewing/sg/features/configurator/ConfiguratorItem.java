@@ -1,6 +1,6 @@
-package gcewing.sg.features.gdo;
+package gcewing.sg.features.configurator;
 
-import gcewing.sg.features.gdo.client.gui.GdoScreen;
+import gcewing.sg.features.configurator.client.gui.ConfiguratorScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
@@ -17,9 +17,9 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-public class GdoItem extends Item {
+public class ConfiguratorItem extends Item {
 
-  public GdoItem() {}
+  public ConfiguratorItem() {}
 
   @SideOnly(Side.CLIENT)
   @Override
@@ -29,7 +29,7 @@ public class GdoItem extends Item {
 
   @Override
   public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer player, EnumHand handIn) {
-      new GdoScreen(Minecraft.getMinecraft().player, Minecraft.getMinecraft().world, true).display();
+      new ConfiguratorScreen(Minecraft.getMinecraft().player, Minecraft.getMinecraft().world, true).display();
     return new ActionResult<>(EnumActionResult.PASS, player.getHeldItem(handIn));  //Both Server & Client expect a returned value.
   }
 }

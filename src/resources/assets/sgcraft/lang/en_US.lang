@@ -43,3 +43,5 @@ message.sgcraft:reverseWormhole=Cannot travel backwards through one-way wormhole
 tile.sgcraft:zpm_interface_cart.name=ZPM Interface Cart
 item.sgcraft:zpm.name=Zero Point Module
 item.sgcraft:gdo.name=Handheld GDO
+item.sgcraft:pdd.name=Personal Dialer Device
+item.sgcraft:configurator.name=Configurator

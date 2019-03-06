@@ -17,12 +17,14 @@ import gcewing.sg.container.PowerContainer;
 import gcewing.sg.container.SGBaseContainer;
 import gcewing.sg.entity.EntityStargateIris;
 import gcewing.sg.entity.SGEntity;
+import gcewing.sg.features.configurator.ConfiguratorItem;
 import gcewing.sg.features.gdo.GdoItem;
 import gcewing.sg.features.ic2.zpm.ZPMItem;
 import gcewing.sg.features.ic2.zpm.ZPMMultiplierRegistry;
 import gcewing.sg.features.ic2.zpm.ZpmContainer;
 import gcewing.sg.features.ic2.zpm.ZpmInterfaceCart;
 import gcewing.sg.features.ic2.zpm.ZpmInterfaceCartTE;
+import gcewing.sg.features.pdd.PddItem;
 import gcewing.sg.features.tokra.SGTradeHandler;
 import gcewing.sg.features.tokra.TokraVillagerWorldRegistry;
 import gcewing.sg.features.oc.OCIntegration;
@@ -118,7 +120,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 //     public static MystcraftIntegration mystcraftIntegration; //[MYST]
 
     public static Block zpm_interface_cart;
-    public static Item zpm, gdo;
+    public static Item zpm, gdo, pdd, configurator;
 
     public static CreativeTabs creativeTabs;
 
@@ -270,6 +272,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         }
 
         gdo = addItem(new GdoItem(), "gdo");
+        pdd = addItem(new PddItem(), "pdd");
+        configurator = addItem(new ConfiguratorItem(), "configurator");
     }
 
     @SideOnly(Side.CLIENT)

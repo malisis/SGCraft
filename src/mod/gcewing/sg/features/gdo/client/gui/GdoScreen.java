@@ -1,4 +1,4 @@
-package gcewing.sg.features.gdo.client;
+package gcewing.sg.features.gdo.client.gui;
 
 import com.google.common.eventbus.Subscribe;
 import gcewing.sg.util.IrisState;
@@ -61,6 +61,8 @@ public class GdoScreen extends BasicScreen {
         this.form.setRightPadding(3);
         this.form.setTopPadding(20);
         this.form.setLeftPadding(3);
+
+
 
         final UILabel titleLabel = new UILabel(this, "GDO Controller");
         titleLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
