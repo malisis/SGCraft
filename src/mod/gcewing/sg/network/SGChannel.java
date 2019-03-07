@@ -141,7 +141,7 @@ public class SGChannel extends BaseDataChannel {
             } else if (setting == 7) { // Test button functionality (varies)
                 //te.startDiallingStargate("ZFDDUR8", te, true, false);
                 //te.connect("PFKCMK3", player,true, false);
-                te.connect("ZFDDUR8", player,false, false);
+                te.connect("ZFDDUR8", player,true, false);
             }
         }
     }
