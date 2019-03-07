@@ -5,6 +5,7 @@ import gcewing.sg.util.IrisState;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.network.SGChannel;
 import gcewing.sg.SGCraft;
+import gcewing.sg.util.SGAddressing;
 import gcewing.sg.util.SGState;
 import gcewing.sg.util.GateUtil;
 import net.malisis.core.client.gui.Anchor;
@@ -32,7 +33,7 @@ public class GdoScreen extends BasicScreen {
     private BasicForm form, localGateControlArea, remoteGateControlArea;
     private UIButton localIrisOpenButton, localGateCloseButton, localIrisCloseButton, remoteIrisOpenButton, remoteGateCloseButton, remoteIrisCloseButton;
     private UIImage localGateImage, remoteGateImage;
-    private UILabel localGateChevronUpgradeLabel, remoteGateChevronUpgradeLabel;
+    private UILabel localGateAddressLabel, remoteGateAddressLabel;
     private BlockPos location;
     private World world;
     private EntityPlayer player;
@@ -89,9 +90,9 @@ public class GdoScreen extends BasicScreen {
         localGateImage.setSize(110, 110);
         localGateImage.setPosition(0, 20, Anchor.TOP | Anchor.CENTER);
 
-        localGateChevronUpgradeLabel = new UILabel(this, "5 Chevrons");
-        localGateChevronUpgradeLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.3F).build());
-        localGateChevronUpgradeLabel.setPosition(0, -30, Anchor.CENTER | Anchor.BOTTOM);
+        localGateAddressLabel = new UILabel(this, "gateAddress");
+        localGateAddressLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.3F).build());
+        localGateAddressLabel.setPosition(0, -30, Anchor.CENTER | Anchor.BOTTOM);
 
         localIrisOpenButton = new UIButtonBuilder(this)
             .width(40)
@@ -114,7 +115,7 @@ public class GdoScreen extends BasicScreen {
             .listener(this)
             .build("button.local.iris.close");
 
-        localGateControlArea.add(localGateControlLabel, localGateImage, localGateChevronUpgradeLabel, localIrisOpenButton, localGateCloseButton, localIrisCloseButton);
+        localGateControlArea.add(localGateControlLabel, localGateImage, localGateAddressLabel, localIrisOpenButton, localGateCloseButton, localIrisCloseButton);
 
         // ****************************************************************************************************************************
         // Remote Gate Control
@@ -138,9 +139,9 @@ public class GdoScreen extends BasicScreen {
         remoteGateImage.setSize(110, 110);
         remoteGateImage.setPosition(0, 20, Anchor.TOP | Anchor.CENTER);
 
-        remoteGateChevronUpgradeLabel = new UILabel(this, "5 Chevrons"); // Incorrect Value
-        remoteGateChevronUpgradeLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.3F).build());
-        remoteGateChevronUpgradeLabel.setPosition(0, -30, Anchor.CENTER | Anchor.BOTTOM);
+        remoteGateAddressLabel = new UILabel(this, "gateAddress"); // Incorrect Value
+        remoteGateAddressLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.3F).build());
+        remoteGateAddressLabel.setPosition(0, -30, Anchor.CENTER | Anchor.BOTTOM);
 
         remoteIrisOpenButton = new UIButtonBuilder(this)
             .width(40)
@@ -164,7 +165,7 @@ public class GdoScreen extends BasicScreen {
             .listener(this)
             .build("button.remote.iris.close");
 
-        remoteGateControlArea.add(remoteGateControlLabel, remoteGateImage, remoteGateChevronUpgradeLabel, remoteIrisOpenButton, remoteGateCloseButton, remoteIrisCloseButton);
+        remoteGateControlArea.add(remoteGateControlLabel, remoteGateImage, remoteGateAddressLabel, remoteIrisOpenButton, remoteGateCloseButton, remoteIrisCloseButton);
 
         // ****************************************************************************************************************************
 
@@ -248,11 +249,8 @@ public class GdoScreen extends BasicScreen {
                     this.form.setWidth(200);
                     this.remoteGateControlArea.setVisible(false);
                 }
-                if (!((SGBaseTE) localGate).hasChevronUpgrade) {
-                    this.localGateChevronUpgradeLabel.setText("7 Chevrons");
-                } else {
-                    this.localGateChevronUpgradeLabel.setText("9 Chevrons");
-                }
+                this.localGateAddressLabel.setText(SGAddressing.formatAddress(((SGBaseTE) localGate).homeAddress, "-", "-"));
+
                 // Disconnected No Iris
                 if (!((SGBaseTE) localGate).isConnected() && (!((SGBaseTE) localGate).hasIrisUpgrade) && ((SGBaseTE) localGate).gateType == 1)
                     this.localGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_no_iris.png")), null);
@@ -317,11 +315,7 @@ public class GdoScreen extends BasicScreen {
 
                     SGBaseTE remoteGate = ((SGBaseTE) localGate).getConnectedStargateTE();
 
-                    if (!remoteGate.hasChevronUpgrade) {
-                        this.remoteGateChevronUpgradeLabel.setText("7 Chevrons");
-                    } else {
-                        this.remoteGateChevronUpgradeLabel.setText("9 Chevrons");
-                    }
+                    this.remoteGateAddressLabel.setText(SGAddressing.formatAddress(((SGBaseTE) remoteGate).homeAddress, "-", "-"));
 
                     // Disconnected No Iris
                     if (!remoteGate.hasIrisUpgrade && (remoteGate.gateType == 0 || remoteGate.gateType == 1))
