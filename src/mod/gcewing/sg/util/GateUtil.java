@@ -16,7 +16,7 @@ public class GateUtil {
             if (gateTE instanceof SGBaseTE) {
                 if (gateTE != null) {
                     if (debug) {
-                        System.err.println("Found SGBaseTE at: " + gateTE.getPos());
+                        //System.err.println("Found SGBaseTE at: " + gateTE.getPos());
                     }
                     return gateTE;
                 }

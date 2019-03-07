@@ -113,36 +113,100 @@ public class SGChannel extends BaseDataChannel {
     @ServerMessageHandler("GdoInput")
     public void handleGdoInputFromClient(EntityPlayer player, ChannelInput data) {
         BlockPos pos = readCoords(data);
-        int function = data.readInt();
+        int setting = data.readInt();
         SGBaseTE te = SGBaseTE.at(player.world, pos);
 
         if (te != null) {
-            if (function == 1) { // Local Open Iris
+            if (setting == 1) { // Local Open Iris
                 te.openIris();
-            } else if (function == 2) { // Local Close Iris
+            } else if (setting == 2) { // Local Close Iris
                 te.closeIris();
-            } else if (function == 3) { // Local Disconnect Wormhole
+            } else if (setting == 3) { // Local Disconnect Wormhole
                 te.disconnect(player);
-            } else if (function == 4) { // Remote Open Iris
+            } else if (setting == 4) { // Remote Open Iris
                 if (te.isConnected()) {
                     SGBaseTE remoteGate = te.getConnectedStargateTE();
                     remoteGate.openIris();
                 }
-            } else if (function == 5) { // Remote Close Iris
+            } else if (setting == 5) { // Remote Close Iris
                 if (te.isConnected()) {
                     SGBaseTE remoteGate = te.getConnectedStargateTE();
                     remoteGate.closeIris();
                 }
-            } else if (function == 6) { // Remote Disconnect (Not implemented on GUI)
+            } else if (setting == 6) { // Remote Disconnect (Not implemented on GUI)
                 if (te.isConnected()) {
                     SGBaseTE remoteGate = te.getConnectedStargateTE();
                     remoteGate.disconnect();
                 }
-            } else if (function == 7) { // Test button functionality (varies)
+            } else if (setting == 7) { // Test button functionality (varies)
                 //te.startDiallingStargate("ZFDDUR8", te, true, false);
                 //te.connect("PFKCMK3", player,true, false);
                 te.connect("ZFDDUR8", player,false, false);
             }
         }
     }
+
+    public static void sendConfiguratorInputToServer(SGBaseTE te, int setting, int a, boolean b, double c) {
+        ChannelOutput data = channel.openServer("ConfiguratorInput");
+        writeCoords(data, te);
+        data.writeInt(setting);
+        data.writeInt(a);
+        data.writeBoolean(b);
+        data.writeDouble(c);
+        data.close();
+    }
+
+    @ServerMessageHandler("ConfiguratorInput")
+    public void handleConfiguratorInputFromClient(EntityPlayer player, ChannelInput data) {
+        BlockPos pos = readCoords(data);
+        int setting = data.readInt();
+        SGBaseTE te = SGBaseTE.at(player.world, pos);
+        int a = data.readInt();
+        boolean b = data.readBoolean();
+        double c = data.readDouble();
+
+        if (setting <= 0) {
+            System.err.println("Cannot process ConfiguratorInput packet, setting value is at or below zero!");
+            return;
+        }
+
+        System.out.println("Server: Configurator - " + setting + " | " + a + " | " + b + " | " + c);
+
+        if (setting == 1) { // Seconds to Stay Open (int)
+            te.secondsToStayOpen = a;
+        } if (setting == 2) { // Gate Rotation Speed (double)
+            te.ringRotationSpeed = c;
+        } else if (setting == 3) { // Energy Buffer Size (double)
+            te.maxEnergyBuffer = c;
+        } else if (setting == 4) { // Energy Per Fuel Item (double)
+            te.energyPerFuelItem = c;
+        } else if (setting == 5) { // Gate Openings per Fuel Item (int)
+            te.gateOpeningsPerFuelItem = a;
+        } else if (setting == 6) { // Distance Factor Multiplier (double)
+            te.distanceFactorMultiplier = c;
+        } else if (setting == 7) { // Inter-dimensional Multiplier (double)
+            te.interDimensionMultiplier = c;
+        } else if (setting == 8) { // One-Way Travel (boolean)
+            te.oneWayTravel = b;
+        } else if (setting == 9) { // Iris Upgrade (boolean)
+            te.hasIrisUpgrade = b;
+        } else if (setting == 10) { // Chevron Upgrade (boolean)
+            te.hasChevronUpgrade = b;
+        } else if (setting == 11) { //Pegasus Gate Type
+            te.gateType = a;
+        } else if (setting == 12) { // Reverse Wormhold Kills
+            te.reverseWormholeKills = b;
+        } else if (setting == 13) { // Can be Dialed
+            //Todo: build this.
+        } else if (setting == 14) { // Close from Either End
+            te.closeFromEitherEnd = b;
+        } else if (setting == 15) { // Preserve Inventory on Iris Death
+            te.preserveInventory = b;
+        } else if (setting == 16) { // No Input Power Required
+            //Todo: build this
+        }
+
+        te.markForUpdate(); // Force Client to Update
+    }
+
 }

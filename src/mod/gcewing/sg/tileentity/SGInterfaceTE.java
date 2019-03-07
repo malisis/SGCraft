@@ -80,7 +80,7 @@ public class SGInterfaceTE extends BaseTileEntity {
             SGBaseTE dte = SGAddressing.findAddressedStargate(address, te.getWorld());
             if (dte == null)
                 throw new IllegalArgumentException("unknownAddress");
-            double distanceFactor = SGBaseTE.distanceFactorForCoordDifference(te, dte);
+            double distanceFactor = dte.distanceFactorForCoordDifference(te, dte);
             return SGBaseTE.energyToOpen * distanceFactor;
         } catch (AddressingError e) {
             //System.out.printf("SGBaseTE.ciEnergyToDial: caught %s\n", e);

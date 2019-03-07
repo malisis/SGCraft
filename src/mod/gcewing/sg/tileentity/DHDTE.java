@@ -243,7 +243,8 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
         for (int i = 0; i < numFuelSlots; i++) {
             ItemStack stack = fuelStackInSlot(i);
             if (stack != null) {
-                energy += stack.getCount() * SGBaseTE.energyPerFuelItem;
+                SGBaseTE baseTe = this.getLinkedStargateTE();
+                energy += stack.getCount() * baseTe.energyPerFuelItem;
             }
         }
         return energy;
@@ -277,7 +278,8 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
             ItemStack stack = fuelStackInSlot(i);
             if (stack != null) {
                 decrStackSize(i, 1);
-                energyInBuffer += SGBaseTE.energyPerFuelItem;
+                SGBaseTE baseTe = this.getLinkedStargateTE();
+                energyInBuffer += baseTe.energyPerFuelItem;
                 return true;
             }
         }

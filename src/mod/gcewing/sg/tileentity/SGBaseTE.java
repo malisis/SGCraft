@@ -133,7 +133,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public final static double irisThickness = 0.2; //0.1;
     public final static DamageSource irisDamageSource = new DamageSource("sgcraft:iris");
     public final static float irisDamageAmount = 1000000;
-    public final static double ringRotationSpeed = 5.0; //2.0
+    public static int minutesOpenPerFuelItem = 80;
+
 
     final static int interDiallingTime = 10; // ticks
     public int syncAwaitTime = 10; // ticks  // 10 - withinWorld, 30 - dimensional
@@ -147,9 +148,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     final static int maxIrisPhase = 70; // ticks
 
-    public final static int firstCamouflageSlot = 0;
-    public final static int numCamouflageSlots = 5;
-    public final static int numInventorySlots = numCamouflageSlots;
+    public static int firstCamouflageSlot = 0;
+    public static int numCamouflageSlots = 5;
+    public static int numInventorySlots = numCamouflageSlots;
 
     static float defaultChevronAngle = 40f;
     static float chevronAngles[][] = {
@@ -158,31 +159,19 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             { 36f, 33f, 30f }  // 9 chevrons
     };
 
-    // Configuration options
-    public static double maxEnergyBuffer = 1000;
-    public static double energyPerFuelItem = 96000;
-    static double distanceFactorMultiplier = 1.0;
-    static double interDimensionMultiplier = 4.0;
-    static int gateOpeningsPerFuelItem = 24;
-    static int minutesOpenPerFuelItem = 80;
-
-    static boolean reverseWormholeKills = false;
-    static boolean closeFromEitherEnd = true;
+    // Static options
     static int chunkLoadingRange = 1;
     static boolean logStargateEvents = false;
-    static boolean preserveInventory = false;
     static float soundVolume = 1F;
     static boolean variableChevronPositions = true;
-    //static boolean immediateDHDGateDial = true;
-
     public static double energyToOpen;
     static double energyUsePerTick;
-
     public static boolean transparency = true;
-
     static Random random = new Random();
     static DamageSource transientDamage = new DamageSource("sgcraft:transient");
+    public static BaseConfiguration cfg;
 
+    // Instanced options
     public boolean isMerged;
     public SGState state = SGState.Idle;
     public double startRingAngle, ringAngle, lastRingAngle, targetRingAngle; // degrees
@@ -204,7 +193,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public double energyInBuffer, distanceFactor; // all energy use is multiplied by this
     public String homeAddress, addressError;
     private int updated = 0;
-    private static BaseConfiguration cfg;
 
     IInventory inventory = new InventoryBasic("Stargate", false, numInventorySlots);
 
@@ -220,39 +208,40 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public int secondsToStayOpen = 5 * 60;
     public int ticksToStayOpen = 20 * secondsToStayOpen;
     public boolean oneWayTravel = true;
+    public double ringRotationSpeed = 2.0;
+    public double maxEnergyBuffer = 1000;
+    public double energyPerFuelItem = 96000;
+    public double distanceFactorMultiplier = 1.0;
+    public double interDimensionMultiplier = 4.0;
+    public int gateOpeningsPerFuelItem = 24;
+    public boolean reverseWormholeKills = false;
+    public boolean closeFromEitherEnd = true;
+    public boolean preserveInventory = false;
 
     double ehGrid[][][];
     private static Set<UUID> messagesQueue = Sets.newHashSet();
 
     public static void configure(BaseConfiguration cfg) {
         SGBaseTE.cfg = cfg;
-        energyPerFuelItem = cfg.getDouble("stargate", "energyPerFuelItem", energyPerFuelItem);
-        gateOpeningsPerFuelItem = cfg.getInteger("stargate", "gateOpeningsPerFuelItem", gateOpeningsPerFuelItem);
+        //energyPerFuelItem = cfg.getDouble("stargate", "energyPerFuelItem", energyPerFuelItem);
+        //gateOpeningsPerFuelItem = cfg.getInteger("stargate", "gateOpeningsPerFuelItem", gateOpeningsPerFuelItem);
         minutesOpenPerFuelItem = cfg.getInteger("stargate", "minutesOpenPerFuelItem", minutesOpenPerFuelItem);
         //secondsToStayOpen = cfg.getInteger("stargate", "secondsToStayOpen", secondsToStayOpen);
         //oneWayTravel = cfg.getBoolean("stargate", "oneWayTravel", oneWayTravel);
-        reverseWormholeKills = cfg.getBoolean("stargate", "reverseWormholeKills", reverseWormholeKills);
-        closeFromEitherEnd = cfg.getBoolean("stargate", "closeFromEitherEnd", closeFromEitherEnd);
-        maxEnergyBuffer = cfg.getDouble("stargate", "maxEnergyBuffer", maxEnergyBuffer);
-        energyToOpen = energyPerFuelItem / gateOpeningsPerFuelItem;
-        energyUsePerTick = energyPerFuelItem / (minutesOpenPerFuelItem * 60 * 20);
-        distanceFactorMultiplier = cfg.getDouble("stargate", "distanceFactorMultiplier", distanceFactorMultiplier);
-        interDimensionMultiplier = cfg.getDouble("stargate", "interDimensionMultiplier", interDimensionMultiplier);
+        //reverseWormholeKills = cfg.getBoolean("stargate", "reverseWormholeKills", reverseWormholeKills);
+        //closeFromEitherEnd = cfg.getBoolean("stargate", "closeFromEitherEnd", closeFromEitherEnd);
+        //maxEnergyBuffer = cfg.getDouble("stargate", "maxEnergyBuffer", maxEnergyBuffer);
+        //energyToOpen = energyPerFuelItem / gateOpeningsPerFuelItem;
+        //energyUsePerTick = energyPerFuelItem / (minutesOpenPerFuelItem * 60 * 20);
+        //distanceFactorMultiplier = cfg.getDouble("stargate", "distanceFactorMultiplier", distanceFactorMultiplier);
+        //interDimensionMultiplier = cfg.getDouble("stargate", "interDimensionMultiplier", interDimensionMultiplier);
         //ticksToStayOpen = 20 * secondsToStayOpen;
         chunkLoadingRange = cfg.getInteger("options", "chunkLoadingRange", chunkLoadingRange);
         transparency = cfg.getBoolean("stargate", "transparency", transparency);
         logStargateEvents = cfg.getBoolean("options", "logStargateEvents", logStargateEvents);
-        preserveInventory = cfg.getBoolean("iris", "preserveInventory", preserveInventory);
+        //preserveInventory = cfg.getBoolean("iris", "preserveInventory", preserveInventory);
         soundVolume = (float)cfg.getDouble("stargate", "soundVolume", soundVolume);
         variableChevronPositions = cfg.getBoolean("stargate", "variableChevronPositions", variableChevronPositions);
-
-        if (debugEnergyUse) {
-            System.out.println("-------Setting up SGBaseTE--------");
-            System.out.printf("SGBaseTE: energyPerFuelItem = %s\n", energyPerFuelItem);
-            System.out.printf("SGBaseTE: energyToOpen = %s\n", energyToOpen);
-            System.out.printf("SGBaseTE: energyUsePerTick = %s\n", energyUsePerTick);
-            System.out.println("----------------------------------");
-        }
     }
 
     public static SGBaseTE get(IBlockAccess world, BlockPos pos) {
@@ -383,7 +372,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     public int dimension() {
-        return world != null ? world.provider.getDimension() : -999;
+        return this.world != null ? world.provider.getDimension() : -999;
     }
 
     @Override
@@ -394,54 +383,110 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     @Override
     public void readFromNBT(NBTTagCompound nbt) {
         super.readFromNBT(nbt);
-        isMerged = nbt.getBoolean("isMerged");
-        state = SGState.values()[nbt.getInteger("state")];
+        this.isMerged = nbt.getBoolean("isMerged");
+        this.state = SGState.values()[nbt.getInteger("state")];
         SGState oldState = state;
-        ringAngle = nbt.getDouble("ringAngle");
-        startRingAngle = nbt.getDouble("startRingAngle");
-        targetRingAngle = nbt.getDouble("targetRingAngle");
-        numEngagedChevrons = nbt.getInteger("numEngagedChevrons");
-        dialledAddress = nbt.getString("dialledAddress");
-        isLinkedToController = nbt.getBoolean("isLinkedToController");
+        this.ringAngle = nbt.getDouble("ringAngle");
+        this.startRingAngle = nbt.getDouble("startRingAngle");
+        this.targetRingAngle = nbt.getDouble("targetRingAngle");
+        this.numEngagedChevrons = nbt.getInteger("numEngagedChevrons");
+        this.dialledAddress = nbt.getString("dialledAddress");
+        this.isLinkedToController = nbt.getBoolean("isLinkedToController");
         int x = nbt.getInteger("linkedX");
         int y = nbt.getInteger("linkedY");
         int z = nbt.getInteger("linkedZ");
-        linkedPos = new BlockPos(x, y, z);
-        hasChevronUpgrade = nbt.getBoolean("hasChevronUpgrade");
+        this.linkedPos = new BlockPos(x, y, z);
+        this.hasChevronUpgrade = nbt.getBoolean("hasChevronUpgrade");
         if (nbt.hasKey("connectedLocation")) {
             connectedLocation = new SGLocation(nbt.getCompoundTag("connectedLocation"));
         }
-        isInitiator = nbt.getBoolean("isInitiator");
-        timeout = nbt.getInteger("timeout");
-        maxTimeout = nbt.getInteger("maxTimeout");
-        energyInBuffer = nbt.hasKey("energyInBuffer") ? nbt.getDouble("energyInBuffer") : nbt.getInteger("fuelBuffer");
-        distanceFactor = nbt.getDouble("distanceFactor");
-        hasIrisUpgrade = nbt.getBoolean("hasIrisUpgrade");
-        irisState = IrisState.values()[nbt.getInteger("irisState")];
-        irisPhase = nbt.getInteger("irisPhase");
-        redstoneInput = nbt.getBoolean("redstoneInput");
-        homeAddress = getStringOrNull(nbt, "address");
-        addressError = nbt.getString("addressError");
-        gateType = nbt.getInteger("gateType");
+        this.isInitiator = nbt.getBoolean("isInitiator");
+        this.timeout = nbt.getInteger("timeout");
+        this.maxTimeout = nbt.getInteger("maxTimeout");
+        this.energyInBuffer = nbt.hasKey("energyInBuffer") ? nbt.getDouble("energyInBuffer") : nbt.getInteger("fuelBuffer");
+        this.distanceFactor = nbt.getDouble("distanceFactor");
+        this.hasIrisUpgrade = nbt.getBoolean("hasIrisUpgrade");
+        this.irisState = IrisState.values()[nbt.getInteger("irisState")];
+        this.irisPhase = nbt.getInteger("irisPhase");
+        this.redstoneInput = nbt.getBoolean("redstoneInput");
+        this.homeAddress = getStringOrNull(nbt, "address");
+        this.addressError = nbt.getString("addressError");
 
-        if (oldState != state && state == SGState.Connected && world.isRemote) {
+        if (oldState != this.state && this.state == SGState.Connected && this.world.isRemote) {
             SGCraft.playSound(this, eventHorizonSound);
         }
 
-        // New per SGBaseTE Configuration Options
+        // Configurator Options
+        this.gateType = nbt.getInteger("gateType");
+
         if (nbt.hasKey("secondsToStayOpen")) {
-            secondsToStayOpen = nbt.getInteger("secondsToStayOpen");
-            ticksToStayOpen = 20 * secondsToStayOpen;
+            this.secondsToStayOpen = nbt.getInteger("secondsToStayOpen");
         } else {
-            secondsToStayOpen = cfg.getInteger("stargate", "secondsToStayOpen", secondsToStayOpen);
-            ticksToStayOpen = 20 * secondsToStayOpen;
+            this.secondsToStayOpen = this.cfg.getInteger("stargate", "secondsToStayOpen", this.secondsToStayOpen);
         }
 
         if (nbt.hasKey("oneWayTravel")) {
-            oneWayTravel = nbt.getBoolean("oneWayTravel");
+            this.oneWayTravel = nbt.getBoolean("oneWayTravel");
         } else {
-            oneWayTravel = cfg.getBoolean("stargate", "oneWayTravel", oneWayTravel);
+            this.oneWayTravel = cfg.getBoolean("stargate", "oneWayTravel", this.oneWayTravel);
         }
+
+        if (nbt.hasKey("ringRotationSpeed")) {
+            this.ringRotationSpeed = nbt.getDouble("ringRotationSpeed");
+        }
+
+        if (nbt.hasKey("maxEnergyBuffer")) {
+            this.maxEnergyBuffer = nbt.getDouble("maxEnergyBuffer");
+        } else {
+            this.maxEnergyBuffer = cfg.getDouble("stargate", "maxEnergyBuffer", this.maxEnergyBuffer);
+        }
+
+        if (nbt.hasKey("energyPerFuelItem")) {
+            this.energyPerFuelItem = nbt.getDouble("energyPerFuelItem");
+        } else {
+            this.energyPerFuelItem = cfg.getDouble("stargate", "energyPerFuelItem", this.energyPerFuelItem);
+        }
+
+        if (nbt.hasKey("gateOpeningsPerFuelItem")) {
+            this.gateOpeningsPerFuelItem = nbt.getInteger("gateOpeningsPerFuelItem");
+        } else {
+            this.gateOpeningsPerFuelItem = cfg.getInteger("stargate", "gateOpeningsPerFuelItem", this.gateOpeningsPerFuelItem);
+        }
+
+        if (nbt.hasKey("distanceFactorMultiplier")) {
+            this.distanceFactorMultiplier = nbt.getDouble("distanceFactorMultiplier");
+        } else {
+            this.distanceFactorMultiplier = cfg.getDouble("stargate", "distanceFactorMultiplier", this.distanceFactorMultiplier);
+        }
+
+        if (nbt.hasKey("interDimensionalMultiplier")) {
+            this.interDimensionMultiplier = nbt.getDouble("interDimensionalMultiplier");
+        } else {
+            this.interDimensionMultiplier = cfg.getDouble("stargate", "interDimensionMultiplier", this.interDimensionMultiplier);
+        }
+
+        if (nbt.hasKey("reverseWormholeKills")) {
+            this.reverseWormholeKills = nbt.getBoolean("reverseWormholeKills");
+        } else {
+            reverseWormholeKills = cfg.getBoolean("stargate", "reverseWormholeKills", this.reverseWormholeKills);
+        }
+
+        if (nbt.hasKey("closeFromEitherEnd")) {
+            this.closeFromEitherEnd = nbt.getBoolean("closeFromEitherEnd");
+        } else {
+            this.closeFromEitherEnd = cfg.getBoolean("stargate", "closeFromEitherEnd", this.closeFromEitherEnd);
+        }
+
+        if (nbt.hasKey("preserveInventory")) {
+            this.preserveInventory = nbt.getBoolean("preserveInventory");
+        } else {
+            this.preserveInventory = cfg.getBoolean("iris", "preserveInventory", this.preserveInventory);
+        }
+
+        // Set values after NBT load
+        this.ticksToStayOpen = 20 * this.secondsToStayOpen;
+        this.energyToOpen = this.energyPerFuelItem / this.gateOpeningsPerFuelItem;
+        this.energyUsePerTick = this.energyPerFuelItem / (this.minutesOpenPerFuelItem * 60 * 20);
     }
 
     protected String getStringOrNull(NBTTagCompound nbt, String name) {
@@ -457,16 +502,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setDouble("startRingAngle", startRingAngle);
         nbt.setDouble("targetRingAngle", targetRingAngle);
         nbt.setInteger("numEngagedChevrons", numEngagedChevrons);
-        //nbt.setString("homeAddress", homeAddress);
         nbt.setString("dialledAddress", dialledAddress);
         nbt.setBoolean("isLinkedToController", isLinkedToController);
         nbt.setInteger("linkedX", linkedPos.getX());
         nbt.setInteger("linkedY", linkedPos.getY());
         nbt.setInteger("linkedZ", linkedPos.getZ());
         nbt.setBoolean("hasChevronUpgrade", hasChevronUpgrade);
-        if (connectedLocation != null) {
-            nbt.setTag("connectedLocation", connectedLocation.toNBT());
-        }
         nbt.setBoolean("isInitiator", isInitiator);
         nbt.setInteger("timeout", timeout);
         nbt.setInteger("maxTimeout", maxTimeout);
@@ -476,15 +517,29 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setInteger("irisState", irisState.ordinal());
         nbt.setInteger("irisPhase", irisPhase);
         nbt.setBoolean("redstoneInput", redstoneInput);
+        if (connectedLocation != null) {
+            nbt.setTag("connectedLocation", connectedLocation.toNBT());
+        }
         if (homeAddress != null) {
             nbt.setString("address", homeAddress);
         }
         if (addressError != null) {
             nbt.setString("addressError", addressError);
         }
-        nbt.setInteger("gateType", gateType);
 
-        //Todo: implement saving of : secondsToStayOpen, oneWayTravel
+        // Configurator Options
+        nbt.setInteger("gateType", gateType);
+        nbt.setInteger("secondsToStayOpen", secondsToStayOpen);
+        nbt.setBoolean("oneWayTravel", oneWayTravel);
+        nbt.setDouble("ringRotationSpeed", ringRotationSpeed);
+        nbt.setDouble("maxEnergyBuffer", maxEnergyBuffer);
+        nbt.setDouble("energyPerFuelItem", energyPerFuelItem);
+        nbt.setInteger("gateOpeningsPerFuelItem", gateOpeningsPerFuelItem);
+        nbt.setDouble("distanceFactorMultiplier", distanceFactorMultiplier);
+        nbt.setDouble("interDimensionMultiplier", interDimensionMultiplier);
+        nbt.setBoolean("reverseWormholeKills", reverseWormholeKills);
+        nbt.setBoolean("closeFromEitherEnd", closeFromEitherEnd);
+        nbt.setBoolean("preserveInventory", preserveInventory);
 
         return nbt;
     }
@@ -820,7 +875,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return null;
     }
 
-    public static double distanceFactorForCoordDifference(TileEntity te1, TileEntity te2) {
+    public double distanceFactorForCoordDifference(TileEntity te1, TileEntity te2) {
         double dx = te1.getPos().getX() - te2.getPos().getX();
         double dz = te1.getPos().getZ() - te2.getPos().getZ();
         double d = Math.sqrt(dx * dx + dz * dz);
@@ -1310,6 +1365,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 targetAngle -= Math.copySign(360.0, ringAngle);
                 diff = targetAngle - ringAngle;
             }
+
             int delay = (int)Math.abs(diff / ringRotationSpeed);
             targetRingAngle = targetAngle;
             //System.out.println(homeAddress + " -> Delay: " + delay + " (From angle " + ringAngle + " to angle " + targetAngle + ")");
@@ -1550,7 +1606,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return newEntity;
     }
 
-    static void terminateEntityByIrisImpact(Entity entity) {
+    public void terminateEntityByIrisImpact(Entity entity) {
         if (entity instanceof EntityPlayer) {
             terminatePlayerByIrisImpact((EntityPlayer)entity);
         } else {
@@ -1558,7 +1614,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    static void terminatePlayerByIrisImpact(EntityPlayer player) {
+    public void terminatePlayerByIrisImpact(EntityPlayer player) {
         if (player.capabilities.isCreativeMode) {
             sendErrorMsg(player, "irisAtDestination");
         } else {
@@ -1568,7 +1624,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    static void terminateEntityByReverseWormhole(Entity entity) {
+    public void terminateEntityByReverseWormhole(Entity entity) {
         if (entity instanceof EntityPlayer) {
             terminatePlayerByReverseWormhole((EntityPlayer)entity);
         } else {
@@ -1576,7 +1632,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    static void terminatePlayerByReverseWormhole(EntityPlayer player) {
+    public void terminatePlayerByReverseWormhole(EntityPlayer player) {
         if (player.capabilities.isCreativeMode) {
             sendErrorMsg(player, "reverseWormhole");
         } else {
@@ -2090,7 +2146,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return this.maxEnergyBuffer;
     }
 
-    public static double getBaseMaxEnergyBuffer() {
-        return SGBaseTE.maxEnergyBuffer;
+    public double getBaseMaxEnergyBuffer() {
+        return this.maxEnergyBuffer;
     }
 }
