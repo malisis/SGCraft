@@ -1707,6 +1707,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     Entity teleportWithinDimension(Entity entity, Vector3 p, Vector3 v, double a, boolean destBlocked) {
         if (entity instanceof EntityPlayerMP) {
+            System.out.println("AAA");
             return teleportPlayerWithinDimension((EntityPlayerMP) entity, p, v, a);
         } else {
             return teleportEntityToWorld(entity, p, v, a, (WorldServer) entity.world, destBlocked);
@@ -1717,6 +1718,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         entity.rotationYaw = (float)a;
         entity.setPositionAndUpdate(p.x, p.y, p.z);
         entity.world.updateEntityWithOptionalForce(entity, false);
+        entity.velocityChanged = true; // Have to mark entity velocity changed.
+
         return entity;
     }
 
@@ -1734,11 +1737,16 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     void transferPlayerToDimension(EntityPlayerMP player, int newDimension, Vector3 p, double a) {
         FakeTeleporter fakeTeleporter = new FakeTeleporter();
+        double x = player.motionX;
+        double y = player.motionY;
+        double z = player.motionZ;
         player.changeDimension(newDimension, fakeTeleporter);
-
+        System.out.println("I Got here");
         // Now check to see if the player made it through the above server method, if it did, then update their location.
         if (player.dimension == newDimension) {
             player.connection.setPlayerLocation(p.x, p.y, p.z, (float) a, player.rotationPitch);
+            player.setVelocity(x, y, z);
+            player.velocityChanged = true;
         }
     }
 
@@ -1759,8 +1767,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         // Now check to see if the entity made it through the above server method, if it did, then update their location.
         if (newEntity.dimension == newWorld.provider.getDimension()) {
-            setVelocity(newEntity,v); //Set velocity so that items exist at the same rate they did when they entered the event horizon.
             newEntity.setLocationAndAngles(p.x, p.y, p.z, (float) a, oldEntity.rotationPitch);
+            setVelocity(newEntity,v); //Set velocity so that items exist at the same rate they did when they entered the event horizon.
+            newEntity.velocityChanged = true;
         }
 
         return newEntity;
