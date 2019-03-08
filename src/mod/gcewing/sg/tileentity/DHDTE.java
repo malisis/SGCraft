@@ -81,11 +81,7 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
         if (gate != null) {
             if (enteredAddress.length() < gate.getNumChevrons()) {
                 enteredAddress += symbol;
-                boolean fastLockChevron = false;
-                if (player != null && !player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().getItem().equals(SGCraft.gdo)) {
-                    fastLockChevron = true;
-                }
-                if (fastLockChevron) {
+                if (gate.chevronsLockOnDial) {
                     boolean last = enteredAddress.length() == gate.getNumChevrons();
                     gate.finishDiallingSymbol(Character.toString(symbol), true, false, last);
                     gate.dialledAddress = enteredAddress;
@@ -102,12 +98,7 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
             if (!enteredAddress.isEmpty()) {
                 char symbol = enteredAddress.charAt(enteredAddress.length() - 1);
                 enteredAddress = enteredAddress.substring(0, enteredAddress.length() - 1);
-                //if (SGBaseTE.immediateDHDGateDial) {
-                boolean fastLockChevron = false;
-                if (player != null && !player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().getItem().equals(SGCraft.gdo)) {
-                    fastLockChevron = true;
-                }
-                if (fastLockChevron) {
+                if (gate.chevronsLockOnDial) {
                     gate.unsetSymbol(symbol);
                     gate.dialledAddress = enteredAddress;
                     gate.numEngagedChevrons = enteredAddress.length()-1;
