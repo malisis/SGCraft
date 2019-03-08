@@ -1741,7 +1741,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         double y = player.motionY;
         double z = player.motionZ;
         player.changeDimension(newDimension, fakeTeleporter);
-        System.out.println("I Got here");
+
         // Now check to see if the player made it through the above server method, if it did, then update their location.
         if (player.dimension == newDimension) {
             player.connection.setPlayerLocation(p.x, p.y, p.z, (float) a, player.rotationPitch);
