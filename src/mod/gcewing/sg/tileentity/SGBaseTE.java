@@ -205,6 +205,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     // Unique Gate Configurator Options
     public int gateType = 1; //1 = Milky way 2 = Pegasus
+    public int gateOrientation = 1;
     public int secondsToStayOpen = 5 * 60;
     public int ticksToStayOpen = 20 * secondsToStayOpen;
     public boolean oneWayTravel = true;
@@ -220,6 +221,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public boolean acceptIncomingConnections = true;
     public boolean chevronsLockOnDial = false;
     public boolean returnToPreviousIrisState = false;
+    public boolean allowOnlySpecifiedDestination = false;
+    public String onlySpecifiedAddress = "";
+    public int facingDirectionOfBase = 0;
 
     double ehGrid[][][];
     private static Set<UUID> messagesQueue = Sets.newHashSet();
@@ -504,6 +508,25 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             this.returnToPreviousIrisState = false;
         }
 
+        if (nbt.hasKey("allowOnlySpecifiedDestination")) {
+            this.allowOnlySpecifiedDestination = nbt.getBoolean("allowOnlySpecifiedDestination");
+        } else {
+            this.allowOnlySpecifiedDestination = false;
+        }
+
+        if (nbt.hasKey("onlySpecifiedAddress")) {
+            this.onlySpecifiedAddress = nbt.getString("onlySpecifiedAddress");
+        } else {
+            this.onlySpecifiedAddress = "";
+        }
+
+        if (nbt.hasKey("gateOrientation")) {
+            this.gateOrientation = nbt.getInteger("gateOrientation");
+        } else {
+            this.gateOrientation = 1;
+        }
+        this.facingDirectionOfBase = nbt.getInteger("facingDirectionOfBase");
+
         // Set values after NBT load
         this.ticksToStayOpen = 20 * this.secondsToStayOpen;
         this.energyToOpen = this.energyPerFuelItem / this.gateOpeningsPerFuelItem;
@@ -564,7 +587,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setBoolean("acceptIncomingconnections", acceptIncomingConnections);
         nbt.setBoolean("chevronsLockOnDial", chevronsLockOnDial);
         nbt.setBoolean("returnToPreviousIrisState", returnToPreviousIrisState);
-
+        nbt.setBoolean("allowOnlySpecifiedDestination", allowOnlySpecifiedDestination);
+        nbt.setString("onlySpecifiedAddress", onlySpecifiedAddress);
+        nbt.setInteger("gateOrientation", gateOrientation);
+        nbt.setInteger("facingDirectionOfBase", facingDirectionOfBase);
         return nbt;
     }
 
@@ -778,6 +804,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         String homeAddress = findHomeAddress();
         if (homeAddress.equals("")) {
             return diallingFailure(player, "selfOutOfRange");
+        }
+        if (this.allowOnlySpecifiedDestination) {
+            if (!this.onlySpecifiedAddress.isEmpty()) {
+                if (!address.equalsIgnoreCase(this.onlySpecifiedAddress));
+                    return diallingFailure(player, "dialspecificaddress");
+            }
         }
         SGBaseTE targetGate;
         try {

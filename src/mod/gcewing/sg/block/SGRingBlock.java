@@ -181,17 +181,21 @@ public class SGRingBlock extends SGBlock<SGRingTE> {
         if (SGBaseBlock.debugMerge)
             System.out.printf("SGRingBlock.updateBaseBlocks: merged = %s, base = %s\n",
                 te.isMerged, te.basePos);
-        for (int i = -2; i <= 2; i++)
+        for (int i = -5; i <= 5; i++)
             for (int j = -4; j <= 0; j++)
-                for (int k = -2; k <= 2; k++) {
+                for (int k = -5; k <= 5; k++) {
                     BlockPos bp = pos.add(i, j, k);
                     Block block = world.getBlockState(bp).getBlock();
                     if (block instanceof SGBaseBlock) {
                          if (SGBaseBlock.debugMerge)
                             System.out.printf("SGRingBlock.updateBaseBlocks: found base at %s\n", bp);
                         SGBaseBlock base = (SGBaseBlock)block;
-                        if (!te.isMerged)
-                            base.checkForMerge(world, bp);
+                        if (!te.isMerged) {
+                            base.checkForVerticalMerge(world, bp);
+                            if (!te.isMerged) {
+                                base.checkForHorizontalMerge(world, bp);
+                            }
+                        }
                         else if (te.basePos.equals(bp))
                             base.unmerge(world, bp);
                 }

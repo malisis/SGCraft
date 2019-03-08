@@ -6,6 +6,8 @@
 
 package gcewing.sg.block;
 
+import static gcewing.sg.BaseOrientation.Orient4WaysByState.FACING;
+
 import gcewing.sg.BaseBlockUtils;
 import gcewing.sg.BaseConfiguration;
 import gcewing.sg.BaseOrientation;
@@ -111,9 +113,29 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
     
     @Override
     public void onBlockAdded(World world, BlockPos pos, IBlockState state) {
-        if (SGBaseBlock.debugMerge)
+        if (SGBaseBlock.debugMerge) {
             System.out.printf("SGBaseBlock.onBlockAdded: at %d\n", pos);
-        checkForMerge(world, pos);
+        }
+
+        checkForVerticalMerge(world, pos);
+        checkForHorizontalMerge(world, pos);
+        SGBaseTE te = getTileEntity(world, pos);
+        if (te != null) {
+            if (te instanceof SGBaseTE) {
+                if (state.getValue(FACING).toString().equalsIgnoreCase("north")) {
+                    te.facingDirectionOfBase = 0;
+                }
+                if (state.getValue(FACING).toString().equalsIgnoreCase("west")) {
+                    te.facingDirectionOfBase = 1;
+                }
+                if (state.getValue(FACING).toString().equalsIgnoreCase("south")) {
+                    te.facingDirectionOfBase = 2;
+                }
+                if (state.getValue(FACING).toString().equalsIgnoreCase("east")) {
+                    te.facingDirectionOfBase = 3;
+                }
+            }
+        }
     }
 
     @Override
@@ -143,7 +165,6 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
     
     @Override    
     public void neighborChanged(IBlockState state, World world, BlockPos pos, Block block, BlockPos from) {
-        //System.out.printf("SGBaseBlock.neighborChanged: %s\n", pos);
         neighbourChanged(world, pos);
     }
 
@@ -152,41 +173,76 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
         if (te != null)
             te.onNeighborBlockChange();
     }
-    
-    public void checkForMerge(World world, BlockPos pos) {
-        if (debugMerge)
-            System.out.printf("SGBaseBlock.checkForMerge at %s\n", pos);
+
+    public void checkForVerticalMerge(World world, BlockPos pos) {
         if (!isMerged(world, pos)) {
             Trans3 t = localToGlobalTransformation(world, pos);
-            for (int i = -2; i <= 2; i++)
-                for (int j = 0; j <= 4; j++) 
+            for (int i = -2; i <= 2; i++) {
+                for (int j = 0; j <= 4; j++) {
                     if (!(i == 0 && j == 0)) {
-                        //BlockPos rp = pos.add(i * dx, j, i * dz);
                         BlockPos rp = t.p(i, j, 0).blockPos();
                         int type = getRingBlockType(world, rp);
                         int pat = pattern[4 - j][2 + i];
                         if (pat != 0 && type != pat) {
-                            if (debugMerge)
-                                System.out.printf("SGBaseBlock: world %d != pattern %d at %s\n",
-                                    type, pattern[j][2 + i], rp);
                             return;
                         }
                     }
-            if (debugMerge)
-                System.out.printf("SGBaseBlock: Merging\n");
+                }
+            }
+
             SGBaseTE te = getTileEntity(world, pos);
             te.setMerged(true);
+            te.gateOrientation = 1;
             BaseBlockUtils.markBlockForUpdate(world, pos);
             for (int i = -2; i <= 2; i++)
-                for (int j = 0; j <= 4; j++) 
+                for (int j = 0; j <= 4; j++)
                     if (!(i == 0 && j == 0)) {
-                        //BlockPos rp = pos.add(i * dx, j, i * dz);
                         BlockPos rp = t.p(i, j, 0).blockPos();
                         Block block = world.getBlockState(rp).getBlock();
-                        if (block instanceof SGRingBlock)
-                            ((SGRingBlock)block).mergeWith(world, rp, pos);
+                        if (block instanceof SGRingBlock) {
+                            ((SGRingBlock) block).mergeWith(world, rp, pos);
+                        }
                     }
             te.checkForLink();
+        }
+    }
+
+    public void checkForHorizontalMerge(World world, BlockPos pos) {
+        boolean debugThisMerge = true;
+        if (!isMerged(world, pos)) {
+            Trans3 t = localToGlobalTransformation(world, pos);
+            for (int x = -2; x <= 2; x++) {
+                for (int z = 0; z <= 4; z++) {
+                    if (!(x == 0 && z == 0)) {
+                        BlockPos rp = t.p(x, 0, z).blockPos();
+                        int type = getRingBlockType(world, rp);
+                        int pat = pattern[4 - z][2 + x];
+                        if (pat != 0 && type != pat) {
+                            return;
+                        }
+                    }
+                }
+            }
+
+            SGBaseTE te = getTileEntity(world, pos);
+            te.setMerged(true);
+            te.gateOrientation = 2;
+            BaseBlockUtils.markBlockForUpdate(world, pos);
+
+            for (int x = -2; x <= 2; x++) {
+                for (int z = 0; z <= 4; z++) {
+                    if (!(x == 0 && z == 0)) {
+                        //BlockPos rp = t.p(i, j, 0).blockPos(); // original
+                        BlockPos rp = t.p(x, 0, z).blockPos();
+                        Block block = world.getBlockState(rp).getBlock();
+                        if (block instanceof SGRingBlock) {
+                            ((SGRingBlock) block).mergeWith(world, rp, pos);
+                        }
+                    }
+                }
+            }
+            te.checkForLink();
+            te.markForUpdate();
         }
     }
     
@@ -248,19 +304,17 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
     }
     
     void unmergeRing(World world, BlockPos pos) {
-        for (int i = -2; i <= 2; i++)
+        for (int i = -5; i <= 5; i++)
             for (int j = 0; j <= 4; j++)
-                for (int k = -2; k <= 2; k++)
+                for (int k = -5; k <= 5; k++)
                     unmergeRingBlock(world, pos, pos.add(i, j, k));
     }
     
     void unmergeRingBlock(World world, BlockPos pos, BlockPos ringPos) {
-        //System.out.printf("SGBaseBlock.unmergeRingBlock at (%d,%d,%d)\n", xr, yr, zr);
         Block block = world.getBlockState(ringPos).getBlock();
         if (debugMerge)
             System.out.printf("SGBaseBlock.unmergeRingBlock: found %s at %s\n", block, ringPos);
         if (block instanceof SGRingBlock) {
-            //System.out.printf("SGBaseBlock: unmerging ring block\n");
             ((SGRingBlock)block).unmergeFrom(world, ringPos, pos);
         }
     }

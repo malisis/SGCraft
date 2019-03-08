@@ -7,13 +7,19 @@
 package gcewing.sg.client.renderer;
 
 import gcewing.sg.BaseGLUtils;
+import gcewing.sg.BaseOrientation;
 import gcewing.sg.BaseTileEntityRenderer;
+import gcewing.sg.block.SGBaseBlock;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.SGCraft;
 import gcewing.sg.util.SGState;
 import gcewing.sg.Vector3;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockDirectional;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
 import org.lwjgl.opengl.GL11;
 
 import static java.lang.Math.min;
@@ -78,22 +84,55 @@ public class SGBaseTERenderer extends BaseTileEntityRenderer {
             if (SGBaseTE.transparency) {
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            }
-            else
+            } else {
                 glDisable(GL_BLEND);
+            }
+
             glEnable(GL_RESCALE_NORMAL);
             glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
 
-            //Original
-            //glTranslated(x + 0.5, y + 2.5, z + 0.5);
+            if (gate.gateOrientation == 1) {
+                glTranslated(x + 0.5, y + 2.5, z + 0.5); // Vertical, facing SOUTH
+            }
 
-            // On Ground, Face Up
-            //glTranslated(x + 0.5, y + 0.25, z + 0.5);
-            //glRotatef(180,0,180,-180);
+            if (gate.gateOrientation == 2) {
+                if (gate.facingDirectionOfBase == 0) { // North
+                    glTranslated(x + 0.5, y + 0.25, z + 2.5);
+                    glRotatef(180, 0, 180, 180); // Horizontal, Face Up
+                }
+                if (gate.facingDirectionOfBase == 1) { // West
+                    glTranslated(x + 2.5, y + 0.25, z + 0.5);
+                    glRotatef(180, 180, 180, 0); // Horizontal, Face Up
+                }
+                if (gate.facingDirectionOfBase == 2) { // South
+                    glTranslated(x + 0.5, y + 0.25, z + -1.5);
+                    glRotatef(180, 0, -180, 180); // Horizontal, Face Up
+                }
+                if (gate.facingDirectionOfBase == 3) { // East
+                    glTranslated(x + -1.5, y + 0.25, z + 0.5);
+                    glRotatef(180, 180, -180, 0); // Horizontal, Face Up
+                }
+            }
 
-            // Floating, face down
-            //glTranslated(x + 0.5, y + 4.25, z + 0.5);
-            //glRotatef(180,0,180,180);
+            if (gate.gateOrientation == 3) {
+                if (gate.facingDirectionOfBase == 0) { // North
+                    glTranslated(x + 0.5, y + 0.25, z + 2.5);
+                    glRotatef(180, 0, -180, 180); // Horizontal, Face Down
+                }
+                if (gate.facingDirectionOfBase == 1) { // West
+                    glTranslated(x + 2.5, y + 0.25, z + 0.5);
+                    glRotatef(180, 180, -180, 0); // Horizontal, Face Down
+
+                }
+                if (gate.facingDirectionOfBase == 2) { // South
+                    glTranslated(x + 0.5, y + 0.25, z + -1.5);
+                    glRotatef(180, 0, 180, 180); // Horizontal, Face Down
+                }
+                if (gate.facingDirectionOfBase == 3) { // East
+                    glTranslated(x + -1.5, y + 0.25, z + 0.5);
+                    glRotatef(180, 180, 180, 0); // Horizontal, Face Down
+                }
+            }
 
             renderStargate(gate, partialTicks);
 
@@ -197,18 +236,21 @@ public class SGBaseTERenderer extends BaseTileEntityRenderer {
         for (int i = i0; i < i0 + numChevrons; i++) {
             int j = chevronEngagementSequences[k][i];
             boolean engaged = te.chevronIsEngaged(j);
-            renderChevronAtPosition(i, a, engaged);
+            renderChevronAtPosition(te, i, a, engaged);
         }
     }
 
     // Render a chevron at the given position (0 to 8, with 4 being top dead centre)
-    void renderChevronAtPosition(int i, float a, boolean engaged) {
+    void renderChevronAtPosition(SGBaseTE gate, int i, float a, boolean engaged) {
         glPushMatrix();
-        // Normal
-        glRotatef(90 - (i - 4) * a, 0, 0, 1);
 
-        // On ground
-        //glRotatef(-90 - (i - 4) * a, 0, 0, 1);
+        if (gate.gateOrientation == 1) {
+            glRotatef(90 - (i - 4) * a, 0, 0, 1);
+        }
+
+        if (gate.gateOrientation == 2 || gate.gateOrientation == 3) {
+            glRotatef(-90 - (i - 4) * a, 0, 0, 1);
+        }
 
         chevron(engaged);
         glPopMatrix();
