@@ -32,7 +32,7 @@ public class ConfiguratorScreen extends BasicScreen {
     private boolean isAdmin;
     private BasicForm form, numericOptionsArea, checkboxOptionsArea;
     private UILabel gateAddressLabel;
-    private UICheckBox oneWayTravelCheckbox, irisUpgradeCheckbox, chevronUpgradeCheckbox, gateTypeCheckbox, reverseWormholeKillsCheckbox, acceptIncomingConnectionsCheckbox, closeFromEitherEndCheckbox, preserveInventoryCheckbox, noPowerRequiredCheckbox, chevronsLockOnDialCheckbox;
+    private UICheckBox oneWayTravelCheckbox, irisUpgradeCheckbox, chevronUpgradeCheckbox, gateTypeCheckbox, reverseWormholeKillsCheckbox, acceptIncomingConnectionsCheckbox, closeFromEitherEndCheckbox, preserveInventoryCheckbox, noPowerRequiredCheckbox, chevronsLockOnDialCheckbox, returnIrisToPreviousStateCheckbox;
     private UITextField secondsToStayOpen, gateRotationSpeed, energyBufferSize, energyPerNaquadah, gateOpeningsPerNaquadah, distanceMultiplier, dimensionalMultiplier;
     private BlockPos location;
     private World world;
@@ -240,6 +240,7 @@ public class ConfiguratorScreen extends BasicScreen {
         this.checkboxOptionsArea.setLeftPadding(3);
 
         int checkboxIndentPadding = 25;
+        padding = 12;
 
         final UILabel booleanValuesLabel = new UILabel(this, "Boolean Values");
         booleanValuesLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
@@ -251,7 +252,7 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.oneWayTravelCheckbox = new UICheckBox(this);
         this.oneWayTravelCheckbox.setText(TextFormatting.WHITE + "One Way Travel Only");
-        this.oneWayTravelCheckbox.setPosition(checkboxIndentPadding, 20, Anchor.LEFT | Anchor.TOP);
+        this.oneWayTravelCheckbox.setPosition(checkboxIndentPadding, 15, Anchor.LEFT | Anchor.TOP);
         this.oneWayTravelCheckbox.setName("checkbox.onewaytravel");
         this.oneWayTravelCheckbox.register(this);
 
@@ -313,9 +314,17 @@ public class ConfiguratorScreen extends BasicScreen {
         this.chevronsLockOnDialCheckbox.setName("checkbox.chevronlockondial");
         this.chevronsLockOnDialCheckbox.register(this);
 
+        this.returnIrisToPreviousStateCheckbox = new UICheckBox(this);
+        this.returnIrisToPreviousStateCheckbox.setText(TextFormatting.WHITE + "Return to Previous Iris State");
+        this.returnIrisToPreviousStateCheckbox.setTooltip("This will return the iris state to what it was prior to dialing.");
+        this.returnIrisToPreviousStateCheckbox.setPosition(checkboxIndentPadding, this.chevronsLockOnDialCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
+        this.returnIrisToPreviousStateCheckbox.setEnabled(true);
+        this.returnIrisToPreviousStateCheckbox.setName("checkbox.returntopreviousirisstate");
+        this.returnIrisToPreviousStateCheckbox.register(this);
+
         this.checkboxOptionsArea.add(booleanValuesLabel, checkboxSeparator, this.oneWayTravelCheckbox, this.irisUpgradeCheckbox, this.chevronUpgradeCheckbox, this.gateTypeCheckbox);
         this.checkboxOptionsArea.add(this.reverseWormholeKillsCheckbox, this.acceptIncomingConnectionsCheckbox, this.closeFromEitherEndCheckbox, this.preserveInventoryCheckbox, this.noPowerRequiredCheckbox);
-        this.checkboxOptionsArea.add(this.chevronsLockOnDialCheckbox);
+        this.checkboxOptionsArea.add(this.chevronsLockOnDialCheckbox, this.returnIrisToPreviousStateCheckbox);
 
         // Load Defaults button
         final UIButton buttonDefaults = new UIButtonBuilder(this)
@@ -415,6 +424,7 @@ public class ConfiguratorScreen extends BasicScreen {
                 preserveInventoryCheckbox.setChecked(SGBaseTE.cfg.getBoolean("iris", "preserveInventory", false));
                 noPowerRequiredCheckbox.setChecked(false);
                 chevronsLockOnDialCheckbox.setChecked(false);
+                returnIrisToPreviousStateCheckbox.setChecked(false);
                 break;
 
             case "button.save":
@@ -439,6 +449,7 @@ public class ConfiguratorScreen extends BasicScreen {
                 SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 15, 0, preserveInventoryCheckbox.isChecked(), 0.0);
                 //SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 16, 0, noPowerRequiredCheckbox.isChecked(), 0.0);
                 SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 17, 0, chevronsLockOnDialCheckbox.isChecked(), 0.0);
+                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 18, 0, returnIrisToPreviousStateCheckbox.isChecked(), 0.0);
                 break;
 
             case "button.close":
@@ -483,6 +494,7 @@ public class ConfiguratorScreen extends BasicScreen {
         this.preserveInventoryCheckbox.setChecked(((SGBaseTE) localGate).preserveInventory);
         //
         this.chevronsLockOnDialCheckbox.setChecked(((SGBaseTE) localGate).chevronsLockOnDial);
+        this.returnIrisToPreviousStateCheckbox.setChecked(((SGBaseTE) localGate).returnToPreviousIrisState);
     }
 
     @Override

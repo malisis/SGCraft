@@ -202,6 +202,8 @@ public class SGChannel extends BaseDataChannel {
             //Todo: build this
         } else if (setting == 17) { // Chevrons lock when dialed
             te.chevronsLockOnDial = b;
+        } else if (setting == 18) {
+            te.returnToPreviousIrisState = b;
             te.markForUpdate(); // Force Client to Update but only after the last packet
         }
     }

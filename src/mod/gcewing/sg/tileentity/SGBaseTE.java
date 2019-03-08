@@ -219,6 +219,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public boolean preserveInventory = false;
     public boolean acceptIncomingConnections = true;
     public boolean chevronsLockOnDial = false;
+    public boolean returnToPreviousIrisState = false;
 
     double ehGrid[][][];
     private static Set<UUID> messagesQueue = Sets.newHashSet();
@@ -497,6 +498,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             this.chevronsLockOnDial = false;
         }
 
+        if (nbt.hasKey("returnToPreviousIrisState")) {
+            this.returnToPreviousIrisState = nbt.getBoolean("returnToPreviousIrisState");
+        } else {
+            this.returnToPreviousIrisState = false;
+        }
+
         // Set values after NBT load
         this.ticksToStayOpen = 20 * this.secondsToStayOpen;
         this.energyToOpen = this.energyPerFuelItem / this.gateOpeningsPerFuelItem;
@@ -556,6 +563,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setBoolean("preserveInventory", preserveInventory);
         nbt.setBoolean("acceptIncomingconnections", acceptIncomingConnections);
         nbt.setBoolean("chevronsLockOnDial", chevronsLockOnDial);
+        nbt.setBoolean("returnToPreviousIrisState", returnToPreviousIrisState);
 
         return nbt;
     }
@@ -858,7 +866,15 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (!energyIsAvailable(energyToOpen * distanceFactor)) {
             return diallingFailure(player, "insufficientEnergy");
         }
-        System.out.println("FastDial: " + this.chevronsLockOnDial);
+
+        if (this.hasChevronUpgrade) {
+            this.wasIrisClosed = this.irisIsClosed();
+        }
+
+        if (targetGate.hasChevronUpgrade) {
+            targetGate.wasIrisClosed = targetGate.irisIsClosed();
+        }
+
         startDiallingStargate(address, targetGate, true, this.chevronsLockOnDial);
         targetGate.enterState(SGState.attemptToDial, 0); // Force remote gate immediate change state to help chunk stay loaded
         targetGate.startDiallingStargate(homeAddress, this, false, this.chevronsLockOnDial);
@@ -1065,10 +1081,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                         numEngagedChevrons = 0;
                         enterState(SGState.Idle, 0);
 
-                        if (this.hasIrisUpgrade) {
-                            if (this.wasIrisClosed) {
-                                this.closeIris();
-                            }
+                        if (this.hasIrisUpgrade && this.returnToPreviousIrisState && this.wasIrisClosed) {
+                            this.closeIris();
+                            // Note: this is fired at both the origin and destination gates.
                         }
 
                         break;
