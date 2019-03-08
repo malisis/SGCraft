@@ -128,15 +128,6 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
                 System.out.printf("SGBaseBlock.onBlockActivated: %s: isMerged = %s\n", Side, te.isMerged);
             }
 
-            if (player != null && !player.getHeldItemMainhand().isEmpty() && player.getHeldItemMainhand().getItem().equals(SGCraft.gdo)) {
-                if (te.gateType == 0 || te.gateType == 1) {
-                    te.gateType = 2;
-                } else {
-                    te.gateType = 1;
-                }
-                return true;
-            }
-
             if (te.isMerged) {
                 SGCraft.mod.openGui(player, SGGui.SGBase, world, pos);
                 return true;

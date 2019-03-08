@@ -83,8 +83,20 @@ public class SGBaseTERenderer extends BaseTileEntityRenderer {
                 glDisable(GL_BLEND);
             glEnable(GL_RESCALE_NORMAL);
             glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
-            glTranslated(x + 0.5, y + 2.5, z + 0.5);
+
+            //Original
+            //glTranslated(x + 0.5, y + 2.5, z + 0.5);
+
+            // On Ground, Face Up
+            //glTranslated(x + 0.5, y + 0.25, z + 0.5);
+            //glRotatef(180,0,180,-180);
+
+            // Floating, face down
+            //glTranslated(x + 0.5, y + 4.25, z + 0.5);
+            //glRotatef(180,0,180,180);
+
             renderStargate(gate, partialTicks);
+
             glDisable(GL_RESCALE_NORMAL);
             glPopMatrix();
         }
@@ -113,6 +125,7 @@ public class SGBaseTERenderer extends BaseTileEntityRenderer {
         glPushMatrix();
         glRotatef((float)(te.interpolatedRingAngle(partialTicks) + SGBaseTE.ringSymbolAngle / 2), 0, 0, 1);
         renderRing(ringInnerRadius, ringMidRadius, RingType.Inner, 0);
+
         glPopMatrix();
     }
         
@@ -165,6 +178,7 @@ public class SGBaseTERenderer extends BaseTileEntityRenderer {
             vertex(r2*c[i+1], r2*s[i+1],  z,   u,     0);
             vertex(r1*c[i+1], r1*s[i+1],  z,   u,    dv);
         }
+
         glEnd();
     }
     
@@ -190,7 +204,12 @@ public class SGBaseTERenderer extends BaseTileEntityRenderer {
     // Render a chevron at the given position (0 to 8, with 4 being top dead centre)
     void renderChevronAtPosition(int i, float a, boolean engaged) {
         glPushMatrix();
+        // Normal
         glRotatef(90 - (i - 4) * a, 0, 0, 1);
+
+        // On ground
+        //glRotatef(-90 - (i - 4) * a, 0, 0, 1);
+
         chevron(engaged);
         glPopMatrix();
     }
