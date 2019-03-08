@@ -148,6 +148,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static boolean displayGuiPowerDebug = true;
 
     //World data fixes
+    public static boolean forceSGBaseTEUpdate = false;
     public static boolean forceDHDCfgUpdate = false;
     public static boolean forceIC2CfgUpdate = false;
     public static boolean forceRFCfgUpdate = false;
@@ -490,6 +491,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         RfPerSGEnergyUnit = config.getDouble("rf", "rfPerSGEnergyUnit", RfPerSGEnergyUnit);
 
         // World Update / Fixes
+        forceSGBaseTEUpdate = config.getBoolean("stargate", "force-default-configs", forceSGBaseTEUpdate);
         forceDHDCfgUpdate = config.getBoolean("dhd", "force-update", forceDHDCfgUpdate);
         forceIC2CfgUpdate = config.getBoolean("ic2", "force-update", forceIC2CfgUpdate);
         forceRFCfgUpdate = config.getBoolean("rf", "force-update", forceRFCfgUpdate);

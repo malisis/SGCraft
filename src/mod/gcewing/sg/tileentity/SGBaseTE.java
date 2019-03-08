@@ -230,23 +230,30 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     public static void configure(BaseConfiguration cfg) {
         SGBaseTE.cfg = cfg;
-        //energyPerFuelItem = cfg.getDouble("stargate", "energyPerFuelItem", energyPerFuelItem);
-        //gateOpeningsPerFuelItem = cfg.getInteger("stargate", "gateOpeningsPerFuelItem", gateOpeningsPerFuelItem);
+        // Instanced config values
+        // Note: allowing these methods to be hit creates the config in the file.
+        cfg.getDouble("stargate", "energyPerFuelItem", 96000);
+        cfg.getInteger("stargate", "gateOpeningsPerFuelItem", 24);
+        cfg.getInteger("stargate", "secondsToStayOpen", 5 * 60);
+        cfg.getBoolean("stargate", "oneWayTravel", false);
+        cfg.getBoolean("stargate", "reverseWormholeKills", false);
+        cfg.getBoolean("stargate", "closeFromEitherEnd", true);
+        cfg.getDouble("stargate", "maxEnergyBuffer", 1000);
+        cfg.getDouble("stargate", "distanceFactorMultiplier", 1.0);
+        cfg.getDouble("stargate", "interDimensionMultiplier", 4.0);
+        cfg.getBoolean("iris", "preserveInventory", false);
+
+        // New instance config values
+        cfg.getInteger("stargate", "gateType", 1);
+        cfg.getBoolean("stargate", "chevronsLockOnDial", false);
+        cfg.getBoolean("stargate", "returnToPreviousIrisState", false);
+        cfg.getDouble("stargate", "ringRotationSpeed", 2.0);
+
+        // Global static config values
         minutesOpenPerFuelItem = cfg.getInteger("stargate", "minutesOpenPerFuelItem", minutesOpenPerFuelItem);
-        //secondsToStayOpen = cfg.getInteger("stargate", "secondsToStayOpen", secondsToStayOpen);
-        //oneWayTravel = cfg.getBoolean("stargate", "oneWayTravel", oneWayTravel);
-        //reverseWormholeKills = cfg.getBoolean("stargate", "reverseWormholeKills", reverseWormholeKills);
-        //closeFromEitherEnd = cfg.getBoolean("stargate", "closeFromEitherEnd", closeFromEitherEnd);
-        //maxEnergyBuffer = cfg.getDouble("stargate", "maxEnergyBuffer", maxEnergyBuffer);
-        //energyToOpen = energyPerFuelItem / gateOpeningsPerFuelItem;
-        //energyUsePerTick = energyPerFuelItem / (minutesOpenPerFuelItem * 60 * 20);
-        //distanceFactorMultiplier = cfg.getDouble("stargate", "distanceFactorMultiplier", distanceFactorMultiplier);
-        //interDimensionMultiplier = cfg.getDouble("stargate", "interDimensionMultiplier", interDimensionMultiplier);
-        //ticksToStayOpen = 20 * secondsToStayOpen;
         chunkLoadingRange = cfg.getInteger("options", "chunkLoadingRange", chunkLoadingRange);
         transparency = cfg.getBoolean("stargate", "transparency", transparency);
         logStargateEvents = cfg.getBoolean("options", "logStargateEvents", logStargateEvents);
-        //preserveInventory = cfg.getBoolean("iris", "preserveInventory", preserveInventory);
         soundVolume = (float)cfg.getDouble("stargate", "soundVolume", soundVolume);
         variableChevronPositions = cfg.getBoolean("stargate", "variableChevronPositions", variableChevronPositions);
     }
@@ -424,97 +431,103 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
 
         // Configurator Options
-        this.gateType = nbt.getInteger("gateType");
-
-        if (nbt.hasKey("secondsToStayOpen")) {
-            this.secondsToStayOpen = nbt.getInteger("secondsToStayOpen");
+        if (nbt.hasKey("gateType") && !SGCraft.forceSGBaseTEUpdate) {
+            this.gateType = nbt.getInteger("gateType");
         } else {
-            this.secondsToStayOpen = this.cfg.getInteger("stargate", "secondsToStayOpen", this.secondsToStayOpen);
+            this.gateType = cfg.getInteger("stargate", "gateType", this.gateType);
         }
 
-        if (nbt.hasKey("oneWayTravel")) {
+        if (nbt.hasKey("secondsToStayOpen") && !SGCraft.forceSGBaseTEUpdate) {
+            this.secondsToStayOpen = nbt.getInteger("secondsToStayOpen");
+        } else {
+            this.secondsToStayOpen = cfg.getInteger("stargate", "secondsToStayOpen", this.secondsToStayOpen);
+        }
+
+        if (nbt.hasKey("oneWayTravel") && !SGCraft.forceSGBaseTEUpdate) {
             this.oneWayTravel = nbt.getBoolean("oneWayTravel");
         } else {
             this.oneWayTravel = cfg.getBoolean("stargate", "oneWayTravel", this.oneWayTravel);
         }
 
-        if (nbt.hasKey("ringRotationSpeed")) {
+        if (nbt.hasKey("ringRotationSpeed") && !SGCraft.forceSGBaseTEUpdate) {
             this.ringRotationSpeed = nbt.getDouble("ringRotationSpeed");
+        } else {
+            this.ringRotationSpeed = cfg.getDouble("stargate", "ringRotationSpeed", this.ringRotationSpeed);
         }
 
-        if (nbt.hasKey("maxEnergyBuffer")) {
+        if (nbt.hasKey("maxEnergyBuffer") && !SGCraft.forceSGBaseTEUpdate) {
             this.maxEnergyBuffer = nbt.getDouble("maxEnergyBuffer");
         } else {
             this.maxEnergyBuffer = cfg.getDouble("stargate", "maxEnergyBuffer", this.maxEnergyBuffer);
         }
 
-        if (nbt.hasKey("energyPerFuelItem")) {
+        if (nbt.hasKey("energyPerFuelItem") && !SGCraft.forceSGBaseTEUpdate) {
             this.energyPerFuelItem = nbt.getDouble("energyPerFuelItem");
         } else {
             this.energyPerFuelItem = cfg.getDouble("stargate", "energyPerFuelItem", this.energyPerFuelItem);
         }
 
-        if (nbt.hasKey("gateOpeningsPerFuelItem")) {
+        if (nbt.hasKey("gateOpeningsPerFuelItem") && !SGCraft.forceSGBaseTEUpdate) {
             this.gateOpeningsPerFuelItem = nbt.getInteger("gateOpeningsPerFuelItem");
         } else {
             this.gateOpeningsPerFuelItem = cfg.getInteger("stargate", "gateOpeningsPerFuelItem", this.gateOpeningsPerFuelItem);
         }
 
-        if (nbt.hasKey("distanceFactorMultiplier")) {
+        if (nbt.hasKey("distanceFactorMultiplier") && !SGCraft.forceSGBaseTEUpdate) {
             this.distanceFactorMultiplier = nbt.getDouble("distanceFactorMultiplier");
         } else {
             this.distanceFactorMultiplier = cfg.getDouble("stargate", "distanceFactorMultiplier", this.distanceFactorMultiplier);
         }
 
-        if (nbt.hasKey("interDimensionalMultiplier")) {
+        if (nbt.hasKey("interDimensionalMultiplier") && !SGCraft.forceSGBaseTEUpdate) {
             this.interDimensionMultiplier = nbt.getDouble("interDimensionalMultiplier");
         } else {
             this.interDimensionMultiplier = cfg.getDouble("stargate", "interDimensionMultiplier", this.interDimensionMultiplier);
         }
 
-        if (nbt.hasKey("reverseWormholeKills")) {
+        if (nbt.hasKey("reverseWormholeKills") && !SGCraft.forceSGBaseTEUpdate) {
             this.reverseWormholeKills = nbt.getBoolean("reverseWormholeKills");
         } else {
             reverseWormholeKills = cfg.getBoolean("stargate", "reverseWormholeKills", this.reverseWormholeKills);
         }
 
-        if (nbt.hasKey("closeFromEitherEnd")) {
+        if (nbt.hasKey("closeFromEitherEnd") && !SGCraft.forceSGBaseTEUpdate) {
             this.closeFromEitherEnd = nbt.getBoolean("closeFromEitherEnd");
         } else {
             this.closeFromEitherEnd = cfg.getBoolean("stargate", "closeFromEitherEnd", this.closeFromEitherEnd);
         }
 
-        if (nbt.hasKey("preserveInventory")) {
+        if (nbt.hasKey("preserveInventory") && !SGCraft.forceSGBaseTEUpdate) {
             this.preserveInventory = nbt.getBoolean("preserveInventory");
         } else {
             this.preserveInventory = cfg.getBoolean("iris", "preserveInventory", this.preserveInventory);
         }
 
-        if (nbt.hasKey("acceptIncomingConnections")) {
+        if (nbt.hasKey("acceptIncomingConnections") && !SGCraft.forceSGBaseTEUpdate) {
             this.acceptIncomingConnections = nbt.getBoolean("acceptIncomingConnections");
         } else {
             this.acceptIncomingConnections = true;
         }
 
-        if (nbt.hasKey("chevronsLockOnDial")) {
+        if (nbt.hasKey("chevronsLockOnDial") && !SGCraft.forceSGBaseTEUpdate) {
             this.chevronsLockOnDial = nbt.getBoolean("chevronsLockOnDial");
         } else {
-            this.chevronsLockOnDial = false;
+            this.chevronsLockOnDial = cfg.getBoolean("stargate", "chevronsLockOnDial", this.chevronsLockOnDial);
         }
 
-        if (nbt.hasKey("returnToPreviousIrisState")) {
+        if (nbt.hasKey("returnToPreviousIrisState") && !SGCraft.forceSGBaseTEUpdate) {
             this.returnToPreviousIrisState = nbt.getBoolean("returnToPreviousIrisState");
         } else {
-            this.returnToPreviousIrisState = false;
+            this.returnToPreviousIrisState = cfg.getBoolean("stargate", "returnToPreviousIrisState", this.returnToPreviousIrisState);
         }
 
-        if (nbt.hasKey("allowOnlySpecifiedDestination")) {
+        if (nbt.hasKey("allowOnlySpecifiedDestination") && !SGCraft.forceSGBaseTEUpdate) {
             this.allowOnlySpecifiedDestination = nbt.getBoolean("allowOnlySpecifiedDestination");
         } else {
             this.allowOnlySpecifiedDestination = false;
         }
 
-        if (nbt.hasKey("onlySpecifiedAddress")) {
+        if (nbt.hasKey("onlySpecifiedAddress") && !SGCraft.forceSGBaseTEUpdate) {
             this.onlySpecifiedAddress = nbt.getString("onlySpecifiedAddress");
         } else {
             this.onlySpecifiedAddress = "";
