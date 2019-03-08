@@ -116,7 +116,7 @@ public class SGInterfaceTE extends BaseTileEntity {
 //         }
         address = SGAddressing.normalizeAddress(address);
         //System.out.printf("SGBaseTE.ciDial: dialling symbols %s\n", address);
-        String error = te.connect(address, null, false, false);
+        String error = te.connect(address, null);
         if (error != null)
             throw new IllegalArgumentException(error);
     }

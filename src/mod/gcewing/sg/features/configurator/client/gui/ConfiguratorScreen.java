@@ -32,7 +32,7 @@ public class ConfiguratorScreen extends BasicScreen {
     private boolean isAdmin;
     private BasicForm form, numericOptionsArea, checkboxOptionsArea;
     private UILabel gateAddressLabel;
-    private UICheckBox oneWayTravelCheckbox, irisUpgradeCheckbox, chevronUpgradeCheckbox, gateTypeCheckbox, reverseWormholeKillsCheckbox, canBeDialedCheckbox, closeFromEitherEndCheckbox, preserveInventoryCheckbox, noPowerRequiredCheckbox;
+    private UICheckBox oneWayTravelCheckbox, irisUpgradeCheckbox, chevronUpgradeCheckbox, gateTypeCheckbox, reverseWormholeKillsCheckbox, acceptIncomingConnectionsCheckbox, closeFromEitherEndCheckbox, preserveInventoryCheckbox, noPowerRequiredCheckbox, chevronsLockOnDialCheckbox;
     private UITextField secondsToStayOpen, gateRotationSpeed, energyBufferSize, energyPerNaquadah, gateOpeningsPerNaquadah, distanceMultiplier, dimensionalMultiplier;
     private BlockPos location;
     private World world;
@@ -279,16 +279,16 @@ public class ConfiguratorScreen extends BasicScreen {
         this.reverseWormholeKillsCheckbox.setName("checkbox.reversekills");
         this.reverseWormholeKillsCheckbox.register(this);
 
-        this.canBeDialedCheckbox = new UICheckBox(this);
-        this.canBeDialedCheckbox.setText(TextFormatting.WHITE + "Can be dialed to");
-        this.canBeDialedCheckbox.setPosition(checkboxIndentPadding, this.reverseWormholeKillsCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
-        this.canBeDialedCheckbox.setEnabled(false);
-        this.canBeDialedCheckbox.setName("checkbox.canbedialedto");
-        this.canBeDialedCheckbox.register(this);
+        this.acceptIncomingConnectionsCheckbox = new UICheckBox(this);
+        this.acceptIncomingConnectionsCheckbox.setText(TextFormatting.WHITE + "Accept Incoming Connections");
+        this.acceptIncomingConnectionsCheckbox.setPosition(checkboxIndentPadding, this.reverseWormholeKillsCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
+        this.acceptIncomingConnectionsCheckbox.setEnabled(true);
+        this.acceptIncomingConnectionsCheckbox.setName("checkbox.acceptincomingconnections");
+        this.acceptIncomingConnectionsCheckbox.register(this);
 
         this.closeFromEitherEndCheckbox = new UICheckBox(this);
         this.closeFromEitherEndCheckbox.setText(TextFormatting.WHITE + "Close from Either End");
-        this.closeFromEitherEndCheckbox.setPosition(checkboxIndentPadding, this.canBeDialedCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
+        this.closeFromEitherEndCheckbox.setPosition(checkboxIndentPadding, this.acceptIncomingConnectionsCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
         this.closeFromEitherEndCheckbox.setName("checkbox.canbedialedto");
         this.closeFromEitherEndCheckbox.register(this);
 
@@ -305,8 +305,17 @@ public class ConfiguratorScreen extends BasicScreen {
         this.noPowerRequiredCheckbox.setName("checkbox.nopowerrequired");
         this.noPowerRequiredCheckbox.register(this);
 
+        this.chevronsLockOnDialCheckbox = new UICheckBox(this);
+        this.chevronsLockOnDialCheckbox.setText(TextFormatting.WHITE + "Chevrons lock when dialed");
+        this.chevronsLockOnDialCheckbox.setTooltip("Chevrons lock when dialed from PDD or DHD, no ring rotation dialing sequence.");
+        this.chevronsLockOnDialCheckbox.setPosition(checkboxIndentPadding, this.noPowerRequiredCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
+        this.chevronsLockOnDialCheckbox.setEnabled(true);
+        this.chevronsLockOnDialCheckbox.setName("checkbox.chevronlockondial");
+        this.chevronsLockOnDialCheckbox.register(this);
+
         this.checkboxOptionsArea.add(booleanValuesLabel, checkboxSeparator, this.oneWayTravelCheckbox, this.irisUpgradeCheckbox, this.chevronUpgradeCheckbox, this.gateTypeCheckbox);
-        this.checkboxOptionsArea.add(this.reverseWormholeKillsCheckbox, this.canBeDialedCheckbox, this.closeFromEitherEndCheckbox, this.preserveInventoryCheckbox, this.noPowerRequiredCheckbox);
+        this.checkboxOptionsArea.add(this.reverseWormholeKillsCheckbox, this.acceptIncomingConnectionsCheckbox, this.closeFromEitherEndCheckbox, this.preserveInventoryCheckbox, this.noPowerRequiredCheckbox);
+        this.checkboxOptionsArea.add(this.chevronsLockOnDialCheckbox);
 
         // Load Defaults button
         final UIButton buttonDefaults = new UIButtonBuilder(this)
@@ -401,10 +410,11 @@ public class ConfiguratorScreen extends BasicScreen {
                 irisUpgradeCheckbox.setChecked(false);
                 chevronUpgradeCheckbox.setChecked(false);
                 reverseWormholeKillsCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "reverseWormholeKills", false));
-                canBeDialedCheckbox.setChecked(true);
+                acceptIncomingConnectionsCheckbox.setChecked(true);
                 closeFromEitherEndCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "closeFromEitherEnd", true));
                 preserveInventoryCheckbox.setChecked(SGBaseTE.cfg.getBoolean("iris", "preserveInventory", false));
                 noPowerRequiredCheckbox.setChecked(false);
+                chevronsLockOnDialCheckbox.setChecked(false);
                 break;
 
             case "button.save":
@@ -424,10 +434,11 @@ public class ConfiguratorScreen extends BasicScreen {
                     SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 11, 1, false, 0.0);
                 }
                 SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 12, 0, reverseWormholeKillsCheckbox.isChecked(), 0.0);
-                //SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 13, 0, canBeDialedCheckbox.isChecked(), 0.0);
+                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 13, 0, acceptIncomingConnectionsCheckbox.isChecked(), 0.0);
                 SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 14, 0, closeFromEitherEndCheckbox.isChecked(), 0.0);
                 SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 15, 0, preserveInventoryCheckbox.isChecked(), 0.0);
                 //SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 16, 0, noPowerRequiredCheckbox.isChecked(), 0.0);
+                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 17, 0, chevronsLockOnDialCheckbox.isChecked(), 0.0);
                 break;
 
             case "button.close":
@@ -467,8 +478,11 @@ public class ConfiguratorScreen extends BasicScreen {
             this.gateTypeCheckbox.setChecked(true);
         }
         this.reverseWormholeKillsCheckbox.setChecked(((SGBaseTE) localGate).reverseWormholeKills);
+        this.acceptIncomingConnectionsCheckbox.setChecked(((SGBaseTE) localGate).acceptIncomingConnections);
         this.closeFromEitherEndCheckbox.setChecked(((SGBaseTE) localGate).closeFromEitherEnd);
         this.preserveInventoryCheckbox.setChecked(((SGBaseTE) localGate).preserveInventory);
+        //
+        this.chevronsLockOnDialCheckbox.setChecked(((SGBaseTE) localGate).chevronsLockOnDial);
     }
 
     @Override

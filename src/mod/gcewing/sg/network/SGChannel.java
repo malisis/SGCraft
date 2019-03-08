@@ -139,9 +139,7 @@ public class SGChannel extends BaseDataChannel {
                     remoteGate.disconnect();
                 }
             } else if (setting == 7) { // Test button functionality (varies)
-                //te.startDiallingStargate("ZFDDUR8", te, true, false);
-                //te.connect("PFKCMK3", player,true, false);
-                te.connect("ZFDDUR8", player,true, false);
+                te.connect("ZFDDUR8", player);
             }
         }
     }
@@ -170,8 +168,6 @@ public class SGChannel extends BaseDataChannel {
             return;
         }
 
-        System.out.println("Server: Configurator - " + setting + " | " + a + " | " + b + " | " + c);
-
         if (setting == 1) { // Seconds to Stay Open (int)
             te.secondsToStayOpen = a;
         } if (setting == 2) { // Gate Rotation Speed (double)
@@ -196,17 +192,17 @@ public class SGChannel extends BaseDataChannel {
             te.gateType = a;
         } else if (setting == 12) { // Reverse Wormhold Kills
             te.reverseWormholeKills = b;
-        } else if (setting == 13) { // Can be Dialed
-            //Todo: build this.
+        } else if (setting == 13) { // Gate accepts incoming connections
+            te.acceptIncomingConnections = b;
         } else if (setting == 14) { // Close from Either End
             te.closeFromEitherEnd = b;
         } else if (setting == 15) { // Preserve Inventory on Iris Death
             te.preserveInventory = b;
         } else if (setting == 16) { // No Input Power Required
             //Todo: build this
+        } else if (setting == 17) { // Chevrons lock when dialed
+            te.chevronsLockOnDial = b;
+            te.markForUpdate(); // Force Client to Update but only after the last packet
         }
-
-        te.markForUpdate(); // Force Client to Update
     }
-
 }

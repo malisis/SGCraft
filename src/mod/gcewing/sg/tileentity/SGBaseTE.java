@@ -217,6 +217,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public boolean reverseWormholeKills = false;
     public boolean closeFromEitherEnd = true;
     public boolean preserveInventory = false;
+    public boolean acceptIncomingConnections = true;
+    public boolean chevronsLockOnDial = false;
 
     double ehGrid[][][];
     private static Set<UUID> messagesQueue = Sets.newHashSet();
@@ -483,6 +485,18 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             this.preserveInventory = cfg.getBoolean("iris", "preserveInventory", this.preserveInventory);
         }
 
+        if (nbt.hasKey("acceptIncomingConnections")) {
+            this.acceptIncomingConnections = nbt.getBoolean("acceptIncomingConnections");
+        } else {
+            this.acceptIncomingConnections = true;
+        }
+
+        if (nbt.hasKey("chevronsLockOnDial")) {
+            this.chevronsLockOnDial = nbt.getBoolean("chevronsLockOnDial");
+        } else {
+            this.chevronsLockOnDial = false;
+        }
+
         // Set values after NBT load
         this.ticksToStayOpen = 20 * this.secondsToStayOpen;
         this.energyToOpen = this.energyPerFuelItem / this.gateOpeningsPerFuelItem;
@@ -540,6 +554,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setBoolean("reverseWormholeKills", reverseWormholeKills);
         nbt.setBoolean("closeFromEitherEnd", closeFromEitherEnd);
         nbt.setBoolean("preserveInventory", preserveInventory);
+        nbt.setBoolean("acceptIncomingconnections", acceptIncomingConnections);
+        nbt.setBoolean("chevronsLockOnDial", chevronsLockOnDial);
 
         return nbt;
     }
@@ -718,13 +734,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (address.length() > 0) {
             DHDTE te = getLinkedControllerTE();
             if (te != null) {
-                boolean fastDial = false;
-                boolean openIris = false;
-                if (player != null && !player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().getItem().equals(SGCraft.gdo)) {
-                    fastDial = true;
-                    openIris = true;
-                }
-                if (connect(address, player, fastDial, openIris) != null) {
+                if (connect(address, player) != null) {
                     numEngagedChevrons = 0;
                     markChanged();
                 }
@@ -753,7 +763,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return isInitiator || closeFromEitherEnd;
     }
 
-    public String connect(String address, EntityPlayer player, boolean immediate, boolean openIris) {
+    public String connect(String address, EntityPlayer player) {
         if (state != SGState.Idle) {
             return diallingFailure(player, "selfBusy");
         }
@@ -773,6 +783,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (getWorld() == targetGate.getWorld()) {
             address = SGAddressing.localAddress(address);
             homeAddress = SGAddressing.localAddress(homeAddress);
+        }
+        if (!targetGate.acceptIncomingConnections) {
+            return diallingFailure(player, "cannotDialThisGate", address);
         }
         if (address.length() > getNumChevrons()) {
             return diallingFailure(player, "selfLackChevrons", address);
@@ -845,32 +858,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (!energyIsAvailable(energyToOpen * distanceFactor)) {
             return diallingFailure(player, "insufficientEnergy");
         }
-
-        // Handle auto-open of Iris at current gate and destination
-        if (this.hasIrisUpgrade) {
-            if (this.irisIsClosed()) {
-                this.wasIrisClosed = true;
-            } else {
-                this.wasIrisClosed = false;
-            }
-            if (openIris) {
-                this.openIris();
-            }
-        }
-        if (targetGate.hasIrisUpgrade) {
-            if (targetGate.irisIsClosed()) {
-                targetGate.wasIrisClosed = true;
-            } else {
-                targetGate.wasIrisClosed = false;
-            }
-            if (openIris) {
-                targetGate.openIris();
-            }
-        }
-
-        startDiallingStargate(address, targetGate, true, immediate);
+        System.out.println("FastDial: " + this.chevronsLockOnDial);
+        startDiallingStargate(address, targetGate, true, this.chevronsLockOnDial);
         targetGate.enterState(SGState.attemptToDial, 0); // Force remote gate immediate change state to help chunk stay loaded
-        targetGate.startDiallingStargate(homeAddress, this, false, immediate);
+        targetGate.startDiallingStargate(homeAddress, this, false, this.chevronsLockOnDial);
 
         return null;
     }
