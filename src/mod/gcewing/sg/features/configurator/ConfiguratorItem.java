@@ -38,7 +38,7 @@ public class ConfiguratorItem extends Item {
       TileEntity localGate = GateUtil.locateLocalGate(worldIn, new BlockPos(player.posX, player.posY, player.posZ), 6, true);
       if (localGate != null) {
         if (localGate instanceof SGBaseTE) {
-          SGChannel.sendGuiRequestToServer(player, 1);
+          SGChannel.sendGuiRequestToServer((SGBaseTE)localGate, player, 1);
           return new ActionResult<>(EnumActionResult.PASS, player.getHeldItem(handIn));  //Both Server & Client expect a returned value.
         }
       }

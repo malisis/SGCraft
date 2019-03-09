@@ -590,7 +590,6 @@ public class BaseDataChannel {
             }
         }
 
-        @SideOnly(Side.SERVER)
         protected void handleServerPacket(ChannelHandlerContext ctx, FMLProxyPacket msg) {
             ChannelInput data = new ChannelInputStream(msg.payload());
             if (ctx.channel() == channel.pipes.get(Side.SERVER)) {

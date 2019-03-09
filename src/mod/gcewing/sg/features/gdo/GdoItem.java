@@ -38,7 +38,7 @@ public class GdoItem extends Item {
       TileEntity localGate = GateUtil.locateLocalGate(worldIn, new BlockPos(player.posX, player.posY, player.posZ), 6, true);
       if (localGate != null) {
         if (localGate instanceof SGBaseTE) {
-          SGChannel.sendGuiRequestToServer(player, 2);
+          SGChannel.sendGuiRequestToServer((SGBaseTE)localGate, player, 2);
           return new ActionResult<>(EnumActionResult.PASS, player.getHeldItem(handIn));  //Both Server & Client expect a returned value.
         }
       }

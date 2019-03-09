@@ -37,12 +37,21 @@ public class GdoScreen extends BasicScreen {
     private BlockPos location;
     private World world;
     private EntityPlayer player;
+    private boolean isRemoteConnected, r_hasIrisUpgrade, r_hasChevronUpgrade, r_isIrisClosed;
+    private String r_address;
+    private int r_gateType;
 
-    public GdoScreen(EntityPlayer player, World worldIn,  boolean isAdmin) {
+    public GdoScreen(EntityPlayer player, World worldIn,  boolean isAdmin, boolean isRemoteConnected, boolean r_hasIrisUpgrade, boolean r_hasChevronUpgrade, boolean r_isIrisClosed, int r_gateType, String r_address) {
         this.player = player;
         this.isAdmin = isAdmin;
         this.world = worldIn;
         this.location = new BlockPos(player.posX, player.posY, player.posZ);
+        this.isRemoteConnected = isRemoteConnected;
+        this.r_hasIrisUpgrade = r_hasIrisUpgrade;
+        this.r_hasChevronUpgrade = r_hasChevronUpgrade;
+        this.r_isIrisClosed = r_isIrisClosed;
+        this.r_gateType = r_gateType;
+        this.r_address = r_address;
     }
 
     @SuppressWarnings("unchecked")
@@ -62,8 +71,6 @@ public class GdoScreen extends BasicScreen {
         this.form.setRightPadding(3);
         this.form.setTopPadding(20);
         this.form.setLeftPadding(3);
-
-
 
         final UILabel titleLabel = new UILabel(this, "GDO Controller");
         titleLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
@@ -313,59 +320,58 @@ public class GdoScreen extends BasicScreen {
                     this.localGateCloseButton.setEnabled(true);
                     this.remoteGateCloseButton.setEnabled(true);
 
-                    SGBaseTE remoteGate = ((SGBaseTE) localGate).getConnectedStargateTE();
-
-                    this.remoteGateAddressLabel.setText(SGAddressing.formatAddress(((SGBaseTE) remoteGate).homeAddress, "-", "-"));
+                    //SGBaseTE remoteGate = ((SGBaseTE) localGate).getConnectedStargateTE();
+                    this.remoteGateAddressLabel.setText(r_address);
 
                     // Disconnected No Iris
-                    if (!remoteGate.hasIrisUpgrade && (remoteGate.gateType == 0 || remoteGate.gateType == 1))
+                    if (!r_hasIrisUpgrade && (r_gateType == 0 || r_gateType == 1))
                         this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_no_iris.png")), null);
-                    if (!remoteGate.hasIrisUpgrade && remoteGate.gateType == 2)
+                    if (!r_hasIrisUpgrade && r_gateType == 2)
                         this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_no_iris.png")), null);
                     // Connected No Iris
-                    if (!remoteGate.hasIrisUpgrade && (remoteGate.gateType == 0 || remoteGate.gateType == 1))
+                    if (!r_hasIrisUpgrade && (r_gateType == 0 || r_gateType == 1))
                         this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_no_iris.png")), null);
-                    if (!remoteGate.hasIrisUpgrade && remoteGate.gateType == 2)
+                    if (!r_hasIrisUpgrade && r_gateType == 2)
                         this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_no_iris.png")), null);
 
                     // Disconnected Iris Closed
-                    if (remoteGate.hasIrisUpgrade && (remoteGate.gateType == 0 || remoteGate.gateType ==1) && remoteGate.irisIsClosed())
+                    if (r_hasIrisUpgrade && (r_gateType == 0 || r_gateType ==1) && r_isIrisClosed)
                         this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_iris_closed.png")), null);
-                    if (remoteGate.hasIrisUpgrade && remoteGate.gateType == 2 && remoteGate.irisIsClosed())
+                    if (r_hasIrisUpgrade && r_gateType == 2 && r_isIrisClosed)
                         this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_iris_closed.png")), null);
                     // Connected Iris Closed
-                    if (remoteGate.hasIrisUpgrade && (remoteGate.gateType == 0 || remoteGate.gateType ==1) && remoteGate.irisIsClosed())
+                    if (r_hasIrisUpgrade && (r_gateType == 0 || r_gateType ==1) && r_isIrisClosed)
                         this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_iris_closed.png")), null);
-                    if (remoteGate.hasIrisUpgrade && remoteGate.gateType == 2 && remoteGate.irisIsClosed())
+                    if (r_hasIrisUpgrade && r_gateType == 2 && r_isIrisClosed)
                         this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_iris_closed.png")), null);
 
                     // Disconnected Iris Open
-                    if (remoteGate.hasIrisUpgrade && (remoteGate.gateType == 0 || remoteGate.gateType ==1) && !remoteGate.irisIsClosed())
+                    if (r_hasIrisUpgrade && (r_gateType == 0 || r_gateType ==1) && !r_isIrisClosed)
                         this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_iris_open.png")), null);
-                    if (remoteGate.hasIrisUpgrade && remoteGate.gateType == 2 && !remoteGate.irisIsClosed())
+                    if (r_hasIrisUpgrade && r_gateType == 2 && !r_isIrisClosed)
                         this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_iris_open.png")), null);
                     // Connected Iris Open
-                    if (remoteGate.hasIrisUpgrade && (remoteGate.gateType == 0 || remoteGate.gateType ==1) && !remoteGate.irisIsClosed())
+                    if (r_hasIrisUpgrade && (r_gateType == 0 || r_gateType ==1) && !r_isIrisClosed)
                         this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_iris_open.png")), null);
-                    if (remoteGate.hasIrisUpgrade && remoteGate.gateType == 2 && !remoteGate.irisIsClosed())
+                    if (r_hasIrisUpgrade && r_gateType == 2 && !r_isIrisClosed)
                         this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_iris_open.png")), null);
 
-                    if (!remoteGate.hasIrisUpgrade) {
+                    if (!r_hasIrisUpgrade) {
                         this.remoteIrisOpenButton.setEnabled(false);
                         this.remoteIrisCloseButton.setEnabled(false);
                     } else {
-                        if (remoteGate.irisState == IrisState.Closing || remoteGate.irisState == IrisState.Opening) {
-                            this.remoteIrisOpenButton.setEnabled(false);
-                            this.remoteIrisCloseButton.setEnabled(false);
-                        } else {
-                            if (remoteGate.irisIsClosed()) {
+                        //if (remoteGate.irisState == IrisState.Closing || remoteGate.irisState == IrisState.Opening) {
+                        //    this.remoteIrisOpenButton.setEnabled(false);
+                        //    this.remoteIrisCloseButton.setEnabled(false);
+                        //} else {
+                            if (r_isIrisClosed) {
                                 this.remoteIrisOpenButton.setEnabled(true);
                                 this.remoteIrisCloseButton.setEnabled(false);
                             } else {
                                 this.remoteIrisOpenButton.setEnabled(false);
                                 this.remoteIrisCloseButton.setEnabled(true);
                             }
-                        }
+                        //}
                     }
                 }
             }

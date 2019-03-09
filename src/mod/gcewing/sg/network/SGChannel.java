@@ -13,6 +13,7 @@ import gcewing.sg.features.configurator.client.gui.ConfiguratorScreen;
 import gcewing.sg.features.gdo.client.gui.GdoScreen;
 import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
+import gcewing.sg.util.SGAddressing;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
@@ -153,46 +154,77 @@ public class SGChannel extends BaseDataChannel {
         }
     }
 
-    public static void sendGuiRequestToServer(EntityPlayer player, int guiType) {
+    public static void sendGuiRequestToServer(SGBaseTE te, EntityPlayer player, int guiType) {
         ChannelOutput data = channel.openServer("requestGUI");
+        writeCoords(data, te);
         data.writeInt(guiType);
+        System.out.println("Send to Server");
         data.close();
     }
 
     @ServerMessageHandler("requestGUI")
     public void handleGUIRequestFromClient(EntityPlayer player, ChannelInput data) {
+        BlockPos pos = readCoords(data);
+        SGBaseTE te = SGBaseTE.at(player.world, pos);
         int guiType = data.readInt();
-
+        System.out.println("Received from client: " + guiType);
         if (guiType == 1 && SGCraft.hasPermission(player, "sgcraft.gui.configurator")) {
-            this.openGuiAtClient(player, 1, SGCraft.hasPermission(player, "sgcraft.admin"));
+            this.openGuiAtClient(te, player, 1, SGCraft.hasPermission(player, "sgcraft.admin"));
         }
 
         if (guiType == 2 && SGCraft.hasPermission(player, "sgcraft.gui.gdo")) {
-            this.openGuiAtClient(player, 2, SGCraft.hasPermission(player, "sgcraft.admin"));
+            this.openGuiAtClient(te, player, 2, SGCraft.hasPermission(player, "sgcraft.admin"));
         }
 
         if (guiType == 3 && SGCraft.hasPermission(player, "sgcraft.gui.pdd")) {
-            this.openGuiAtClient(player, 3, SGCraft.hasPermission(player, "sgcraft.admin"));
+            this.openGuiAtClient(te, player, 3, SGCraft.hasPermission(player, "sgcraft.admin"));
         }
 
     }
 
-    public static void openGuiAtClient(EntityPlayer player, int guiType, boolean isAdmin) {
+    public static void openGuiAtClient(SGBaseTE te, EntityPlayer player, int guiType, boolean isAdmin) {
         ChannelOutput data = channel.openPlayer(player,"OpenGUI");
+        writeCoords(data, te);
         data.writeInt(guiType);
         data.writeBoolean(isAdmin);
+        if (guiType == 2) {
+            data.writeBoolean(te.isConnected());
+            if (te.isConnected()) {
+                SGBaseTE remoteGate = te.getConnectedStargateTE();
+                data.writeBoolean(remoteGate.hasIrisUpgrade);
+                data.writeBoolean(remoteGate.hasChevronUpgrade);
+                data.writeBoolean(remoteGate.irisIsClosed());
+                data.writeInt(remoteGate.gateType);
+                data.writeUTF(SGAddressing.formatAddress(((SGBaseTE) remoteGate).homeAddress, "-", "-"));
+            }
+        }
+        System.out.println("Send to Client: " + guiType);
         data.close();
     }
 
     @ClientMessageHandler("OpenGUI")
     public void handleGuiOpenRequest(EntityPlayer player, ChannelInput data) {
+        BlockPos pos = readCoords(data);
         int guiType = data.readInt();
         boolean isAdmin = data.readBoolean();
         if (guiType == 1) {
             new ConfiguratorScreen(player, player.world, isAdmin).display();
         }
         if (guiType == 2) {
-            new GdoScreen(player, player.world, isAdmin).display();
+            boolean r_connected = data.readBoolean();
+            boolean r_hasIrisUpgrade = false;
+            boolean r_hasChevronUpgrade = false;
+            boolean r_isIrisClosed = false;
+            int r_gateType = 1;
+            String r_address = "";
+            if (r_connected) {
+                r_hasIrisUpgrade = data.readBoolean();
+                r_hasChevronUpgrade = data.readBoolean();
+                r_isIrisClosed = data.readBoolean();
+                r_gateType = data.readInt();
+                r_address = data.readUTF();
+            }
+            new GdoScreen(player, player.world, isAdmin, r_connected, r_hasIrisUpgrade, r_hasChevronUpgrade, r_isIrisClosed, r_gateType, r_address).display();
         }
         if (guiType == 3) {
             //
