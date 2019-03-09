@@ -224,6 +224,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public boolean allowOnlySpecifiedDestination = false;
     public String onlySpecifiedAddress = "";
     public int facingDirectionOfBase = 0;
+    public boolean requiresNoPower = false;
 
     double ehGrid[][][];
     private static Set<UUID> messagesQueue = Sets.newHashSet();
@@ -245,6 +246,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         this.preserveInventory = cfg.getBoolean("iris", "preserveInventory", this.preserveInventory);
         this.chevronsLockOnDial = cfg.getBoolean("stargate", "chevronsLockOnDial", this.chevronsLockOnDial);
         this.returnToPreviousIrisState = cfg.getBoolean("stargate", "returnToPreviousIrisState", this.returnToPreviousIrisState);
+        this.requiresNoPower = cfg.getBoolean("stargate", "requiresNoPower", this.requiresNoPower);
     }
 
     public static void configure(BaseConfiguration cfg) {
@@ -269,6 +271,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         cfg.getDouble("stargate", "ringRotationSpeed", 2.0);
         cfg.getBoolean("stargate", "irisUpgrade", false);
         cfg.getBoolean("stargate", "chevronUpgrade", false);
+        cfg.getBoolean("stargate", "requiresNoPower", false);
 
         // Global static config values
         minutesOpenPerFuelItem = cfg.getInteger("stargate", "minutesOpenPerFuelItem", minutesOpenPerFuelItem);
@@ -569,6 +572,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         } else {
             this.gateOrientation = 1;
         }
+
+        if (nbt.hasKey("requiresNoPower") && !SGCraft.forceSGBaseTEUpdate) {
+            this.requiresNoPower = nbt.getBoolean("requiresNoPower");
+        } else {
+            this.requiresNoPower = cfg.getBoolean("stargate", "requiresNoPower", this.requiresNoPower);
+        }
+
         this.facingDirectionOfBase = nbt.getInteger("facingDirectionOfBase");
 
         // Set values after NBT load
@@ -635,6 +645,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setString("onlySpecifiedAddress", onlySpecifiedAddress);
         nbt.setInteger("gateOrientation", gateOrientation);
         nbt.setInteger("facingDirectionOfBase", facingDirectionOfBase);
+        nbt.setBoolean("requiresNoPower", requiresNoPower);
+
         return nbt;
     }
 
@@ -892,9 +904,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
 
         //Reset this value:
-        energyToOpen = energyPerFuelItem / gateOpeningsPerFuelItem;
+        if (!this.requiresNoPower) {
+            energyToOpen = energyPerFuelItem / gateOpeningsPerFuelItem;
+        } else {
+            energyToOpen = 0;
+        }
 
-        if (isModLoaded("ic2")) {
+        if (isModLoaded("ic2") && !this.requiresNoPower) {
             // Zpm
             String originName = this.getWorld().getWorldInfo().getWorldName().toLowerCase();
             String destinationName = targetGate.getWorld().getWorldInfo().getWorldName().toLowerCase();
@@ -939,7 +955,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
 
         // Final Power check before dial
-        if (!energyIsAvailable(energyToOpen * distanceFactor)) {
+        if (!this.requiresNoPower && !energyIsAvailable(energyToOpen * distanceFactor)) {
             return diallingFailure(player, "insufficientEnergy");
         }
 
@@ -1170,8 +1186,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     void tickEnergyUsage() {
         if (state == SGState.Connected && isInitiator) {
-            if (!useEnergy(energyUsePerTick * distanceFactor)) {
-                disconnect();
+            if (!this.requiresNoPower) {
+                if (!useEnergy(energyUsePerTick * distanceFactor)) {
+                    disconnect();
+                }
             }
         }
     }
@@ -1190,6 +1208,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     public boolean useEnergy(double amount) {
+        if (this.requiresNoPower) {
+            return true;
+        }
+
         if (debugEnergyUse) {
             System.out.printf("SGBaseTE.useEnergy: %s; buffered: %s\n", amount, energyInBuffer);
         }

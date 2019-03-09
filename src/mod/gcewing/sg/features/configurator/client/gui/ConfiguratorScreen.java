@@ -302,7 +302,6 @@ public class ConfiguratorScreen extends BasicScreen {
         this.noPowerRequiredCheckbox = new UICheckBox(this);
         this.noPowerRequiredCheckbox.setText(TextFormatting.WHITE + "No Input Power Required");
         this.noPowerRequiredCheckbox.setPosition(checkboxIndentPadding, this.preserveInventoryCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
-        this.noPowerRequiredCheckbox.setEnabled(false);
         this.noPowerRequiredCheckbox.setName("checkbox.nopowerrequired");
         this.noPowerRequiredCheckbox.register(this);
 
@@ -447,7 +446,7 @@ public class ConfiguratorScreen extends BasicScreen {
                 SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 13, 0, acceptIncomingConnectionsCheckbox.isChecked(), 0.0);
                 SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 14, 0, closeFromEitherEndCheckbox.isChecked(), 0.0);
                 SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 15, 0, preserveInventoryCheckbox.isChecked(), 0.0);
-                //SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 16, 0, noPowerRequiredCheckbox.isChecked(), 0.0);
+                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 16, 0, noPowerRequiredCheckbox.isChecked(), 0.0);
                 SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 17, 0, chevronsLockOnDialCheckbox.isChecked(), 0.0);
                 SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 18, 0, returnIrisToPreviousStateCheckbox.isChecked(), 0.0);
                 break;
@@ -492,7 +491,7 @@ public class ConfiguratorScreen extends BasicScreen {
         this.acceptIncomingConnectionsCheckbox.setChecked(((SGBaseTE) localGate).acceptIncomingConnections);
         this.closeFromEitherEndCheckbox.setChecked(((SGBaseTE) localGate).closeFromEitherEnd);
         this.preserveInventoryCheckbox.setChecked(((SGBaseTE) localGate).preserveInventory);
-        //
+        this.noPowerRequiredCheckbox.setChecked(((SGBaseTE) localGate).requiresNoPower);
         this.chevronsLockOnDialCheckbox.setChecked(((SGBaseTE) localGate).chevronsLockOnDial);
         this.returnIrisToPreviousStateCheckbox.setChecked(((SGBaseTE) localGate).returnToPreviousIrisState);
     }

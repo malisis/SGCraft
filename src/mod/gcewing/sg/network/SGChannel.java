@@ -200,7 +200,7 @@ public class SGChannel extends BaseDataChannel {
         } else if (setting == 15 && SGCraft.hasPermission(player, "sgcraft.configurator.preserveInventory")) { // Preserve Inventory on Iris Death
             te.preserveInventory = b;
         } else if (setting == 16) { // No Input Power Required
-            //Todo: build this
+            te.requiresNoPower = b;
         } else if (setting == 17 && SGCraft.hasPermission(player, "sgcraft.configurator.chevronsLockOnDial")) { // Chevrons lock when dialed
             te.chevronsLockOnDial = b;
         } else if (setting == 18 && SGCraft.hasPermission(player, "sgcraft.configurator.returnToPreviousIrisState")) {
