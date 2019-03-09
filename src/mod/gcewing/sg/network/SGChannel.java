@@ -11,6 +11,7 @@ import gcewing.sg.BaseDataChannel;
 import gcewing.sg.SGCraft;
 import gcewing.sg.features.configurator.client.gui.ConfiguratorScreen;
 import gcewing.sg.features.gdo.client.gui.GdoScreen;
+import gcewing.sg.features.pdd.client.gui.PddScreen;
 import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.SGAddressing;
@@ -202,9 +203,11 @@ public class SGChannel extends BaseDataChannel {
 
     @ClientMessageHandler("OpenGUI")
     public void handleGuiOpenRequest(EntityPlayer player, ChannelInput data) {
+
         BlockPos pos = readCoords(data);
         int guiType = data.readInt();
         boolean isAdmin = data.readBoolean();
+        System.out.println("Handler GUI Request: "+ guiType);
         if (guiType == 1) {
             new ConfiguratorScreen(player, player.world, isAdmin).display();
         }
@@ -236,7 +239,7 @@ public class SGChannel extends BaseDataChannel {
             }
         }
         if (guiType == 3) {
-            //
+            new PddScreen(player, player.world, isAdmin).display();
         }
     }
 

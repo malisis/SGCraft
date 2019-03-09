@@ -44,6 +44,6 @@ public class ConfiguratorItem extends Item {
       }
     }
 
-    return new ActionResult<>(EnumActionResult.FAIL, player.getHeldItem(handIn));  //Both Server & Client expect a returned value.
+    return new ActionResult<>(EnumActionResult.PASS, player.getHeldItem(handIn));  //Both Server & Client expect a returned value.
   }
 }
