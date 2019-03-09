@@ -228,6 +228,25 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     double ehGrid[][][];
     private static Set<UUID> messagesQueue = Sets.newHashSet();
 
+    public SGBaseTE() {
+        this.hasIrisUpgrade = cfg.getBoolean("stargate", "irisUpgrade", this.hasIrisUpgrade);
+        this.hasChevronUpgrade = cfg.getBoolean("stargate", "chevronUpgrade", this.hasChevronUpgrade);
+        this.gateType = cfg.getInteger("stargate", "gateType", this.gateType);
+        this.secondsToStayOpen = cfg.getInteger("stargate", "secondsToStayOpen", this.secondsToStayOpen);
+        this.oneWayTravel = cfg.getBoolean("stargate", "oneWayTravel", this.oneWayTravel);
+        this.ringRotationSpeed = cfg.getDouble("stargate", "ringRotationSpeed", this.ringRotationSpeed);
+        this.maxEnergyBuffer = cfg.getDouble("stargate", "maxEnergyBuffer", this.maxEnergyBuffer);
+        this.energyPerFuelItem = cfg.getDouble("stargate", "energyPerFuelItem", this.energyPerFuelItem);
+        this.gateOpeningsPerFuelItem = cfg.getInteger("stargate", "gateOpeningsPerFuelItem", this.gateOpeningsPerFuelItem);
+        this.distanceFactorMultiplier = cfg.getDouble("stargate", "distanceFactorMultiplier", this.distanceFactorMultiplier);
+        this.interDimensionMultiplier = cfg.getDouble("stargate", "interDimensionMultiplier", this.interDimensionMultiplier);
+        this.reverseWormholeKills = cfg.getBoolean("stargate", "reverseWormholeKills", this.reverseWormholeKills);
+        this.closeFromEitherEnd = cfg.getBoolean("stargate", "closeFromEitherEnd", this.closeFromEitherEnd);
+        this.preserveInventory = cfg.getBoolean("iris", "preserveInventory", this.preserveInventory);
+        this.chevronsLockOnDial = cfg.getBoolean("stargate", "chevronsLockOnDial", this.chevronsLockOnDial);
+        this.returnToPreviousIrisState = cfg.getBoolean("stargate", "returnToPreviousIrisState", this.returnToPreviousIrisState);
+    }
+
     public static void configure(BaseConfiguration cfg) {
         SGBaseTE.cfg = cfg;
         // Instanced config values
@@ -235,7 +254,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         cfg.getDouble("stargate", "energyPerFuelItem", 96000);
         cfg.getInteger("stargate", "gateOpeningsPerFuelItem", 24);
         cfg.getInteger("stargate", "secondsToStayOpen", 5 * 60);
-        cfg.getBoolean("stargate", "oneWayTravel", false);
+        cfg.getBoolean("stargate", "oneWayTravel", true);
         cfg.getBoolean("stargate", "reverseWormholeKills", false);
         cfg.getBoolean("stargate", "closeFromEitherEnd", true);
         cfg.getDouble("stargate", "maxEnergyBuffer", 1000);
@@ -248,6 +267,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         cfg.getBoolean("stargate", "chevronsLockOnDial", false);
         cfg.getBoolean("stargate", "returnToPreviousIrisState", false);
         cfg.getDouble("stargate", "ringRotationSpeed", 2.0);
+        cfg.getBoolean("stargate", "irisUpgrade", false);
+        cfg.getBoolean("stargate", "chevronUpgrade", false);
 
         // Global static config values
         minutesOpenPerFuelItem = cfg.getInteger("stargate", "minutesOpenPerFuelItem", minutesOpenPerFuelItem);
@@ -361,15 +382,16 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (isMerged != state) {
             isMerged = state;
             markBlockChanged();
-            if (logStargateEvents) {
-                String address = tryToGetHomeAddress();
-                if (address != null) {
-                    Logger log = LogManager.getLogger();
-                    String action = isMerged ? "ADDED" : "REMOVED";
-                    String name = getWorld().getWorldInfo().getWorldName();
-                    if (isMerged) {
-                        this.homeAddress = address;
-                    }
+
+            String address = tryToGetHomeAddress();
+            if (address != null) {
+                Logger log = LogManager.getLogger();
+                String action = isMerged ? "ADDED" : "REMOVED";
+                String name = getWorld().getWorldInfo().getWorldName();
+                if (isMerged) {
+                    this.homeAddress = address;
+                }
+                if (logStargateEvents) {
                     log.info(String.format("STARGATE %s %s %s %s", action, name, pos, address));
                 }
             }
@@ -410,7 +432,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         int y = nbt.getInteger("linkedY");
         int z = nbt.getInteger("linkedZ");
         this.linkedPos = new BlockPos(x, y, z);
-        this.hasChevronUpgrade = nbt.getBoolean("hasChevronUpgrade");
         if (nbt.hasKey("connectedLocation")) {
             connectedLocation = new SGLocation(nbt.getCompoundTag("connectedLocation"));
         }
@@ -419,7 +440,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         this.maxTimeout = nbt.getInteger("maxTimeout");
         this.energyInBuffer = nbt.hasKey("energyInBuffer") ? nbt.getDouble("energyInBuffer") : nbt.getInteger("fuelBuffer");
         this.distanceFactor = nbt.getDouble("distanceFactor");
-        this.hasIrisUpgrade = nbt.getBoolean("hasIrisUpgrade");
         this.irisState = IrisState.values()[nbt.getInteger("irisState")];
         this.irisPhase = nbt.getInteger("irisPhase");
         this.redstoneInput = nbt.getBoolean("redstoneInput");
@@ -430,7 +450,18 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             SGCraft.playSound(this, eventHorizonSound);
         }
 
-        // Configurator Options
+        if (nbt.hasKey("hasIrisUpgrade") && !SGCraft.forceSGBaseTEUpdate) {
+            this.hasIrisUpgrade = nbt.getBoolean("hasIrisUpgrade");
+        } else {
+            this.hasIrisUpgrade = cfg.getBoolean("stargate", "irisUpgrade", this.hasIrisUpgrade);
+        }
+
+        if (nbt.hasKey("hasChevronUpgrade") && !SGCraft.forceSGBaseTEUpdate) {
+            this.hasChevronUpgrade = nbt.getBoolean("hasChevronUpgrade");
+        } else {
+            this.hasChevronUpgrade = cfg.getBoolean("stargate", "chevronUpgrade", this.hasChevronUpgrade);
+        }
+
         if (nbt.hasKey("gateType") && !SGCraft.forceSGBaseTEUpdate) {
             this.gateType = nbt.getInteger("gateType");
         } else {

@@ -41,6 +41,7 @@ import gcewing.sg.generator.NaquadahOreWorldGen;
 import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.Info;
+import gcewing.sg.util.PermissionsUtil;
 import gcewing.sg.util.SGChunkData;
 import gcewing.sg.util.Sound;
 import net.minecraft.block.Block;
@@ -50,6 +51,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -153,6 +156,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static boolean forceIC2CfgUpdate = false;
     public static boolean forceRFCfgUpdate = false;
 
+    public static PermissionsUtil permissionsUtil;
+
     public SGCraft() {
         mod = this;
 
@@ -192,6 +197,11 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     @Mod.EventHandler
     @Override
     public void postInit(FMLPostInitializationEvent e) {
+        if (isModLoaded("spongeapi")) {
+            permissionsUtil = new PermissionsUtil();
+        } else {
+            System.out.println("SGCraft - SpongeAPI not found, permissions system NOT initialized!");
+        }
         super.postInit(e);
     }
 
@@ -272,9 +282,11 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             zpm = addItem(new ZPMItem(), "zpm");
         }
 
-        gdo = addItem(new GdoItem(), "gdo");
-        pdd = addItem(new PddItem(), "pdd");
-        configurator = addItem(new ConfiguratorItem(), "configurator");
+        if (isModLoaded("malisiscore")) {
+            gdo = addItem(new GdoItem(), "gdo");
+            pdd = addItem(new PddItem(), "pdd");
+            configurator = addItem(new ConfiguratorItem(), "configurator");
+        }
     }
 
     @SideOnly(Side.CLIENT)
@@ -495,5 +507,13 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         forceDHDCfgUpdate = config.getBoolean("dhd", "force-update", forceDHDCfgUpdate);
         forceIC2CfgUpdate = config.getBoolean("ic2", "force-update", forceIC2CfgUpdate);
         forceRFCfgUpdate = config.getBoolean("rf", "force-update", forceRFCfgUpdate);
+    }
+
+    public static boolean hasPermission(EntityPlayer player, String permission) {
+        if (isModLoaded("spongeapi")) {
+            return PermissionsUtil.spongeHasPermission(player, permission);
+        }
+
+        return true; // Fallback
     }
 }

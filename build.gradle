@@ -56,6 +56,10 @@ repositories {
 }
 
 dependencies {
+    compile ("org.spongepowered:spongeforge:1.12.2-2768-7.1.6-RC3621:dev") {
+        exclude module: 'testplugins'
+        exclude module: 'testmods'
+    }
     compile "org.spongepowered:mixin:0.7.11-SNAPSHOT"
     compile 'org.spongepowered:configurate-yaml:3.6'
     compile 'org.spongepowered:configurate-core:3.6'
