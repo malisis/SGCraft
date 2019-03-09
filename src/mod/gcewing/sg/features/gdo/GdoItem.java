@@ -1,6 +1,7 @@
 package gcewing.sg.features.gdo;
 
 import gcewing.sg.features.gdo.client.gui.GdoScreen;
+import gcewing.sg.network.SGChannel;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.GateUtil;
 import net.minecraft.client.Minecraft;
@@ -34,10 +35,10 @@ public class GdoItem extends Item {
   @Override
   public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer player, EnumHand handIn) {
     if (worldIn.isRemote) {  // Execute this ONLY on the client
-      TileEntity localGate = GateUtil.locateLocalGate(Minecraft.getMinecraft().world, new BlockPos(player.posX, player.posY, player.posZ), 6, true);
+      TileEntity localGate = GateUtil.locateLocalGate(worldIn, new BlockPos(player.posX, player.posY, player.posZ), 6, true);
       if (localGate != null) {
         if (localGate instanceof SGBaseTE) {
-          new GdoScreen(Minecraft.getMinecraft().player, Minecraft.getMinecraft().world, true).display();
+          SGChannel.sendGuiRequestToServer(player, 2);
           return new ActionResult<>(EnumActionResult.PASS, player.getHeldItem(handIn));  //Both Server & Client expect a returned value.
         }
       }

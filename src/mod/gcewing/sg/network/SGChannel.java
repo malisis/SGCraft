@@ -9,11 +9,16 @@ package gcewing.sg.network;
 import gcewing.sg.BaseBlockUtils;
 import gcewing.sg.BaseDataChannel;
 import gcewing.sg.SGCraft;
+import gcewing.sg.features.configurator.client.gui.ConfiguratorScreen;
+import gcewing.sg.features.gdo.client.gui.GdoScreen;
 import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.*;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class SGChannel extends BaseDataChannel {
 
@@ -116,32 +121,81 @@ public class SGChannel extends BaseDataChannel {
         BlockPos pos = readCoords(data);
         int setting = data.readInt();
         SGBaseTE te = SGBaseTE.at(player.world, pos);
-
-        if (te != null) {
-            if (setting == 1) { // Local Open Iris
-                te.openIris();
-            } else if (setting == 2) { // Local Close Iris
-                te.closeIris();
-            } else if (setting == 3) { // Local Disconnect Wormhole
-                te.disconnect(player);
-            } else if (setting == 4) { // Remote Open Iris
-                if (te.isConnected()) {
-                    SGBaseTE remoteGate = te.getConnectedStargateTE();
-                    remoteGate.openIris();
+        if (SGCraft.hasPermission(player, "sgcraft.gui.gdo")) {
+            if (te != null) {
+                if (setting == 1) { // Local Open Iris
+                    te.openIris();
+                } else if (setting == 2) { // Local Close Iris
+                    te.closeIris();
+                } else if (setting == 3) { // Local Disconnect Wormhole
+                    te.disconnect(player);
+                } else if (setting == 4) { // Remote Open Iris
+                    if (te.isConnected()) {
+                        SGBaseTE remoteGate = te.getConnectedStargateTE();
+                        remoteGate.openIris();
+                    }
+                } else if (setting == 5) { // Remote Close Iris
+                    if (te.isConnected()) {
+                        SGBaseTE remoteGate = te.getConnectedStargateTE();
+                        remoteGate.closeIris();
+                    }
+                } else if (setting == 6) { // Remote Disconnect (Not implemented on GUI)
+                    if (te.isConnected()) {
+                        SGBaseTE remoteGate = te.getConnectedStargateTE();
+                        remoteGate.disconnect();
+                    }
+                } else if (setting == 7) { // Test button functionality (varies)
+                    te.connect("ZFDDUR8", player);
                 }
-            } else if (setting == 5) { // Remote Close Iris
-                if (te.isConnected()) {
-                    SGBaseTE remoteGate = te.getConnectedStargateTE();
-                    remoteGate.closeIris();
-                }
-            } else if (setting == 6) { // Remote Disconnect (Not implemented on GUI)
-                if (te.isConnected()) {
-                    SGBaseTE remoteGate = te.getConnectedStargateTE();
-                    remoteGate.disconnect();
-                }
-            } else if (setting == 7) { // Test button functionality (varies)
-                te.connect("ZFDDUR8", player);
             }
+        } else {
+            System.err.println("SGCraft - Hacked Client detected!");
+        }
+    }
+
+    public static void sendGuiRequestToServer(EntityPlayer player, int guiType) {
+        ChannelOutput data = channel.openServer("requestGUI");
+        data.writeInt(guiType);
+        data.close();
+    }
+
+    @ServerMessageHandler("requestGUI")
+    public void handleGUIRequestFromClient(EntityPlayer player, ChannelInput data) {
+        int guiType = data.readInt();
+
+        if (guiType == 1 && SGCraft.hasPermission(player, "sgcraft.gui.configurator")) {
+            this.openGuiAtClient(player, 1, SGCraft.hasPermission(player, "sgcraft.admin"));
+        }
+
+        if (guiType == 2 && SGCraft.hasPermission(player, "sgcraft.gui.gdo")) {
+            this.openGuiAtClient(player, 2, SGCraft.hasPermission(player, "sgcraft.admin"));
+        }
+
+        if (guiType == 3 && SGCraft.hasPermission(player, "sgcraft.gui.pdd")) {
+            this.openGuiAtClient(player, 3, SGCraft.hasPermission(player, "sgcraft.admin"));
+        }
+
+    }
+
+    public static void openGuiAtClient(EntityPlayer player, int guiType, boolean isAdmin) {
+        ChannelOutput data = channel.openPlayer(player,"OpenGUI");
+        data.writeInt(guiType);
+        data.writeBoolean(isAdmin);
+        data.close();
+    }
+
+    @ClientMessageHandler("OpenGUI")
+    public void handleGuiOpenRequest(EntityPlayer player, ChannelInput data) {
+        int guiType = data.readInt();
+        boolean isAdmin = data.readBoolean();
+        if (guiType == 1) {
+            new ConfiguratorScreen(player, player.world, isAdmin).display();
+        }
+        if (guiType == 2) {
+            new GdoScreen(player, player.world, isAdmin).display();
+        }
+        if (guiType == 3) {
+            //
         }
     }
 

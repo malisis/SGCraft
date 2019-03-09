@@ -1285,10 +1285,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
 
         List<ISGEnergySource> result = new ArrayList<>();
-        Trans3 t = localToGlobalTransformation();
-        //for (int i = -5; i <= 2; i++) {
-        //BlockPos bp = t.p(i, -1, 0).blockPos();
-
         int radius = 2;
 
         for (final BlockPos.MutableBlockPos nearPos : BlockPos.getAllInBoxMutable(
