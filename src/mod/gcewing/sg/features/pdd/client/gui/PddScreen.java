@@ -11,8 +11,13 @@ import gcewing.sg.util.GateUtil;
 import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.BasicScreen;
 import net.malisis.core.client.gui.GuiTexture;
+import net.malisis.core.client.gui.MalisisGui;
+import net.malisis.core.client.gui.component.UIComponent;
+import net.malisis.core.client.gui.component.container.BasicContainer;
 import net.malisis.core.client.gui.component.container.BasicForm;
 import net.malisis.core.client.gui.component.container.BasicList;
+import net.malisis.core.client.gui.component.container.UIContainer;
+import net.malisis.core.client.gui.component.decoration.BasicLine;
 import net.malisis.core.client.gui.component.decoration.UIImage;
 import net.malisis.core.client.gui.component.decoration.UILabel;
 import net.malisis.core.client.gui.component.decoration.UISeparator;
@@ -23,6 +28,7 @@ import net.malisis.core.util.FontColors;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -31,69 +37,60 @@ public class PddScreen extends BasicScreen {
     private int lastUpdate = 0;
     private boolean unlockMouse = true;
     private boolean isAdmin;
-    private BasicForm form, addressArea, buttonsArea;
+    private BasicForm form;
+    private BasicContainer<?> addressContainer;
     private UIButton addAddressButton, editAddressButton, deleteAddressButton, dialAddressButton, closeButton;
     private UILabel localGateAddressLabel, remoteGateAddressLabel;
     private BlockPos location;
     private World world;
     private EntityPlayer player;
 
-    //private BasicList<AddressItem> addressList;  // ?
+    private BasicList<AddressData> addressList;
 
-
-    public PddScreen(EntityPlayer player, World worldIn,  boolean isAdmin) {
+    public PddScreen(EntityPlayer player, World worldIn, boolean isAdmin) {
         this.player = player;
         this.isAdmin = isAdmin;
         this.world = worldIn;
         this.location = new BlockPos(player.posX, player.posY, player.posZ);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public void construct() {
         this.guiscreenBackground = false;
         Keyboard.enableRepeatEvents(true);
 
         // Master Panel
-        this.form = new BasicForm(this, 300, 225, "");
-        this.form.setAnchor(Anchor.CENTER | Anchor.MIDDLE);
-        this.form.setMovable(true);
-        this.form.setClosable(true);
-        this.form.setBorder(FontColors.WHITE, 1, 185);
-        this.form.setBackgroundAlpha(215);
-        this.form.setBottomPadding(3);
-        this.form.setRightPadding(3);
-        this.form.setTopPadding(20);
-        this.form.setLeftPadding(3);
+        this.form = new BasicForm(this, 300, 225, "Personal Dialer Device");
 
-        final UILabel titleLabel = new UILabel(this, "Personal Dialer Device");
-        titleLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
-        titleLabel.setPosition(0, -15, Anchor.CENTER | Anchor.TOP);
         // ****************************************************************************************************************************
         // Address List Area
         // ****************************************************************************************************************************
-        addressArea = new BasicForm(this, 295, 185, "");
-        addressArea.setPosition(0, 0, Anchor.LEFT | Anchor.MIDDLE);
-        addressArea.setMovable(false);
-        addressArea.setClosable(false);
-        addressArea.setBorder(FontColors.WHITE, 1, 185);
-        addressArea.setBackgroundAlpha(215);
-        addressArea.setBottomPadding(3);
-        addressArea.setRightPadding(3);
-        addressArea.setTopPadding(3);
-        addressArea.setLeftPadding(3);
+        this.addressContainer = new BasicContainer(this, 295, 185);
+        this.addressContainer.setPosition(0, 0, Anchor.LEFT | Anchor.MIDDLE);
+        this.addressContainer.setBorder(FontColors.WHITE, 1, 185);
+        this.addressContainer.setPadding(0, 3);
+        this.addressContainer.setBackgroundAlpha(0);
 
-        final UILabel availableAddressesLabel = new UILabel(this, "Available Addresses");
-        availableAddressesLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
+        final UILabel availableAddressesLabel = new UILabel(this, TextFormatting.WHITE + "Available Addresses");
         availableAddressesLabel.setPosition(0, 0, Anchor.CENTER | Anchor.TOP);
 
-        final UISeparator valuesSeparator = new UISeparator(this);
-        valuesSeparator.setSize(this.addressArea.getWidth() - 15, 1);
-        valuesSeparator.setPosition(0, 10, Anchor.TOP | Anchor.CENTER);
+        this.addressList = new BasicList<>(this, UIComponent.INHERITED, this.addressContainer.getHeight() - 14);
+        this.addressList.setPosition(0, BasicScreen.getPaddedY(availableAddressesLabel, 2));
+        this.addressList.setItemComponentFactory(AddressItemComponent::new);
+        this.addressList.setItemComponentSpacing(1);
+        this.addressList.setPadding(2);
+        this.addressList.setBorder(FontColors.WHITE, 1, 185);
+        this.addressList.setBorders(FontColors.WHITE, 185, 0, 1, 0, 0);
 
-        // Address List Here
+        this.addressList.addItem(new AddressData("Banana1", "12345-12345-12345-12345", false));
+        this.addressList.addItem(new AddressData("Banana2", "12345-12345-12345-12345", false));
+        this.addressList.addItem(new AddressData("Banana3", "12345-12345-12345-12345", false));
+        this.addressList.addItem(new AddressData("Banana4", "12345-12345-12345-12345", false));
+        this.addressList.addItem(new AddressData("Banana5", "12345-12345-12345-12345", false));
+        this.addressList.addItem(new AddressData("Banana6", "12345-12345-12345-12345", false));
+        this.addressList.addItem(new AddressData("Banana7", "12345-12345-12345-12345", false));
 
-        addressArea.add(availableAddressesLabel, valuesSeparator);
+        this.addressContainer.add(availableAddressesLabel, this.addressList);
 
         // ****************************************************************************************************************************
 
@@ -102,7 +99,13 @@ public class PddScreen extends BasicScreen {
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.LEFT)
             .text("TEST")
-            .listener(this)
+            .onClick(() -> {
+              final TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+              if (!(localGate instanceof SGBaseTE)) {
+                return;
+              }
+              SGChannel.sendGdoInputToServer((SGBaseTE) localGate, 7);
+            })
             .build("button.test");
 
         // Close button
@@ -110,44 +113,19 @@ public class PddScreen extends BasicScreen {
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text("Close")
-            .listener(this)
+            .onClick(this::close)
             .build("button.close");
 
-        this.form.add(titleLabel, addressArea, buttonTest, buttonClose);
+        this.form.add(this.addressContainer, buttonTest, buttonClose);
         addToScreen(this.form);
         this.refresh();
     }
 
-    @Subscribe
-    public void onUIButtonClickEvent(UIButton.ClickEvent event) {
-        TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, true);
-
-        if (localGate == null) {
-            return;
-        }
-
-        if (!(localGate instanceof SGBaseTE)) {
-            return;
-        }
-
-        switch (event.getComponent().getName().toLowerCase()) {
-
-            case "button.test":
-                SGChannel.sendGdoInputToServer((SGBaseTE)localGate, 7);
-                break;
-
-            case "button.close":
-                this.close();
-                break;
-        }
-    }
-
     private void refresh() {
-        TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, false);
-        if (localGate != null) {
-            if (localGate instanceof SGBaseTE) {
-               // Do things, all the things.
-            }
+        final TileEntity localGateEntity = GateUtil.locateLocalGate(this.world, this.location, 6, false);
+        if (localGateEntity instanceof SGBaseTE) {
+            final SGBaseTE localGate = (SGBaseTE) localGateEntity;
+
         }
     }
 
@@ -187,5 +165,52 @@ public class PddScreen extends BasicScreen {
     @Override
     public boolean doesGuiPauseGame() {
         return false; // Can't stop the game otherwise the Sponge Scheduler also stops.
+    }
+
+    private class AddressData {
+      private final String name;
+      private final String address;
+      private final boolean locked;
+
+      private AddressData(final String name, final String address, final boolean locked) {
+        this.name = name;
+        this.address = address;
+        this.locked = locked;
+      }
+    }
+
+    private class AddressItemComponent extends BasicList.ItemComponent<AddressData> {
+
+      private UILabel addressLabel, nameLabel;
+      private BasicContainer lockedStatusContainer;
+
+      public AddressItemComponent(final MalisisGui gui, final BasicList<AddressData> parent, final AddressData item) {
+        super(gui, parent, item);
+      }
+
+      @Override
+      protected void construct(final MalisisGui gui) {
+        super.construct(gui);
+
+        this.setHeight(28);
+        this.setPadding(1);
+
+        this.nameLabel = new UILabel(this.getGui(), TextFormatting.WHITE + this.item.name);
+        this.nameLabel.setPosition(4, 3);
+
+        this.addressLabel = new UILabel(this.getGui(), TextFormatting.WHITE + this.item.address);
+        this.addressLabel.setPosition(4, BasicScreen.getPaddedY(this.nameLabel, 2));
+
+        this.lockedStatusContainer = new BasicContainer(this.getGui(), 5, UIComponent.INHERITED);
+        this.lockedStatusContainer.setPosition(0, 0, Anchor.MIDDLE | Anchor.RIGHT);
+
+        this.update();
+
+        this.add(this.nameLabel, this.addressLabel, this.lockedStatusContainer);
+      }
+
+      public void update() {
+        this.lockedStatusContainer.setColor(this.item.locked ? FontColors.GREEN : FontColors.RED);
+      }
     }
 }
