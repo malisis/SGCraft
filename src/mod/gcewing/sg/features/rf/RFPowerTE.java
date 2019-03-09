@@ -21,7 +21,7 @@ public class RFPowerTE extends PowerTE implements IEnergyStorage {
 
     // Addon for Redstone Flux
 
-    private EnergyStorage storage = new EnergyStorage((int)energyBuffer);
+    private EnergyStorage storage = new EnergyStorage(SGCraft.RfMaxEnergyBuffer);
     private int update = 0;
 
     public RFPowerTE() {
