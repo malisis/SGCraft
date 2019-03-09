@@ -14,6 +14,7 @@ import gcewing.sg.features.gdo.client.gui.GdoScreen;
 import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.SGAddressing;
+import gcewing.sg.util.SGState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
@@ -158,7 +159,6 @@ public class SGChannel extends BaseDataChannel {
         ChannelOutput data = channel.openServer("requestGUI");
         writeCoords(data, te);
         data.writeInt(guiType);
-        System.out.println("Send to Server");
         data.close();
     }
 
@@ -167,7 +167,6 @@ public class SGChannel extends BaseDataChannel {
         BlockPos pos = readCoords(data);
         SGBaseTE te = SGBaseTE.at(player.world, pos);
         int guiType = data.readInt();
-        System.out.println("Received from client: " + guiType);
         if (guiType == 1 && SGCraft.hasPermission(player, "sgcraft.gui.configurator")) {
             this.openGuiAtClient(te, player, 1, SGCraft.hasPermission(player, "sgcraft.admin"));
         }
@@ -188,8 +187,8 @@ public class SGChannel extends BaseDataChannel {
         data.writeInt(guiType);
         data.writeBoolean(isAdmin);
         if (guiType == 2) {
-            data.writeBoolean(te.isConnected());
-            if (te.isConnected()) {
+            data.writeBoolean(te.isConnected() && te.state == SGState.Connected);
+            if (te.isConnected() && te.state == SGState.Connected) {
                 SGBaseTE remoteGate = te.getConnectedStargateTE();
                 data.writeBoolean(remoteGate.hasIrisUpgrade);
                 data.writeBoolean(remoteGate.hasChevronUpgrade);
@@ -198,7 +197,6 @@ public class SGChannel extends BaseDataChannel {
                 data.writeUTF(SGAddressing.formatAddress(((SGBaseTE) remoteGate).homeAddress, "-", "-"));
             }
         }
-        System.out.println("Send to Client: " + guiType);
         data.close();
     }
 
@@ -224,7 +222,18 @@ public class SGChannel extends BaseDataChannel {
                 r_gateType = data.readInt();
                 r_address = data.readUTF();
             }
-            new GdoScreen(player, player.world, isAdmin, r_connected, r_hasIrisUpgrade, r_hasChevronUpgrade, r_isIrisClosed, r_gateType, r_address).display();
+
+            if (Minecraft.getMinecraft().currentScreen instanceof GdoScreen) {
+                GdoScreen screen = (GdoScreen)Minecraft.getMinecraft().currentScreen;
+                screen.isRemoteConnected = r_connected;
+                screen.r_hasIrisUpgrade = r_hasIrisUpgrade;
+                screen.r_hasChevronUpgrade = r_hasIrisUpgrade;
+                screen.r_isIrisClosed = r_isIrisClosed;
+                screen.r_gateType = r_gateType;
+                screen.r_address = r_address;
+            } else {
+                new GdoScreen(player, player.world, isAdmin, r_connected, r_hasIrisUpgrade, r_hasChevronUpgrade, r_isIrisClosed, r_gateType, r_address).display();
+            }
         }
         if (guiType == 3) {
             //

@@ -602,7 +602,6 @@ public class BaseDataChannel {
         @SideOnly(Side.CLIENT)
         protected void handleClientPacket(ChannelHandlerContext ctx, FMLProxyPacket msg) {
             ChannelInput data = new ChannelInputStream(msg.payload());
-            INetHandler net = ctx.channel().attr(NetworkRegistry.NET_HANDLER).get();
             EntityPlayer player = Minecraft.getMinecraft().player;
             channel.onReceiveFromServer(player, data);
         }

@@ -37,9 +37,9 @@ public class GdoScreen extends BasicScreen {
     private BlockPos location;
     private World world;
     private EntityPlayer player;
-    private boolean isRemoteConnected, r_hasIrisUpgrade, r_hasChevronUpgrade, r_isIrisClosed;
-    private String r_address;
-    private int r_gateType;
+    public boolean isRemoteConnected, r_hasIrisUpgrade, r_hasChevronUpgrade, r_isIrisClosed;
+    public String r_address;
+    public int r_gateType;
 
     public GdoScreen(EntityPlayer player, World worldIn,  boolean isAdmin, boolean isRemoteConnected, boolean r_hasIrisUpgrade, boolean r_hasChevronUpgrade, boolean r_isIrisClosed, int r_gateType, String r_address) {
         this.player = player;
@@ -249,13 +249,6 @@ public class GdoScreen extends BasicScreen {
         TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, false);
         if (localGate != null) {
             if (localGate instanceof SGBaseTE) {
-                if (((SGBaseTE) localGate).isConnected() && ((SGBaseTE) localGate).state == SGState.Connected) {
-                    this.form.setWidth(400);
-                    this.remoteGateControlArea.setVisible(true);
-                } else {
-                    this.form.setWidth(200);
-                    this.remoteGateControlArea.setVisible(false);
-                }
                 this.localGateAddressLabel.setText(SGAddressing.formatAddress(((SGBaseTE) localGate).homeAddress, "-", "-"));
 
                 // Disconnected No Iris
@@ -314,13 +307,12 @@ public class GdoScreen extends BasicScreen {
                     this.remoteGateCloseButton.setEnabled(false);
                     this.remoteIrisOpenButton.setEnabled(false);
                     this.remoteIrisCloseButton.setEnabled(false);
+                    this.form.setWidth(200);
+                    this.remoteGateControlArea.setVisible(false);
 
-                } else if (((SGBaseTE) localGate).isConnected()) {
-                    this.remoteGateImage.setVisible(true);
-                    this.localGateCloseButton.setEnabled(true);
-                    this.remoteGateCloseButton.setEnabled(true);
-
-                    //SGBaseTE remoteGate = ((SGBaseTE) localGate).getConnectedStargateTE();
+                } else if (isRemoteConnected) {
+                    this.form.setWidth(400);
+                    this.remoteGateControlArea.setVisible(true);
                     this.remoteGateAddressLabel.setText(r_address);
 
                     // Disconnected No Iris
@@ -373,6 +365,9 @@ public class GdoScreen extends BasicScreen {
                             }
                         //}
                     }
+                    this.remoteGateImage.setVisible(true);
+                    this.localGateCloseButton.setEnabled(true);
+                    this.remoteGateCloseButton.setEnabled(true);
                 }
             }
         }
@@ -386,11 +381,15 @@ public class GdoScreen extends BasicScreen {
             unlockMouse = false; // Only unlock once per session.
         }
 
-        if (this.lastUpdate == 25) {
+        if (this.lastUpdate == 100) {
+            TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+            if (localGate != null) {
+                SGChannel.sendGuiRequestToServer((SGBaseTE) localGate, player, 2);
+            }
             this.refresh();
         }
 
-        if (++this.lastUpdate > 30) {
+        if (++this.lastUpdate > 120) {
             this.lastUpdate = 0;
         }
     }
