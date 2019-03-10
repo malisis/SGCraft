@@ -8,6 +8,8 @@ import gcewing.sg.util.GateUtil;
 import gcewing.sg.util.SGState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -45,11 +47,16 @@ public class PddItem extends Item {
                 compound = new NBTTagCompound();
             }
 
-            if (!compound.hasKey(AddressData.ADDRESSES, Constants.NBT.TAG_COMPOUND)) {
+            if (!compound.hasKey(AddressData.ADDRESSES)) {
                 List<AddressData> genericAddressList = Lists.newArrayList();
                 // Create Generic List
-                genericAddressList.add(new AddressData("Orilla - Endor", "T9FH-3VW-VL", true, 1));
-                System.out.println(genericAddressList.get(0).getAddress());
+                genericAddressList.add(new AddressData("Orilla - Endor", "T9FH-3VW-VL", true, 1, 0));
+                genericAddressList.add(new AddressData("Orilla - Dockside", "X35A-008-YC", true, 1, 0));
+                genericAddressList.add(new AddressData("Asgard - Main Island", "V9V2-V9V-ZY", true, 1, 0));
+                genericAddressList.add(new AddressData("Asgard - Almura Castle", "9U9S-F4Q-2D", true, 1, 0));
+                genericAddressList.add(new AddressData("Dakara - Main Spawn Point", "PFWO-G8F-10", true, 1, 0));
+                genericAddressList.add(new AddressData("TEST", "ZFDDUR8", true, 1, 0));
+
                 AddressData.writeAddresses(compound, genericAddressList);
                 stack.setTagCompound(compound);
                 player.inventoryContainer.detectAndSendChanges();

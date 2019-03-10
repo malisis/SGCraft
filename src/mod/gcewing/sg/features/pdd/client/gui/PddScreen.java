@@ -1,32 +1,22 @@
 package gcewing.sg.features.pdd.client.gui;
 
-import com.google.common.eventbus.Subscribe;
 import gcewing.sg.features.pdd.AddressData;
-import gcewing.sg.util.IrisState;
-import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.network.SGChannel;
-import gcewing.sg.SGCraft;
-import gcewing.sg.util.SGAddressing;
-import gcewing.sg.util.SGState;
+import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.GateUtil;
+import gcewing.sg.util.SGAddressing;
 import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.BasicScreen;
-import net.malisis.core.client.gui.GuiTexture;
 import net.malisis.core.client.gui.MalisisGui;
 import net.malisis.core.client.gui.component.UIComponent;
 import net.malisis.core.client.gui.component.container.BasicContainer;
 import net.malisis.core.client.gui.component.container.BasicForm;
 import net.malisis.core.client.gui.component.container.BasicList;
-import net.malisis.core.client.gui.component.container.UIContainer;
-import net.malisis.core.client.gui.component.decoration.BasicLine;
-import net.malisis.core.client.gui.component.decoration.UIImage;
 import net.malisis.core.client.gui.component.decoration.UILabel;
-import net.malisis.core.client.gui.component.decoration.UISeparator;
 import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.client.gui.component.interaction.button.builder.UIButtonBuilder;
 import net.malisis.core.renderer.font.FontOptions;
 import net.malisis.core.util.FontColors;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -34,11 +24,8 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-
-import java.util.List;
 
 public class PddScreen extends BasicScreen {
     private int lastUpdate = 0;
@@ -51,6 +38,7 @@ public class PddScreen extends BasicScreen {
     private BlockPos location;
     private World world;
     private EntityPlayer player;
+    private boolean delayedUpdate = true;
 
     private BasicList<AddressData> addressList;
 
@@ -93,43 +81,36 @@ public class PddScreen extends BasicScreen {
         this.addressList.setBorder(FontColors.WHITE, 1, 185);
         this.addressList.setBorders(FontColors.WHITE, 185, 0, 1, 0, 0);
 
-        //this.addressList.addItem(new AddressData("Orilla - Endor", "T9FH-3VW-VL", true));
-        //this.addressList.addItem(new AddressData("Orilla - Dockside", "X35A-008-YC", true));
-        //this.addressList.addItem(new AddressData("Asgard - Main Island", "V9V2-V9V-ZY", true));
-        //this.addressList.addItem(new AddressData("Asgard - Almura Castle", "9U9S-F4Q-2D", true));
-        //this.addressList.addItem(new AddressData("Dakara - Main Spawn Point", "PFWO-G8F-10", true));
-        //this.addressList.addItem(new AddressData("TEST", "ZFDDUR8", false));
-        //this.addressList.addItem(new AddressData("Banana7", "12345-12345-12345-12345", false));
-
         this.addressContainer.add(availableAddressesLabel, localGateAddressLabel, this.addressList);
 
         // ****************************************************************************************************************************
 
         this.addAddressButton = new UIButtonBuilder(this)
             .text(TextFormatting.GREEN + "+")
-            //.onClick(() -> this.runScheduledTask("add"))
+            .onClick(() -> new PddEntryScreen(this, player, "Name Here", "Address Here", 10, 0, false, false).display())
             .anchor(Anchor.BOTTOM | Anchor.LEFT)
             .position(0, 0)
             //.visible(this.canAdd)
-            .tooltip("Add new entry")
             .build("button.add");
 
         this.deleteAddressButton = new UIButtonBuilder(this)
             .text(TextFormatting.RED + "-")
-            //.onClick(() -> this.runScheduledTask("remove"))
+            .onClick(() -> {
+                if (addressList.getSelectedItem() != null && !addressList.getSelectedItem().isLocked()) {
+                    new PddEntryScreen(this, player, addressList.getSelectedItem().getName(), addressList.getSelectedItem().getAddress(), addressList.getSelectedItem().getIndex(), addressList.getSelectedItem().getUnid(), addressList.getSelectedItem().isLocked(), true).display();
+                }
+            })
             .anchor(Anchor.BOTTOM | Anchor.LEFT)
             .position(BasicScreen.getPaddedX(this.addAddressButton, 2), 0)
             //.visible(this.canRemove)
-            .tooltip("Delete selected entry")
             .build("button.remove");
 
         this.editAddressButton = new UIButtonBuilder(this)
             .text(TextFormatting.YELLOW + "?")
-            //.onClick(() -> this.runScheduledTask("details"))
+            .onClick(() -> new PddEntryScreen(this, player, addressList.getSelectedItem().getName(), addressList.getSelectedItem().getAddress(), addressList.getSelectedItem().getIndex(), addressList.getSelectedItem().getUnid(), addressList.getSelectedItem().isLocked(), false).display())
             .anchor(Anchor.BOTTOM | Anchor.LEFT)
             .position(BasicScreen.getPaddedX(this.deleteAddressButton, 2), 0)
             //.visible(this.canModify)
-            .tooltip("Edit selected entry")
             .build("button.details");
 
         buttonDial = new UIButtonBuilder(this)
@@ -169,12 +150,19 @@ public class PddScreen extends BasicScreen {
         this.refresh();
     }
 
-    private void readAddresses(EntityPlayer player) {
+    public void readAddresses(EntityPlayer player) {
         final ItemStack stack = player.getHeldItemMainhand();
         NBTTagCompound compound = stack.getTagCompound();
+
         if (compound != null) {
+            this.addressList.clearItems();
             this.addressList.addItems(AddressData.getAddresses(compound));
         }
+    }
+
+    public void delayedUpdate() {
+        this.delayedUpdate = true;
+        this.lastUpdate = 0;
     }
 
     private void refresh() {
@@ -185,6 +173,9 @@ public class PddScreen extends BasicScreen {
                 this.buttonDisconnect.setEnabled(localGate.isConnected());
                 this.localGateAddressLabel.setText(SGAddressing.formatAddress(((SGBaseTE) localGate).homeAddress, "-", "-"));
             }
+        } else {
+            this.buttonDisconnect.setEnabled(false);
+            this.localGateAddressLabel.setVisible(false);
         }
     }
 
@@ -198,6 +189,10 @@ public class PddScreen extends BasicScreen {
 
         if (this.lastUpdate == 50) {
             this.refresh();
+            if (delayedUpdate) {
+                this.readAddresses(player);
+                this.delayedUpdate = false;
+            }
         }
 
         if (++this.lastUpdate > 60) {

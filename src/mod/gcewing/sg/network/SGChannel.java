@@ -11,6 +11,7 @@ import gcewing.sg.BaseDataChannel;
 import gcewing.sg.SGCraft;
 import gcewing.sg.features.configurator.client.gui.ConfiguratorScreen;
 import gcewing.sg.features.gdo.client.gui.GdoScreen;
+import gcewing.sg.features.pdd.AddressData;
 import gcewing.sg.features.pdd.client.gui.PddScreen;
 import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
@@ -18,6 +19,8 @@ import gcewing.sg.util.SGAddressing;
 import gcewing.sg.util.SGState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.*;
 import net.minecraft.util.text.TextComponentString;
@@ -140,6 +143,42 @@ public class SGChannel extends BaseDataChannel {
 
     }
 
+    public static void sendPddEntryUpdateToServer(String name, String address, int index, int unid, boolean locked) {
+        ChannelOutput data = channel.openServer("PddInputEntry");
+        data.writeUTF(name);
+        data.writeUTF(address);
+        data.writeInt(index);
+        data.writeInt(unid);
+        data.writeBoolean(locked);
+        data.close();
+    }
+
+    @ServerMessageHandler("PddInputEntry")
+    public void handlePddEntryUpdateFromClient(EntityPlayer player, ChannelInput data) {
+        String name = data.readUTF();
+        String address = data.readUTF();
+        int index = data.readInt();
+        int unid = data.readInt();
+        boolean locked = data.readBoolean();
+
+        if (!SGCraft.hasPermission(player, "sgcraft.gui.pdd.edit")) {
+            System.err.println("SGCraft - Hacked Client detected!");
+            return;
+        }
+
+        final ItemStack stack = player.getHeldItemMainhand();
+        if (stack != null) {
+            NBTTagCompound compound = stack.getTagCompound();
+            if (compound != null) {
+                AddressData.updateAddress(player, compound, unid, name, address, index, locked);
+                stack.setTagCompound(compound);
+                player.inventoryContainer.detectAndSendChanges();
+                SGChannel.updatePddList(player);
+            }
+        }
+
+    }
+
     public static void sendGdoInputToServer(SGBaseTE te, int function) {
         ChannelOutput data = channel.openServer("GdoInput");
         writeCoords(data, te);
@@ -147,7 +186,8 @@ public class SGChannel extends BaseDataChannel {
         data.close();
     }
 
-    @ServerMessageHandler("GdoInput") public void handleGdoInputFromClient(EntityPlayer player, ChannelInput data) {
+    @ServerMessageHandler("GdoInput")
+    public void handleGdoInputFromClient(EntityPlayer player, ChannelInput data) {
         BlockPos pos = readCoords(data);
         int setting = data.readInt();
         SGBaseTE localGate = SGBaseTE.at(player.world, pos);
@@ -226,6 +266,21 @@ public class SGChannel extends BaseDataChannel {
 
     }
 
+    public static void updatePddList(EntityPlayer player) {
+        ChannelOutput data = channel.openPlayer(player,"updatePdd");
+        data.writeBoolean(true);
+        data.close();
+    }
+
+    @ClientMessageHandler("updatePdd")
+    public void handleUpdatePddListRequest(EntityPlayer player, ChannelInput data) {
+        boolean update = data.readBoolean();
+        if (Minecraft.getMinecraft().currentScreen instanceof PddScreen) {
+            PddScreen screen = (PddScreen) Minecraft.getMinecraft().currentScreen;
+            screen.delayedUpdate();
+        }
+    }
+
     public static void openGuiAtClient(SGBaseTE te, EntityPlayer player, int guiType, boolean isAdmin, boolean canEditLocal, boolean canEditRemote) {
         ChannelOutput data = channel.openPlayer(player,"OpenGUI");
         writeCoords(data, te);
@@ -255,7 +310,7 @@ public class SGChannel extends BaseDataChannel {
         boolean isAdmin = data.readBoolean();
         boolean canEditLocal = data.readBoolean();
         boolean canEditRemote = data.readBoolean();
-        System.out.println("Handler GUI Request: Type: "+ guiType + " isAdmin: " + isAdmin + " canEditLocal: " + canEditLocal + " canEditRemote: " + canEditRemote);
+
         if (guiType == 1) {
             new ConfiguratorScreen(player, player.world, isAdmin).display();
         }
