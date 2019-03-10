@@ -168,7 +168,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     static double energyUsePerTick;
     public static boolean transparency = true;
     static Random random = new Random();
-    static DamageSource transientDamage = new DamageSource("sgcraft:transient");
+    static DamageSource transientDamageSource = new DamageSource("sgcraft:transient");
     public static BaseConfiguration cfg;
 
     // Instanced options
@@ -225,6 +225,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public String onlySpecifiedAddress = "";
     public int facingDirectionOfBase = 0;
     public boolean requiresNoPower = false;
+    public boolean transientDamage = true;
 
     double ehGrid[][][];
     private static Set<UUID> messagesQueue = Sets.newHashSet();
@@ -272,6 +273,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         cfg.getBoolean("stargate", "irisUpgrade", false);
         cfg.getBoolean("stargate", "chevronUpgrade", false);
         cfg.getBoolean("stargate", "requiresNoPower", false);
+        cfg.getBoolean("stargate", "transientDamage", true);
 
         // Global static config values
         minutesOpenPerFuelItem = cfg.getInteger("stargate", "minutesOpenPerFuelItem", minutesOpenPerFuelItem);
@@ -579,6 +581,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             this.requiresNoPower = cfg.getBoolean("stargate", "requiresNoPower", this.requiresNoPower);
         }
 
+        if (nbt.hasKey("transientDamage") && !SGCraft.forceSGBaseTEUpdate) {
+            this.transientDamage = nbt.getBoolean("transientDamage");
+        } else {
+            this.transientDamage = cfg.getBoolean("stargate", "transientDamage", this.requiresNoPower);
+        }
+
         this.facingDirectionOfBase = nbt.getInteger("facingDirectionOfBase");
 
         // Set values after NBT load
@@ -637,6 +645,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setInteger("gateOrientation", gateOrientation);
         nbt.setInteger("facingDirectionOfBase", facingDirectionOfBase);
         nbt.setBoolean("requiresNoPower", requiresNoPower);
+        nbt.setBoolean("transientDamage", transientDamage);
 
         if (connectedLocation != null) {
             nbt.setTag("connectedLocation", connectedLocation.toNBT());
@@ -1117,7 +1126,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 switch (state) {
                     case Transient:
                         if (!irisIsClosed()) {
-                            performTransientDamage();
+                            if (this.transientDamage) {
+                                performTransientDamage();
+                            }
                         }
                         break;
                     case Dialling:
@@ -1438,7 +1449,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             if (debugTransientDamage) {
                 System.out.printf("SGBaseTE.performTransientDamage: distance = %s, damage = %s\n", dist, damage);
             }
-            ent.attackEntityFrom(transientDamage, damage);
+            ent.attackEntityFrom(transientDamageSource, damage);
         }
     }
 
@@ -1739,7 +1750,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         } else {
             if (!(preserveInventory || player.world.getGameRules().getBoolean("keepInventory")))
                 player.inventory.clear();
-            player.attackEntityFrom(transientDamage, irisDamageAmount);
+            player.attackEntityFrom(transientDamageSource, irisDamageAmount);
             if (!player.isDead) {
                 player.setHealth(0.0F); // Backup player death to prevent grief prevention from saving player.
             }
@@ -1770,7 +1781,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     Entity teleportWithinDimension(Entity entity, Vector3 p, Vector3 v, double a, boolean destBlocked) {
         if (entity instanceof EntityPlayerMP) {
-            System.out.println("AAA");
             return teleportPlayerWithinDimension((EntityPlayerMP) entity, p, v, a);
         } else {
             return teleportEntityToWorld(entity, p, v, a, (WorldServer) entity.world, destBlocked);

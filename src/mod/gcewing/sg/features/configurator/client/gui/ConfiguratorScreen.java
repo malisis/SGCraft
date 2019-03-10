@@ -32,7 +32,7 @@ public class ConfiguratorScreen extends BasicScreen {
     private boolean isAdmin;
     private BasicForm form, numericOptionsArea, checkboxOptionsArea;
     private UILabel gateAddressLabel;
-    private UICheckBox oneWayTravelCheckbox, irisUpgradeCheckbox, chevronUpgradeCheckbox, gateTypeCheckbox, reverseWormholeKillsCheckbox, acceptIncomingConnectionsCheckbox, closeFromEitherEndCheckbox, preserveInventoryCheckbox, noPowerRequiredCheckbox, chevronsLockOnDialCheckbox, returnIrisToPreviousStateCheckbox;
+    private UICheckBox oneWayTravelCheckbox, irisUpgradeCheckbox, chevronUpgradeCheckbox, gateTypeCheckbox, reverseWormholeKillsCheckbox, acceptIncomingConnectionsCheckbox, closeFromEitherEndCheckbox, preserveInventoryCheckbox, noPowerRequiredCheckbox, chevronsLockOnDialCheckbox, returnIrisToPreviousStateCheckbox, transientDamageCheckbox;
     private UITextField secondsToStayOpen, gateRotationSpeed, energyBufferSize, energyPerNaquadah, gateOpeningsPerNaquadah, distanceMultiplier, dimensionalMultiplier;
     private BlockPos location;
     private World world;
@@ -330,9 +330,17 @@ public class ConfiguratorScreen extends BasicScreen {
         this.returnIrisToPreviousStateCheckbox.setName("checkbox.returntopreviousirisstate");
         this.returnIrisToPreviousStateCheckbox.register(this);
 
+        this.transientDamageCheckbox = new UICheckBox(this);
+        this.transientDamageCheckbox.setText(TextFormatting.WHITE + "Enable Transient Damage");
+        this.transientDamageCheckbox.setTooltip("Damages player or entity when Stargate Opens");
+        this.transientDamageCheckbox.setPosition(checkboxIndentPadding, this.returnIrisToPreviousStateCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
+        this.transientDamageCheckbox.setEnabled(true);
+        this.transientDamageCheckbox.setName("checkbox.transientDamage");
+        this.transientDamageCheckbox.register(this);
+
         this.checkboxOptionsArea.add(booleanValuesLabel, checkboxSeparator, this.oneWayTravelCheckbox, this.irisUpgradeCheckbox, this.chevronUpgradeCheckbox, this.gateTypeCheckbox);
         this.checkboxOptionsArea.add(this.reverseWormholeKillsCheckbox, this.acceptIncomingConnectionsCheckbox, this.closeFromEitherEndCheckbox, this.preserveInventoryCheckbox, this.noPowerRequiredCheckbox);
-        this.checkboxOptionsArea.add(this.chevronsLockOnDialCheckbox, this.returnIrisToPreviousStateCheckbox);
+        this.checkboxOptionsArea.add(this.chevronsLockOnDialCheckbox, this.returnIrisToPreviousStateCheckbox, this.transientDamageCheckbox);
 
         // Load Defaults button
         final UIButton buttonDefaults = new UIButtonBuilder(this)
@@ -390,6 +398,8 @@ public class ConfiguratorScreen extends BasicScreen {
                 ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 16, 0, noPowerRequiredCheckbox.isChecked(), 0.0);
                 ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 17, 0, chevronsLockOnDialCheckbox.isChecked(), 0.0);
                 ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 18, 0, returnIrisToPreviousStateCheckbox.isChecked(), 0.0);
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 19, 0, transientDamageCheckbox.isChecked(), 0.0);
+
                 this.close();
             })
             .listener(this)
@@ -421,73 +431,68 @@ public class ConfiguratorScreen extends BasicScreen {
 
     @Subscribe
     public void onFocusStateChange(StateChangeEvent.FocusStateChange<UITextField> event) {
-        TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+        TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+        if (localGateTE instanceof SGBaseTE) {
+            SGBaseTE localGate = (SGBaseTE) localGateTE;
 
-        if (localGate == null)
-            return;
-        if  (!(localGate instanceof SGBaseTE))
-            return;
-
-        if (secondsToStayOpen.getText().isEmpty()) {
-            secondsToStayOpen.setText(String.valueOf(((SGBaseTE) localGate).secondsToStayOpen));
-        }
-        if (gateRotationSpeed.getText().isEmpty()) {
-            gateRotationSpeed.setText(String.valueOf(((SGBaseTE) localGate).ringRotationSpeed));
-        }
-        if (energyBufferSize.getText().isEmpty()) {
-            energyBufferSize.setText(String.valueOf(((SGBaseTE) localGate).maxEnergyBuffer));
-        }
-        if (energyPerNaquadah.getText().isEmpty()) {
-            energyPerNaquadah.setText(String.valueOf(((SGBaseTE) localGate).energyPerFuelItem));
-        }
-        if (gateOpeningsPerNaquadah.getText().isEmpty()) {
-            gateOpeningsPerNaquadah.setText(String.valueOf(((SGBaseTE) localGate).gateOpeningsPerFuelItem));
-        }
-        if (distanceMultiplier.getText().isEmpty()) {
-            distanceMultiplier.setText(String.valueOf(((SGBaseTE) localGate).distanceFactorMultiplier));
-        }
-        if (dimensionalMultiplier.getText().isEmpty()) {
-            dimensionalMultiplier.setText(String.valueOf(((SGBaseTE) localGate).interDimensionMultiplier));
+            if (secondsToStayOpen.getText().isEmpty()) {
+                secondsToStayOpen.setText(String.valueOf(localGate.secondsToStayOpen));
+            }
+            if (gateRotationSpeed.getText().isEmpty()) {
+                gateRotationSpeed.setText(String.valueOf(localGate.ringRotationSpeed));
+            }
+            if (energyBufferSize.getText().isEmpty()) {
+                energyBufferSize.setText(String.valueOf(localGate.maxEnergyBuffer));
+            }
+            if (energyPerNaquadah.getText().isEmpty()) {
+                energyPerNaquadah.setText(String.valueOf(localGate.energyPerFuelItem));
+            }
+            if (gateOpeningsPerNaquadah.getText().isEmpty()) {
+                gateOpeningsPerNaquadah.setText(String.valueOf(localGate.gateOpeningsPerFuelItem));
+            }
+            if (distanceMultiplier.getText().isEmpty()) {
+                distanceMultiplier.setText(String.valueOf(localGate.distanceFactorMultiplier));
+            }
+            if (dimensionalMultiplier.getText().isEmpty()) {
+                dimensionalMultiplier.setText(String.valueOf(localGate.interDimensionMultiplier));
+            }
         }
     }
 
     private void refresh() {
-        TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, true);
-        if (localGate == null) {
-            return;
+        TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+        if (localGateTE instanceof SGBaseTE) {
+            SGBaseTE localGate = (SGBaseTE) localGateTE;
+
+            this.gateAddressLabel.setText(SGAddressing.formatAddress(((SGBaseTE) localGate).homeAddress, "-", "-"));
+
+            // Numeric Values
+            this.secondsToStayOpen.setText(String.valueOf(localGate.secondsToStayOpen));
+            this.gateRotationSpeed.setText(String.valueOf(localGate.ringRotationSpeed));
+            this.energyBufferSize.setText(String.valueOf(localGate.maxEnergyBuffer));
+            this.energyPerNaquadah.setText(String.valueOf(localGate.energyPerFuelItem));
+            this.gateOpeningsPerNaquadah.setText(String.valueOf(localGate.gateOpeningsPerFuelItem));
+            this.distanceMultiplier.setText(String.valueOf(localGate.distanceFactorMultiplier));
+            this.dimensionalMultiplier.setText(String.valueOf(localGate.interDimensionMultiplier));
+
+            // Boolean Values
+            this.oneWayTravelCheckbox.setChecked(localGate.oneWayTravel);
+            this.irisUpgradeCheckbox.setChecked(localGate.hasIrisUpgrade);
+            this.chevronUpgradeCheckbox.setChecked(localGate.hasChevronUpgrade);
+            if (localGate.gateType == 0 || localGate.gateType == 1) {
+                this.gateTypeCheckbox.setChecked(false);
+            } else {
+                this.gateTypeCheckbox.setChecked(true);
+            }
+            this.reverseWormholeKillsCheckbox.setChecked(localGate.reverseWormholeKills);
+            this.acceptIncomingConnectionsCheckbox.setChecked(localGate.acceptIncomingConnections);
+            this.closeFromEitherEndCheckbox.setChecked(localGate.closeFromEitherEnd);
+            this.preserveInventoryCheckbox.setChecked(localGate.preserveInventory);
+            this.noPowerRequiredCheckbox.setChecked(localGate.requiresNoPower);
+            this.chevronsLockOnDialCheckbox.setChecked(localGate.chevronsLockOnDial);
+            this.returnIrisToPreviousStateCheckbox.setChecked(localGate.returnToPreviousIrisState);
+            this.transientDamageCheckbox.setChecked(localGate.transientDamage);
         }
-
-        if  (!(localGate instanceof SGBaseTE)) {
-            return;
-        }
-
-        this.gateAddressLabel.setText(SGAddressing.formatAddress(((SGBaseTE) localGate).homeAddress, "-", "-"));
-
-        // Numeric Values
-        this.secondsToStayOpen.setText(String.valueOf(((SGBaseTE) localGate).secondsToStayOpen));
-        this.gateRotationSpeed.setText(String.valueOf(((SGBaseTE) localGate).ringRotationSpeed));
-        this.energyBufferSize.setText(String.valueOf(((SGBaseTE) localGate).maxEnergyBuffer));
-        this.energyPerNaquadah.setText(String.valueOf(((SGBaseTE) localGate).energyPerFuelItem));
-        this.gateOpeningsPerNaquadah.setText(String.valueOf(((SGBaseTE) localGate).gateOpeningsPerFuelItem));
-        this.distanceMultiplier.setText(String.valueOf(((SGBaseTE) localGate).distanceFactorMultiplier));
-        this.dimensionalMultiplier.setText(String.valueOf(((SGBaseTE) localGate).interDimensionMultiplier));
-
-        // Boolean Values
-        this.oneWayTravelCheckbox.setChecked(((SGBaseTE) localGate).oneWayTravel);
-        this.irisUpgradeCheckbox.setChecked(((SGBaseTE) localGate).hasIrisUpgrade);
-        this.chevronUpgradeCheckbox.setChecked(((SGBaseTE) localGate).hasChevronUpgrade);
-        if (((SGBaseTE) localGate).gateType == 0 || ((SGBaseTE) localGate).gateType == 1) {
-            this.gateTypeCheckbox.setChecked(false);
-        } else {
-            this.gateTypeCheckbox.setChecked(true);
-        }
-        this.reverseWormholeKillsCheckbox.setChecked(((SGBaseTE) localGate).reverseWormholeKills);
-        this.acceptIncomingConnectionsCheckbox.setChecked(((SGBaseTE) localGate).acceptIncomingConnections);
-        this.closeFromEitherEndCheckbox.setChecked(((SGBaseTE) localGate).closeFromEitherEnd);
-        this.preserveInventoryCheckbox.setChecked(((SGBaseTE) localGate).preserveInventory);
-        this.noPowerRequiredCheckbox.setChecked(((SGBaseTE) localGate).requiresNoPower);
-        this.chevronsLockOnDialCheckbox.setChecked(((SGBaseTE) localGate).chevronsLockOnDial);
-        this.returnIrisToPreviousStateCheckbox.setChecked(((SGBaseTE) localGate).returnToPreviousIrisState);
     }
 
     @Override

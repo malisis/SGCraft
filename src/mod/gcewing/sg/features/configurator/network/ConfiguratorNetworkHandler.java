@@ -6,6 +6,7 @@ import gcewing.sg.network.SGChannel;
 import gcewing.sg.tileentity.SGBaseTE;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 
 public class ConfiguratorNetworkHandler extends SGChannel {
 
@@ -76,9 +77,12 @@ public class ConfiguratorNetworkHandler extends SGChannel {
             te.chevronsLockOnDial = b;
         } else if (setting == 18 && SGCraft.hasPermission(player, "sgcraft.configurator.returnToPreviousIrisState")) {
             te.returnToPreviousIrisState = b;
+        } else if (setting == 19 && SGCraft.hasPermission(player, "sgcraft.configurator.transientDamage")) {
+            te.transientDamage = b;
         }
 
-        if (setting == 18) { // Always the last packet to refresh the TE
+        if (setting == 19) { // Always the last packet to refresh the TE
+            player.sendMessage(new TextComponentString("Changes Saved!"));
             te.markForUpdate(); // Force Client to Update but only after the last packet
         }
     }
