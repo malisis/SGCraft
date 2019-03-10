@@ -71,7 +71,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
             te.closeFromEitherEnd = b;
         } else if (setting == 15 && SGCraft.hasPermission(player, "sgcraft.configurator.preserveInventory")) { // Preserve Inventory on Iris Death
             te.preserveInventory = b;
-        } else if (setting == 16) { // No Input Power Required
+        } else if (setting == 16 && SGCraft.hasPermission(player, "sgcraft.configurator.noPowerRequired")) { // No Input Power Required
             te.requiresNoPower = b;
         } else if (setting == 17 && SGCraft.hasPermission(player, "sgcraft.configurator.chevronsLockOnDial")) { // Chevrons lock when dialed
             te.chevronsLockOnDial = b;
