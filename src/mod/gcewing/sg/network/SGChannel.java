@@ -224,10 +224,6 @@ public class SGChannel extends BaseDataChannel {
             }
         }
 
-        if (guiType == 3 && SGCraft.hasPermission(player, "sgcraft.gui.pdd")) {
-            this.openGuiAtClient(localGate, player, 3, SGCraft.hasPermission(player, "sgcraft.admin"), canEditLocal, canEditRemote);
-        }
-
     }
 
     public static void openGuiAtClient(SGBaseTE te, EntityPlayer player, int guiType, boolean isAdmin, boolean canEditLocal, boolean canEditRemote) {

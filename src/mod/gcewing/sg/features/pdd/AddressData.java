@@ -16,15 +16,18 @@ public final class AddressData {
     private static final String NAME = "name";
     private static final String ADDRESS = "address";
     private static final String LOCKED = "locked";
+    private static final String INDEX = "index";
 
     private final String name;
     private final String address;
     private final boolean locked;
+    private final int index;
 
-    public AddressData(final String name, final String address, final boolean locked) {
+    public AddressData(final String name, final String address, final boolean locked, final int index) {
         this.name = name;
         this.address = address;
         this.locked = locked;
+        this.index = index;
     }
 
     public String getName() {
@@ -39,6 +42,10 @@ public final class AddressData {
         return locked;
     }
 
+    public int getIndex() {
+        return index;
+    }
+
     public static List<AddressData> getAddresses(final NBTTagCompound compound) {
         checkNotNull(compound);
 
@@ -49,8 +56,9 @@ public final class AddressData {
             final String name = addressCompound.getString(NAME);
             final String address = addressCompound.getString(ADDRESS);
             final boolean locked = addressCompound.getBoolean(LOCKED);
+            final int index = addressCompound.getInteger(INDEX);
 
-            addresses.add(new AddressData(name, address, locked));
+            addresses.add(new AddressData(name, address, locked, index));
         }
 
         return addresses;
@@ -67,6 +75,7 @@ public final class AddressData {
             compound.setString(NAME, data.getName());
             compound.setString(ADDRESS, data.getAddress());
             compound.setBoolean(LOCKED, data.isLocked());
+            compound.setInteger(INDEX, data.getIndex());
 
             list.appendTag(addressCompound);
         }

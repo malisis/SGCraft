@@ -28,12 +28,17 @@ import net.malisis.core.renderer.font.FontOptions;
 import net.malisis.core.util.FontColors;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+
+import java.util.List;
 
 public class PddScreen extends BasicScreen {
     private int lastUpdate = 0;
@@ -88,13 +93,13 @@ public class PddScreen extends BasicScreen {
         this.addressList.setBorder(FontColors.WHITE, 1, 185);
         this.addressList.setBorders(FontColors.WHITE, 185, 0, 1, 0, 0);
 
-        this.addressList.addItem(new AddressData("Orilla - Endor", "T9FH-3VW-VL", true));
-        this.addressList.addItem(new AddressData("Orilla - Dockside", "X35A-008-YC", true));
-        this.addressList.addItem(new AddressData("Asgard - Main Island", "V9V2-V9V-ZY", true));
-        this.addressList.addItem(new AddressData("Asgard - Almura Castle", "9U9S-F4Q-2D", true));
-        this.addressList.addItem(new AddressData("Dakara - Main Spawn Point", "PFWO-G8F-10", true));
-        this.addressList.addItem(new AddressData("TEST", "ZFDDUR8", false));
-        this.addressList.addItem(new AddressData("Banana7", "12345-12345-12345-12345", false));
+        //this.addressList.addItem(new AddressData("Orilla - Endor", "T9FH-3VW-VL", true));
+        //this.addressList.addItem(new AddressData("Orilla - Dockside", "X35A-008-YC", true));
+        //this.addressList.addItem(new AddressData("Asgard - Main Island", "V9V2-V9V-ZY", true));
+        //this.addressList.addItem(new AddressData("Asgard - Almura Castle", "9U9S-F4Q-2D", true));
+        //this.addressList.addItem(new AddressData("Dakara - Main Spawn Point", "PFWO-G8F-10", true));
+        //this.addressList.addItem(new AddressData("TEST", "ZFDDUR8", false));
+        //this.addressList.addItem(new AddressData("Banana7", "12345-12345-12345-12345", false));
 
         this.addressContainer.add(availableAddressesLabel, localGateAddressLabel, this.addressList);
 
@@ -160,7 +165,16 @@ public class PddScreen extends BasicScreen {
 
         this.form.add(this.addressContainer, addAddressButton, editAddressButton, deleteAddressButton, buttonDisconnect, buttonClose);
         addToScreen(this.form);
+        this.readAddresses(player);
         this.refresh();
+    }
+
+    private void readAddresses(EntityPlayer player) {
+        final ItemStack stack = player.getHeldItemMainhand();
+        NBTTagCompound compound = stack.getTagCompound();
+        if (compound != null) {
+            this.addressList.addItems(AddressData.getAddresses(compound));
+        }
     }
 
     private void refresh() {
