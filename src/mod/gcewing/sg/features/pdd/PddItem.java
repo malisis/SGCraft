@@ -49,6 +49,7 @@ public class PddItem extends Item {
           if (!compound.hasKey(AddressData.ADDRESSES, Constants.NBT.TAG_COMPOUND)) {
             AddressData.writeAddresses(compound, Lists.newArrayList(new AddressData("test", "test2", false)));
             stack.setTagCompound(compound);
+            player.inventoryContainer.detectAndSendChanges();
           }
 
           SGChannel.sendGuiRequestToServer((SGBaseTE)localGate, player, 3);
