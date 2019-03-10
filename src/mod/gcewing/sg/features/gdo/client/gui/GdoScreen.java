@@ -1,6 +1,8 @@
 package gcewing.sg.features.gdo.client.gui;
 
 import com.google.common.eventbus.Subscribe;
+import gcewing.sg.features.gdo.network.GdoNetworkHandler;
+import gcewing.sg.network.GuiNetworkHandler;
 import gcewing.sg.util.IrisState;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.network.SGChannel;
@@ -60,6 +62,15 @@ public class GdoScreen extends BasicScreen {
         this.guiscreenBackground = false;
         Keyboard.enableRepeatEvents(true);
 
+        TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+
+        if (!(localGateTE instanceof SGBaseTE)) {
+            // Desync between server and client.  Client doesn't have TE data yet.
+            return;
+        }
+
+        SGBaseTE localGate = (SGBaseTE) localGateTE;
+
         // Master Panel
         this.form = new BasicForm(this, 400, 225, "");
         this.form.setAnchor(Anchor.CENTER | Anchor.MIDDLE);
@@ -105,6 +116,9 @@ public class GdoScreen extends BasicScreen {
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.LEFT)
             .text("Open Iris")
+            .onClick(() -> {
+                GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 1);
+            })
             .listener(this)
             .build("button.local.iris.open");
 
@@ -112,6 +126,9 @@ public class GdoScreen extends BasicScreen {
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.CENTER)
             .text("Disconnect")
+            .onClick(() -> {
+                GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 3);
+            })
             .listener(this)
             .build("button.local.gate.disconnect");
 
@@ -119,6 +136,9 @@ public class GdoScreen extends BasicScreen {
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text("Close Iris")
+            .onClick(() -> {
+                GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 2);
+            })
             .listener(this)
             .build("button.local.iris.close");
 
@@ -154,6 +174,9 @@ public class GdoScreen extends BasicScreen {
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.LEFT)
             .text("Open Iris")
+            .onClick(() -> {
+                GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 4);
+            })
             .listener(this)
             .build("button.remote.iris.open");
 
@@ -161,14 +184,20 @@ public class GdoScreen extends BasicScreen {
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.CENTER)
             .text("Disconnect")
-            .listener(this)
             .visible(false)
+            .onClick(() -> {
+               // Do Nothing at the moment
+            })
+            .listener(this)
             .build("button.remote.gate.disconnect");
 
         remoteIrisCloseButton = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text("Close Iris")
+            .onClick(() -> {
+                GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 5);
+            })
             .listener(this)
             .build("button.remote.iris.close");
 
@@ -176,73 +205,20 @@ public class GdoScreen extends BasicScreen {
 
         // ****************************************************************************************************************************
 
-        // Test Feature button
-        final UIButton buttonTest = new UIButtonBuilder(this)
-            .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.LEFT)
-            .text("TEST")
-            .listener(this)
-            .build("button.test");
-
         // Close button
         final UIButton buttonClose = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text("Close")
+            .onClick(() -> {
+                this.close();
+            })
             .listener(this)
             .build("button.close");
 
-        this.form.add(titleLabel, localGateControlArea, remoteGateControlArea, buttonTest, buttonClose);
+        this.form.add(titleLabel, localGateControlArea, remoteGateControlArea, buttonClose);
         addToScreen(this.form);
         this.refresh();
-    }
-
-    @Subscribe
-    public void onUIButtonClickEvent(UIButton.ClickEvent event) {
-        TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, true);
-
-        if (localGate == null) {
-            return;
-        }
-
-        if (!(localGate instanceof SGBaseTE)) {
-            return;
-        }
-
-        switch (event.getComponent().getName().toLowerCase()) {
-
-            case "button.local.iris.open":
-                SGChannel.sendGdoInputToServer((SGBaseTE)localGate, 1);
-                break;
-
-            case "button.local.gate.disconnect":
-                SGChannel.sendGdoInputToServer((SGBaseTE)localGate, 3);
-                break;
-
-            case "button.local.iris.close":
-                SGChannel.sendGdoInputToServer((SGBaseTE)localGate, 2);
-                break;
-
-            case "button.remote.iris.open":
-                SGChannel.sendGdoInputToServer((SGBaseTE)localGate, 4);
-                break;
-
-            case "button.remote.gate.disconnect":
-                SGChannel.sendGdoInputToServer((SGBaseTE)localGate, 6);
-                break;
-
-            case "button.remote.iris.close":
-                SGChannel.sendGdoInputToServer((SGBaseTE)localGate, 5);
-                break;
-
-            case "button.test":
-                SGChannel.sendGdoInputToServer((SGBaseTE)localGate, 7);
-                break;
-
-            case "button.close":
-                this.close();
-                break;
-        }
     }
 
     private void refresh() {
@@ -384,7 +360,7 @@ public class GdoScreen extends BasicScreen {
         if (this.lastUpdate == 100) {
             TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, true);
             if (localGate != null) {
-                SGChannel.sendGuiRequestToServer((SGBaseTE) localGate, player, 2);
+                GuiNetworkHandler.sendGuiRequestToServer((SGBaseTE) localGate, player, 2);
             }
             this.refresh();
         }

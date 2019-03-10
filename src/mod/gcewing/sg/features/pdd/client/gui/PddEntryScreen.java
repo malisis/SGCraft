@@ -1,7 +1,6 @@
 package gcewing.sg.features.pdd.client.gui;
 
-import com.google.common.eventbus.Subscribe;
-import gcewing.sg.network.SGChannel;
+import gcewing.sg.features.pdd.network.PddNetworkHandler;
 import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.BasicScreen;
 import net.malisis.core.client.gui.component.container.BasicForm;
@@ -101,6 +100,10 @@ public class PddEntryScreen extends BasicScreen {
             .visible(this.delete)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text("Delete")
+            .onClick(() -> {
+                PddNetworkHandler.sendPddEntryUpdateToServer( this.nameTextField.getText().trim(), this.addressTextField.getText().trim(), -1, this.unid, this.isLocked);
+                this.close();
+            })
             .listener(this)
             .build("button.delete");
 
@@ -111,6 +114,10 @@ public class PddEntryScreen extends BasicScreen {
             .visible(!this.delete)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text("Save")
+            .onClick(() -> {
+                PddNetworkHandler.sendPddEntryUpdateToServer( this.nameTextField.getText().trim(), this.addressTextField.getText().trim(), Integer.valueOf(this.indexTextField.getText()), this.unid, this.isLocked);
+                this.close();
+            })
             .listener(this)
             .build("button.save");
 
@@ -119,36 +126,14 @@ public class PddEntryScreen extends BasicScreen {
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text("Close")
+            .onClick(() -> {
+                this.close();
+            })
             .listener(this)
             .build("button.close");
 
         this.form.add(titleLabel, nameLabel, nameTextField, addressLabel, addressTextField, indexLabel, indexTextField, buttonDelete, buttonSave, buttonClose);
         addToScreen(this.form);
-    }
-
-    @Subscribe
-    public void onUIButtonClickEvent(UIButton.ClickEvent event) {
-
-        switch (event.getComponent().getName().toLowerCase()) {
-
-            case "button.delete":
-                SGChannel.sendPddEntryUpdateToServer( this.nameTextField.getText().trim(), this.addressTextField.getText().trim(), -1, this.unid, this.isLocked);
-                this.close();
-                break;
-
-            case "button.save":
-                SGChannel.sendPddEntryUpdateToServer( this.nameTextField.getText().trim(), this.addressTextField.getText().trim(), Integer.valueOf(this.indexTextField.getText()), this.unid, this.isLocked);
-                this.close();
-                break;
-
-            case "button.close":
-                this.close();
-                break;
-        }
-    }
-
-    private void refresh() {
-
     }
 
     @Override
@@ -166,6 +151,20 @@ public class PddEntryScreen extends BasicScreen {
 
     @Override
     protected void keyTyped(char keyChar, int keyCode) {
+        if (keyCode == Keyboard.KEY_TAB) {
+            if (this.nameTextField.isFocused()) {
+                this.addressTextField.setFocused(true);
+                return;
+            }
+            if (this.addressTextField.isFocused()) {
+                this.indexTextField.setFocused(true);
+                return;
+            }
+            if (this.indexTextField.isFocused()) {
+                this.nameTextField.setFocused(true);
+                return;
+            }
+        }
         super.keyTyped(keyChar, keyCode);
         this.lastUpdate = 0; // Reset the timer when key is typed.
     }

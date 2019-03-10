@@ -1,10 +1,13 @@
 package gcewing.sg.features.pdd.client.gui;
 
+import gcewing.sg.features.configurator.network.ConfiguratorNetworkHandler;
 import gcewing.sg.features.pdd.AddressData;
+import gcewing.sg.features.pdd.network.PddNetworkHandler;
 import gcewing.sg.network.SGChannel;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.GateUtil;
 import gcewing.sg.util.SGAddressing;
+import gcewing.sg.util.SGState;
 import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.BasicScreen;
 import net.malisis.core.client.gui.MalisisGui;
@@ -115,10 +118,13 @@ public class PddScreen extends BasicScreen {
 
         buttonDial = new UIButtonBuilder(this)
             .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.LEFT)
-            .text("Dial")
+            .anchor(Anchor.BOTTOM | Anchor.CENTER)
+            .text("Dial Selected Address")
+            .visible(false)
             .onClick(() -> {
-                dialSelectedAddress();
+                if (this.addressList.getSize() > 0) {
+                    dialSelectedAddress();
+                }
             })
             .build("button.dial");
 
@@ -126,13 +132,14 @@ public class PddScreen extends BasicScreen {
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.CENTER)
             .text("Disconnect")
+            .visible(false)
             .onClick(() -> {
                 final TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, true);
                 if (localGate != null) {
                     if (!(localGate instanceof SGBaseTE)) {
                         return;
                     }
-                    SGChannel.sendPddInputToServer((SGBaseTE) localGate, 2, "");
+                    PddNetworkHandler.sendPddInputToServer((SGBaseTE) localGate, 2, "");
                 }
             })
             .build("button.disconnect");
@@ -144,7 +151,7 @@ public class PddScreen extends BasicScreen {
             .onClick(this::close)
             .build("button.close");
 
-        this.form.add(this.addressContainer, addAddressButton, editAddressButton, deleteAddressButton, buttonDisconnect, buttonClose);
+        this.form.add(this.addressContainer, addAddressButton, editAddressButton, deleteAddressButton, buttonDial, buttonDisconnect, buttonClose);
         addToScreen(this.form);
         this.readAddresses(player);
         this.refresh();
@@ -170,8 +177,21 @@ public class PddScreen extends BasicScreen {
         if (localGateEntity instanceof SGBaseTE) {
             final SGBaseTE localGate = (SGBaseTE) localGateEntity;
             if (localGate != null) {
-                this.buttonDisconnect.setEnabled(localGate.isConnected());
                 this.localGateAddressLabel.setText(SGAddressing.formatAddress(((SGBaseTE) localGate).homeAddress, "-", "-"));
+
+               // System.out.println("State: " + localGate.state);
+
+                if (localGate.state == SGState.Idle && !localGate.isConnected()) {
+                    this.buttonDisconnect.setVisible(false);
+                    this.buttonDial.setVisible(true);
+                }
+
+                if (localGate.isConnected()) {
+                    this.buttonDial.setVisible(false);
+                    this.buttonDisconnect.setVisible(true);
+                    this.buttonDisconnect.setEnabled(localGate.isConnected());
+                }
+
             }
         } else {
             this.buttonDisconnect.setEnabled(false);
@@ -191,7 +211,11 @@ public class PddScreen extends BasicScreen {
             this.refresh();
             if (delayedUpdate) {
                 this.readAddresses(player);
-                this.delayedUpdate = false;
+                if (this.addressList.getSize() > 0) {
+                    this.addressList.setSelectedItem(this.addressList.getItem(0));
+                    this.delayedUpdate = false; // Leave this in the loop in case it takes longer for some users, it will force it to keep auto-refreshing until it gets something.
+                }
+
             }
         }
 
@@ -225,7 +249,7 @@ public class PddScreen extends BasicScreen {
             }
             if (this.addressList.getSelectedItem() != null) {
                 String address = this.addressList.getSelectedItem().getAddress().replaceAll("-", "");
-                SGChannel.sendPddInputToServer((SGBaseTE) localGate, 1, address);
+                PddNetworkHandler.sendPddInputToServer((SGBaseTE) localGate, 1, address);
                 this.close();
             }
         }

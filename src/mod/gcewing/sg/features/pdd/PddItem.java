@@ -2,14 +2,12 @@ package gcewing.sg.features.pdd;
 
 import com.google.common.collect.Lists;
 import gcewing.sg.SGCraft;
-import gcewing.sg.network.SGChannel;
+import gcewing.sg.network.GuiNetworkHandler;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.GateUtil;
 import gcewing.sg.util.SGState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.EntityEquipmentSlot;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -18,8 +16,8 @@ import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.World;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -39,7 +37,7 @@ public class PddItem extends Item {
 
     @Override
     public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer player, EnumHand handIn) {
-        if (!worldIn.isRemote) {  // Execute this ONLY on the client
+        if (!worldIn.isRemote) {
             final ItemStack stack = player.getHeldItem(handIn);
 
             NBTTagCompound compound = stack.getTagCompound();
@@ -74,13 +72,16 @@ public class PddItem extends Item {
                 }
 
                 if (SGCraft.hasPermission(player, "sgcraft.gui.pdd")) {
-                    SGChannel.openGuiAtClient(localGate, player, 3, SGCraft.hasPermission(player, "sgcraft.admin"), canEditLocal, canEditRemote);
+                    GuiNetworkHandler.openGuiAtClient(localGate, player, 3, SGCraft.hasPermission(player, "sgcraft.admin"), canEditLocal, canEditRemote);
                 }
 
                 return new ActionResult<>(EnumActionResult.PASS, player.getHeldItem(handIn));  //Both Server & Client expect a returned value.
+            } else {
+                player.sendMessage(new TextComponentString("Could not detect Stargate near current position."));
+                return new ActionResult<>(EnumActionResult.FAIL, player.getHeldItem(handIn));
             }
         }
 
-        return new ActionResult<>(EnumActionResult.FAIL, player.getHeldItem(handIn));  //Both Server & Client expect a returned value.
+        return new ActionResult<>(EnumActionResult.PASS, player.getHeldItem(handIn));  //Both Server & Client expect a returned value.
     }
 }

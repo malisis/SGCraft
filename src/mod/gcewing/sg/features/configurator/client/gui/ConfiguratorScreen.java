@@ -1,7 +1,7 @@
 package gcewing.sg.features.configurator.client.gui;
 
 import com.google.common.eventbus.Subscribe;
-import gcewing.sg.network.SGChannel;
+import gcewing.sg.features.configurator.network.ConfiguratorNetworkHandler;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.GateUtil;
 import gcewing.sg.util.SGAddressing;
@@ -50,6 +50,15 @@ public class ConfiguratorScreen extends BasicScreen {
     public void construct() {
         this.guiscreenBackground = false;
         Keyboard.enableRepeatEvents(true);
+
+        TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+
+        if (!(localGateTE instanceof SGBaseTE)) {
+            // Desync between server and client.  Client doesn't have TE data yet.
+            return;
+        }
+
+        SGBaseTE localGate = (SGBaseTE) localGateTE;
 
         // Master Panel
         this.form = new BasicForm(this, 500, 225, "");
@@ -330,6 +339,25 @@ public class ConfiguratorScreen extends BasicScreen {
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.LEFT)
             .text("Load Defaults")
+            .onClick(() -> {
+                secondsToStayOpen.setText(String.valueOf(SGBaseTE.cfg.getInteger("stargate", "secondsToStayOpen", 500)));
+                gateRotationSpeed.setText(String.valueOf(2.0)); // Isn't contained in base config file
+                energyBufferSize.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "maxEnergyBuffer", 2500.0)));
+                energyPerNaquadah.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "energyPerFuelItem", 25000.0)));
+                gateOpeningsPerNaquadah.setText(String.valueOf(SGBaseTE.cfg.getInteger("stargate", "gateOpeningsPerFuelItem", 10)));
+                distanceMultiplier.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "distanceFactorMultiplier", 1.0)));
+                dimensionalMultiplier.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "interDimensionMultiplier", 4.0)));
+                oneWayTravelCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "oneWayTravel", true));
+                irisUpgradeCheckbox.setChecked(false);
+                chevronUpgradeCheckbox.setChecked(false);
+                reverseWormholeKillsCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "reverseWormholeKills", false));
+                acceptIncomingConnectionsCheckbox.setChecked(true);
+                closeFromEitherEndCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "closeFromEitherEnd", true));
+                preserveInventoryCheckbox.setChecked(SGBaseTE.cfg.getBoolean("iris", "preserveInventory", false));
+                noPowerRequiredCheckbox.setChecked(false);
+                chevronsLockOnDialCheckbox.setChecked(false);
+                returnIrisToPreviousStateCheckbox.setChecked(false);
+            })
             .listener(this)
             .build("button.defaults");
 
@@ -339,6 +367,31 @@ public class ConfiguratorScreen extends BasicScreen {
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .position(-40, 0)
             .text("Save")
+            .onClick(() -> {
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 1, Integer.valueOf(secondsToStayOpen.getText()), false, 0.0);
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 2, 0, false, Double.valueOf(gateRotationSpeed.getText()));
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 3, 0, false, Double.valueOf(energyBufferSize.getText()));
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 4, 0, false, Double.valueOf(energyPerNaquadah.getText()));
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 5, Integer.valueOf(gateOpeningsPerNaquadah.getText()), false, 0.0);
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 6, 0, false, Double.valueOf(distanceMultiplier.getText()));
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 7, 0, false, Double.valueOf(dimensionalMultiplier.getText()));
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 8, 0, oneWayTravelCheckbox.isChecked(), 0.0);
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 9, 0, irisUpgradeCheckbox.isChecked(), 0.0);
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 10, 0, chevronUpgradeCheckbox.isChecked(), 0.0);
+                if (gateTypeCheckbox.isChecked()) {
+                    ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 11, 2, false, 0.0);
+                } else {
+                    ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 11, 1, false, 0.0);
+                }
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 12, 0, reverseWormholeKillsCheckbox.isChecked(), 0.0);
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 13, 0, acceptIncomingConnectionsCheckbox.isChecked(), 0.0);
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 14, 0, closeFromEitherEndCheckbox.isChecked(), 0.0);
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 15, 0, preserveInventoryCheckbox.isChecked(), 0.0);
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 16, 0, noPowerRequiredCheckbox.isChecked(), 0.0);
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 17, 0, chevronsLockOnDialCheckbox.isChecked(), 0.0);
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 18, 0, returnIrisToPreviousStateCheckbox.isChecked(), 0.0);
+                this.close();
+            })
             .listener(this)
             .build("button.save");
 
@@ -355,6 +408,9 @@ public class ConfiguratorScreen extends BasicScreen {
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text("Close")
+            .onClick(() -> {
+                this.close();
+            })
             .listener(this)
             .build("button.close");
 
@@ -392,68 +448,6 @@ public class ConfiguratorScreen extends BasicScreen {
         }
         if (dimensionalMultiplier.getText().isEmpty()) {
             dimensionalMultiplier.setText(String.valueOf(((SGBaseTE) localGate).interDimensionMultiplier));
-        }
-    }
-
-    @Subscribe
-    public void onUIButtonClickEvent(UIButton.ClickEvent event) {
-        TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, true);
-
-        if (localGate == null)
-            return;
-        if  (!(localGate instanceof SGBaseTE))
-            return;
-
-        switch (event.getComponent().getName().toLowerCase()) {
-
-            case "button.defaults":
-                secondsToStayOpen.setText(String.valueOf(SGBaseTE.cfg.getInteger("stargate", "secondsToStayOpen", 500)));
-                gateRotationSpeed.setText(String.valueOf(2.0)); // Isn't contained in base config file
-                energyBufferSize.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "maxEnergyBuffer", 2500.0)));
-                energyPerNaquadah.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "energyPerFuelItem", 25000.0)));
-                gateOpeningsPerNaquadah.setText(String.valueOf(SGBaseTE.cfg.getInteger("stargate", "gateOpeningsPerFuelItem", 10)));
-                distanceMultiplier.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "distanceFactorMultiplier", 1.0)));
-                dimensionalMultiplier.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "interDimensionMultiplier", 4.0)));
-                oneWayTravelCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "oneWayTravel", true));
-                irisUpgradeCheckbox.setChecked(false);
-                chevronUpgradeCheckbox.setChecked(false);
-                reverseWormholeKillsCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "reverseWormholeKills", false));
-                acceptIncomingConnectionsCheckbox.setChecked(true);
-                closeFromEitherEndCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "closeFromEitherEnd", true));
-                preserveInventoryCheckbox.setChecked(SGBaseTE.cfg.getBoolean("iris", "preserveInventory", false));
-                noPowerRequiredCheckbox.setChecked(false);
-                chevronsLockOnDialCheckbox.setChecked(false);
-                returnIrisToPreviousStateCheckbox.setChecked(false);
-                break;
-
-            case "button.save":
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 1, Integer.valueOf(secondsToStayOpen.getText()), false, 0.0);
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 2, 0, false, Double.valueOf(gateRotationSpeed.getText()));
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 3, 0, false, Double.valueOf(energyBufferSize.getText()));
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 4, 0, false, Double.valueOf(energyPerNaquadah.getText()));
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 5, Integer.valueOf(gateOpeningsPerNaquadah.getText()), false, 0.0);
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 6, 0, false, Double.valueOf(distanceMultiplier.getText()));
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 7, 0, false, Double.valueOf(dimensionalMultiplier.getText()));
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 8, 0, oneWayTravelCheckbox.isChecked(), 0.0);
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 9, 0, irisUpgradeCheckbox.isChecked(), 0.0);
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 10, 0, chevronUpgradeCheckbox.isChecked(), 0.0);
-                if (gateTypeCheckbox.isChecked()) {
-                    SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 11, 2, false, 0.0);
-                } else {
-                    SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 11, 1, false, 0.0);
-                }
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 12, 0, reverseWormholeKillsCheckbox.isChecked(), 0.0);
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 13, 0, acceptIncomingConnectionsCheckbox.isChecked(), 0.0);
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 14, 0, closeFromEitherEndCheckbox.isChecked(), 0.0);
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 15, 0, preserveInventoryCheckbox.isChecked(), 0.0);
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 16, 0, noPowerRequiredCheckbox.isChecked(), 0.0);
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 17, 0, chevronsLockOnDialCheckbox.isChecked(), 0.0);
-                SGChannel.sendConfiguratorInputToServer((SGBaseTE)localGate, 18, 0, returnIrisToPreviousStateCheckbox.isChecked(), 0.0);
-                break;
-
-            case "button.close":
-                this.close();
-                break;
         }
     }
 
@@ -511,6 +505,36 @@ public class ConfiguratorScreen extends BasicScreen {
 
     @Override
     protected void keyTyped(char keyChar, int keyCode) {
+        if (keyCode == Keyboard.KEY_TAB) {
+            if (this.secondsToStayOpen.isFocused()) {
+                this.gateRotationSpeed.setFocused(true);
+                return;
+            }
+            if (this.gateRotationSpeed.isFocused()) {
+                this.energyBufferSize.setFocused(true);
+                return;
+            }
+            if (this.energyBufferSize.isFocused()) {
+                this.energyPerNaquadah.setFocused(true);
+                return;
+            }
+            if (this.energyPerNaquadah.isFocused()) {
+                this.gateOpeningsPerNaquadah.setFocused(true);
+                return;
+            }
+            if (this.gateOpeningsPerNaquadah.isFocused()) {
+                this.distanceMultiplier.setFocused(true);
+                return;
+            }
+            if (this.distanceMultiplier.isFocused()) {
+                this.dimensionalMultiplier.setFocused(true);
+                return;
+            }
+            if (this.dimensionalMultiplier.isFocused()) {
+                this.secondsToStayOpen.setFocused(true);
+                return;
+            }
+        }
         super.keyTyped(keyChar, keyCode);
         this.lastUpdate = 0; // Reset the timer when key is typed.
     }

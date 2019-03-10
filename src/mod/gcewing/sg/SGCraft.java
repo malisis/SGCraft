@@ -18,13 +18,16 @@ import gcewing.sg.container.SGBaseContainer;
 import gcewing.sg.entity.EntityStargateIris;
 import gcewing.sg.entity.SGEntity;
 import gcewing.sg.features.configurator.ConfiguratorItem;
+import gcewing.sg.features.configurator.network.ConfiguratorNetworkHandler;
 import gcewing.sg.features.gdo.GdoItem;
+import gcewing.sg.features.gdo.network.GdoNetworkHandler;
 import gcewing.sg.features.ic2.zpm.ZPMItem;
 import gcewing.sg.features.ic2.zpm.ZPMMultiplierRegistry;
 import gcewing.sg.features.ic2.zpm.ZpmContainer;
 import gcewing.sg.features.ic2.zpm.ZpmInterfaceCart;
 import gcewing.sg.features.ic2.zpm.ZpmInterfaceCartTE;
 import gcewing.sg.features.pdd.PddItem;
+import gcewing.sg.features.pdd.network.PddNetworkHandler;
 import gcewing.sg.features.tokra.SGTradeHandler;
 import gcewing.sg.features.tokra.TokraVillagerWorldRegistry;
 import gcewing.sg.features.oc.OCIntegration;
@@ -36,6 +39,7 @@ import gcewing.sg.interfaces.SoundSource;
 import gcewing.sg.item.SGChevronUpgradeItem;
 import gcewing.sg.item.SGIrisUpgradeItem;
 import gcewing.sg.item.SGRingItem;
+import gcewing.sg.network.GuiNetworkHandler;
 import gcewing.sg.network.SGChannel;
 import gcewing.sg.generator.NaquadahOreWorldGen;
 import gcewing.sg.tileentity.DHDTE;
@@ -283,9 +287,16 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         }
 
         if (isModLoaded("malisiscore")) {
+            new GuiNetworkHandler(Info.modID+"-GUI");
+
             gdo = addItem(new GdoItem(), "gdo");
+            new GdoNetworkHandler(Info.modID+"-gdo");
+
             pdd = addItem(new PddItem(), "pdd");
+            new PddNetworkHandler(Info.modID+"-pdd");
+
             configurator = addItem(new ConfiguratorItem(), "configurator");
+            new ConfiguratorNetworkHandler(Info.modID+"-configurator");
         }
     }
 
