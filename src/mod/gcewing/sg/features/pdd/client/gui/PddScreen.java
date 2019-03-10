@@ -1,6 +1,7 @@
 package gcewing.sg.features.pdd.client.gui;
 
 import com.google.common.eventbus.Subscribe;
+import gcewing.sg.features.pdd.AddressData;
 import gcewing.sg.util.IrisState;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.network.SGChannel;
@@ -214,23 +215,11 @@ public class PddScreen extends BasicScreen {
                 return;
             }
             if (this.addressList.getSelectedItem() != null) {
-                String address = this.addressList.getSelectedItem().address.replaceAll("-", "");
+                String address = this.addressList.getSelectedItem().getAddress().replaceAll("-", "");
                 SGChannel.sendPddInputToServer((SGBaseTE) localGate, 1, address);
                 this.close();
             }
         }
-    }
-
-    private class AddressData {
-      private final String name;
-      private final String address;
-      private final boolean locked;
-
-      private AddressData(final String name, final String address, final boolean locked) {
-        this.name = name;
-        this.address = address;
-        this.locked = locked;
-      }
     }
 
     private class AddressItemComponent extends BasicList.ItemComponent<AddressData> {
@@ -250,10 +239,10 @@ public class PddScreen extends BasicScreen {
         this.setHeight(28);
         this.setPadding(1);
 
-        this.nameLabel = new UILabel(this.getGui(), TextFormatting.WHITE + this.item.name);
+        this.nameLabel = new UILabel(this.getGui(), TextFormatting.WHITE + this.item.getName());
         this.nameLabel.setPosition(4, 3);
 
-        this.addressLabel = new UILabel(this.getGui(), TextFormatting.BLUE + this.item.address);
+        this.addressLabel = new UILabel(this.getGui(), TextFormatting.BLUE + this.item.getAddress());
         this.addressLabel.setPosition(4, BasicScreen.getPaddedY(this.nameLabel, 2));
 
         this.lockedStatusContainer = new BasicContainer(this.getGui(), 5, UIComponent.INHERITED);
@@ -265,7 +254,7 @@ public class PddScreen extends BasicScreen {
       }
 
       public void update() {
-        this.lockedStatusContainer.setColor(this.item.locked ? FontColors.GRAY : FontColors.GREEN);
+        this.lockedStatusContainer.setColor(this.item.isLocked() ? FontColors.GRAY : FontColors.GREEN);
       }
     }
 }
