@@ -199,7 +199,7 @@ public class SGChannel extends BaseDataChannel {
         SGBaseTE localGate = SGBaseTE.at(player.world, pos);
         boolean canEditLocal = localGate.getWorld().isBlockModifiable(player, localGate.getPos());
         boolean canEditRemote = false;
-        if (localGate.isConnected()) {
+        if (localGate.isConnected() && localGate.state == SGState.Connected) {
             SGBaseTE remoteGate = localGate.getConnectedStargateTE();
             canEditRemote = remoteGate.getWorld().isBlockModifiable(player, remoteGate.getPos());
         }
