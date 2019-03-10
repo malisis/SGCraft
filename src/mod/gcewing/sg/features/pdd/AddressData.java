@@ -21,7 +21,7 @@ public final class AddressData {
     private final String address;
     private final boolean locked;
 
-    protected AddressData(final String name, final String address, final boolean locked) {
+    public AddressData(final String name, final String address, final boolean locked) {
         this.name = name;
         this.address = address;
         this.locked = locked;
