@@ -605,27 +605,18 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setInteger("linkedX", linkedPos.getX());
         nbt.setInteger("linkedY", linkedPos.getY());
         nbt.setInteger("linkedZ", linkedPos.getZ());
-        nbt.setBoolean("hasChevronUpgrade", hasChevronUpgrade);
         nbt.setBoolean("isInitiator", isInitiator);
         nbt.setInteger("timeout", timeout);
         nbt.setInteger("maxTimeout", maxTimeout);
         nbt.setDouble("energyInBuffer", energyInBuffer);
         nbt.setDouble("distanceFactor", distanceFactor);
-        nbt.setBoolean("hasIrisUpgrade", hasIrisUpgrade);
         nbt.setInteger("irisState", irisState.ordinal());
         nbt.setInteger("irisPhase", irisPhase);
         nbt.setBoolean("redstoneInput", redstoneInput);
-        if (connectedLocation != null) {
-            nbt.setTag("connectedLocation", connectedLocation.toNBT());
-        }
-        if (homeAddress != null) {
-            nbt.setString("address", homeAddress);
-        }
-        if (addressError != null) {
-            nbt.setString("addressError", addressError);
-        }
 
         // Configurator Options
+        nbt.setBoolean("hasIrisUpgrade", hasIrisUpgrade);
+        nbt.setBoolean("hasChevronUpgrade", hasChevronUpgrade);
         nbt.setInteger("gateType", gateType);
         nbt.setInteger("secondsToStayOpen", secondsToStayOpen);
         nbt.setBoolean("oneWayTravel", oneWayTravel);
@@ -646,6 +637,16 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setInteger("gateOrientation", gateOrientation);
         nbt.setInteger("facingDirectionOfBase", facingDirectionOfBase);
         nbt.setBoolean("requiresNoPower", requiresNoPower);
+
+        if (connectedLocation != null) {
+            nbt.setTag("connectedLocation", connectedLocation.toNBT());
+        }
+        if (homeAddress != null) {
+            nbt.setString("address", homeAddress);
+        }
+        if (addressError != null) {
+            nbt.setString("addressError", addressError);
+        }
 
         return nbt;
     }

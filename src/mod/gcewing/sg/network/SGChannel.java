@@ -20,18 +20,19 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.*;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 public class SGChannel extends BaseDataChannel {
 
     protected static BaseDataChannel channel;
-    
+
     public SGChannel(String name) {
         super(name);
         channel = this;
-//         for (Object h : handlers)
-//             System.out.printf("SGChannel: handlers include %s\n", h);
+        //         for (Object h : handlers)
+        //             System.out.printf("SGChannel: handlers include %s\n", h);
     }
 
     public static void sendConnectOrDisconnectToServer(SGBaseTE te, String address) {
@@ -40,9 +41,8 @@ public class SGChannel extends BaseDataChannel {
         data.writeUTF(address);
         data.close();
     }
-    
-    @ServerMessageHandler("ConnectOrDisconnect")
-    public void handleConnectOrDisconnectFromClient(EntityPlayer player, ChannelInput data) {
+
+    @ServerMessageHandler("ConnectOrDisconnect") public void handleConnectOrDisconnectFromClient(EntityPlayer player, ChannelInput data) {
         BlockPos pos = readCoords(data);
         String address = data.readUTF();
         SGBaseTE te = SGBaseTE.at(player.world, pos);
@@ -53,19 +53,17 @@ public class SGChannel extends BaseDataChannel {
             te.connectOrDisconnect(address, player);
         }
     }
-    
+
     public static void sendClearAddressToServer(DHDTE te) {
         ChannelOutput data = channel.openServer("ClearAddress");
         writeCoords(data, te);
         data.close();
     }
-    
-    @ServerMessageHandler("ClearAddress")
-    public void handleClearAddressFromClient(EntityPlayer player, ChannelInput data) {
+
+    @ServerMessageHandler("ClearAddress") public void handleClearAddressFromClient(EntityPlayer player, ChannelInput data) {
         BlockPos pos = readCoords(data);
         DHDTE te = DHDTE.at(player.world, pos);
-        if (te != null)
-            te.clearAddress();
+        if (te != null) te.clearAddress();
     }
 
     public static void sendUnsetSymbolToServer(DHDTE te) {
@@ -74,8 +72,7 @@ public class SGChannel extends BaseDataChannel {
         data.close();
     }
 
-    @ServerMessageHandler("UnsetSymbol")
-    public void handleUnsetSymbolFromClient(EntityPlayer player, ChannelInput data) {
+    @ServerMessageHandler("UnsetSymbol") public void handleUnsetSymbolFromClient(EntityPlayer player, ChannelInput data) {
         BlockPos pos = readCoords(data);
         if (player.world.isBlockLoaded(pos)) {
             DHDTE te = DHDTE.at(player.world, pos);
@@ -92,8 +89,7 @@ public class SGChannel extends BaseDataChannel {
         data.close();
     }
 
-    @ServerMessageHandler("EnterSymbol")
-    public void handleEnterSymbolFromClient(EntityPlayer player, ChannelInput data) {
+    @ServerMessageHandler("EnterSymbol") public void handleEnterSymbolFromClient(EntityPlayer player, ChannelInput data) {
         BlockPos pos = readCoords(data);
         char symbol = data.readChar();
         if (player.world.isBlockLoaded(pos)) {
@@ -103,13 +99,45 @@ public class SGChannel extends BaseDataChannel {
             }
         }
     }
-    
+
     public static void writeCoords(ChannelOutput data, TileEntity te) {
         BaseBlockUtils.writeBlockPos(data, te.getPos());
     }
-    
+
     public BlockPos readCoords(ChannelInput data) {
         return BaseBlockUtils.readBlockPos(data);
+    }
+
+    public static void sendPddInputToServer(SGBaseTE te, int function, String address) {
+        ChannelOutput data = channel.openServer("PddInput");
+        writeCoords(data, te);
+        data.writeInt(function);
+        data.writeUTF(address);
+        data.close();
+    }
+
+    @ServerMessageHandler("PddInput") public void handlePddInputFromClient(EntityPlayer player, ChannelInput data) {
+        BlockPos pos = readCoords(data);
+        int setting = data.readInt();
+        SGBaseTE localGate = SGBaseTE.at(player.world, pos);
+        String address = data.readUTF();
+
+        if (!SGCraft.hasPermission(player, "sgcraft.gui.pdd")) {
+            System.err.println("SGCraft - Hacked Client detected!");
+            return;
+        }
+
+        if (setting == 1) { // Connect / Dial / Double Click
+            if (!localGate.isConnected()) {
+                localGate.connect(address, player);
+            }
+        }
+        if (setting == 2) {
+            if (localGate.isConnected()) {
+                localGate.disconnect(player);
+            }
+        }
+
     }
 
     public static void sendGdoInputToServer(SGBaseTE te, int function) {
@@ -119,40 +147,42 @@ public class SGChannel extends BaseDataChannel {
         data.close();
     }
 
-    @ServerMessageHandler("GdoInput")
-    public void handleGdoInputFromClient(EntityPlayer player, ChannelInput data) {
+    @ServerMessageHandler("GdoInput") public void handleGdoInputFromClient(EntityPlayer player, ChannelInput data) {
         BlockPos pos = readCoords(data);
         int setting = data.readInt();
-        SGBaseTE te = SGBaseTE.at(player.world, pos);
-        if (SGCraft.hasPermission(player, "sgcraft.gui.gdo")) {
-            if (te != null) {
-                if (setting == 1) { // Local Open Iris
-                    te.openIris();
-                } else if (setting == 2) { // Local Close Iris
-                    te.closeIris();
-                } else if (setting == 3) { // Local Disconnect Wormhole
-                    te.disconnect(player);
-                } else if (setting == 4) { // Remote Open Iris
-                    if (te.isConnected()) {
-                        SGBaseTE remoteGate = te.getConnectedStargateTE();
-                        remoteGate.openIris();
+        SGBaseTE localGate = SGBaseTE.at(player.world, pos);
+
+        if (!SGCraft.hasPermission(player, "sgcraft.gui.gdo")) {
+            System.err.println("SGCraft - Hacked Client detected!");
+            return;
+        }
+
+        boolean canEditLocal = localGate.getWorld().isBlockModifiable(player, localGate.getPos());
+        boolean canEditRemote = false;
+
+
+        if (SGCraft.hasPermission(player, "sgcraft.gui.gdo") && canEditLocal) {
+            if (localGate != null) {
+                if (setting == 1) localGate.openIris();
+                if (setting == 2) localGate.closeIris();
+                if (setting == 3) localGate.disconnect(player);
+
+                if (setting == 4 || setting == 5 || setting == 6) {
+                    if (localGate.isConnected()) {
+                        SGBaseTE remoteGate = localGate.getConnectedStargateTE();
+                        canEditRemote = remoteGate.getWorld().isBlockModifiable(player, remoteGate.getPos());
+
+                        if (canEditRemote) {
+                            if (setting == 4) remoteGate.openIris();
+                            if (setting == 5) remoteGate.closeIris();
+                        }
                     }
-                } else if (setting == 5) { // Remote Close Iris
-                    if (te.isConnected()) {
-                        SGBaseTE remoteGate = te.getConnectedStargateTE();
-                        remoteGate.closeIris();
-                    }
-                } else if (setting == 6) { // Remote Disconnect (Not implemented on GUI)
-                    if (te.isConnected()) {
-                        SGBaseTE remoteGate = te.getConnectedStargateTE();
-                        remoteGate.disconnect();
-                    }
-                } else if (setting == 7) { // Test button functionality (varies)
-                    te.connect("ZFDDUR8", player);
+                }
+
+                if (setting == 7) { // Test button functionality (varies)
+                    localGate.connect("ZFDDUR8", player);
                 }
             }
-        } else {
-            System.err.println("SGCraft - Hacked Client detected!");
         }
     }
 
@@ -166,27 +196,47 @@ public class SGChannel extends BaseDataChannel {
     @ServerMessageHandler("requestGUI")
     public void handleGUIRequestFromClient(EntityPlayer player, ChannelInput data) {
         BlockPos pos = readCoords(data);
-        SGBaseTE te = SGBaseTE.at(player.world, pos);
+        SGBaseTE localGate = SGBaseTE.at(player.world, pos);
+        boolean canEditLocal = localGate.getWorld().isBlockModifiable(player, localGate.getPos());
+        boolean canEditRemote = false;
+        if (localGate.isConnected()) {
+            SGBaseTE remoteGate = localGate.getConnectedStargateTE();
+            canEditRemote = remoteGate.getWorld().isBlockModifiable(player, remoteGate.getPos());
+        }
         int guiType = data.readInt();
-        if (guiType == 1 && SGCraft.hasPermission(player, "sgcraft.gui.configurator")) {
-            this.openGuiAtClient(te, player, 1, SGCraft.hasPermission(player, "sgcraft.admin"));
+        if (guiType == 1) {
+            if (SGCraft.hasPermission(player, "sgcraft.gui.configurator")) {
+                if (canEditLocal) {
+                    this.openGuiAtClient(localGate, player, 1, SGCraft.hasPermission(player, "sgcraft.admin"), canEditLocal, canEditRemote);
+                } else {
+                    player.sendMessage(new TextComponentString("Insufficient block permissions!"));
+                }
+            } else {
+                player.sendMessage(new TextComponentString("Insufficient permissions!  Requires 'sgcraft.gui.configurator'"));
+            }
         }
 
-        if (guiType == 2 && SGCraft.hasPermission(player, "sgcraft.gui.gdo")) {
-            this.openGuiAtClient(te, player, 2, SGCraft.hasPermission(player, "sgcraft.admin"));
+        if (guiType == 2) {
+            if (SGCraft.hasPermission(player, "sgcraft.gui.gdo")) {
+                this.openGuiAtClient(localGate, player, 2, SGCraft.hasPermission(player, "sgcraft.admin"), canEditLocal, canEditRemote);
+            } else {
+                player.sendMessage(new TextComponentString("Insufficient permissions!  Requires 'sgcraft.gui.gdo'"));
+            }
         }
 
         if (guiType == 3 && SGCraft.hasPermission(player, "sgcraft.gui.pdd")) {
-            this.openGuiAtClient(te, player, 3, SGCraft.hasPermission(player, "sgcraft.admin"));
+            this.openGuiAtClient(localGate, player, 3, SGCraft.hasPermission(player, "sgcraft.admin"), canEditLocal, canEditRemote);
         }
 
     }
 
-    public static void openGuiAtClient(SGBaseTE te, EntityPlayer player, int guiType, boolean isAdmin) {
+    public static void openGuiAtClient(SGBaseTE te, EntityPlayer player, int guiType, boolean isAdmin, boolean canEditLocal, boolean canEditRemote) {
         ChannelOutput data = channel.openPlayer(player,"OpenGUI");
         writeCoords(data, te);
         data.writeInt(guiType);
         data.writeBoolean(isAdmin);
+        data.writeBoolean(canEditLocal);
+        data.writeBoolean(canEditRemote);
         if (guiType == 2) {
             data.writeBoolean(te.isConnected() && te.state == SGState.Connected);
             if (te.isConnected() && te.state == SGState.Connected) {
@@ -207,7 +257,9 @@ public class SGChannel extends BaseDataChannel {
         BlockPos pos = readCoords(data);
         int guiType = data.readInt();
         boolean isAdmin = data.readBoolean();
-        System.out.println("Handler GUI Request: "+ guiType);
+        boolean canEditLocal = data.readBoolean();
+        boolean canEditRemote = data.readBoolean();
+        System.out.println("Handler GUI Request: Type: "+ guiType + " isAdmin: " + isAdmin + " canEditLocal: " + canEditLocal + " canEditRemote: " + canEditRemote);
         if (guiType == 1) {
             new ConfiguratorScreen(player, player.world, isAdmin).display();
         }
