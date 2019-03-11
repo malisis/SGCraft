@@ -28,10 +28,12 @@ import net.malisis.core.client.gui.component.container.BasicContainer;
 import net.malisis.core.client.gui.component.container.BasicForm;
 import net.malisis.core.client.gui.component.container.BasicList;
 import net.malisis.core.client.gui.component.decoration.UILabel;
+import net.malisis.core.client.gui.component.decoration.UISeparator;
 import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.client.gui.component.interaction.button.builder.UIButtonBuilder;
 import net.malisis.core.renderer.font.FontOptions;
 import net.malisis.core.util.FontColors;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -52,6 +54,7 @@ public class PddScreen extends BasicScreen {
     private BasicContainer<?> addressContainer;
     private UIButton addAddressButton, editAddressButton, deleteAddressButton, buttonReset, closeButton, buttonDial, buttonDisconnect;
     private UILabel localGateAddressLabel, gateStatusLabel, availableAddressesLabel;
+    private UISeparator valuesSeparator;
     private BlockPos location;
     private World world;
     private EntityPlayer player;
@@ -59,9 +62,9 @@ public class PddScreen extends BasicScreen {
     private int digit = 0;
     private boolean dialling = false;
     private String enteredAddress = "";
+    private String diallingAddress = "";
     private GState gstate = new GState();
     private String testAddress = "ZFDDUR8";
-    private int xStart = 0;
     private SGBaseTE localGate = null;
     private boolean last = false;
     public boolean firstOpen = true;
@@ -73,7 +76,7 @@ public class PddScreen extends BasicScreen {
 
     public PddScreen(EntityPlayer player, World worldIn, boolean isAdmin) {
         this.player = player;
-        this.isAdmin = isAdmin;
+        this.isAdmin = false;
         this.world = worldIn;
         this.location = new BlockPos(player.posX, player.posY, player.posZ);
     }
@@ -90,6 +93,7 @@ public class PddScreen extends BasicScreen {
         // Master Panel
         this.form = new BasicForm(this, 300, 225, "Personal Dialer Device");
         this.form.setMovable(false);
+        this.form.setBackgroundAlpha(255);
 
         // ****************************************************************************************************************************
         // Address List Area
@@ -111,6 +115,10 @@ public class PddScreen extends BasicScreen {
         gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
         gateStatusLabel.setPosition(-5, 50, Anchor.CENTER | Anchor.TOP);
         gateStatusLabel.setVisible(true);
+
+        valuesSeparator = new UISeparator(this);
+        valuesSeparator.setSize(this.addressContainer.getWidth() - 55, 1);
+        valuesSeparator.setPosition(0, 70, Anchor.TOP | Anchor.CENTER);
 
         this.addressList = new BasicList<>(this, UIComponent.INHERITED, this.addressContainer.getHeight() - 14);
         this.addressList.setPosition(0, BasicScreen.getPaddedY(availableAddressesLabel, 2));
@@ -158,12 +166,19 @@ public class PddScreen extends BasicScreen {
             .text("Dial Selected Address")
             .visible(false)
             .onClick(() -> {
-                if (this.addressList.getSize() > 0 && !this.addressList.getSelectedItem().getAddress().isEmpty()) {
-                    this.enteredAddress = "";
-                    this.dialling = true;
-                    this.gateStatusLabel.setText("... Dialling ...");
-                    //dialSelectedAddress(); // Immediate Dial all chevrons
-                    this.digit = 0;
+                if (this.addressList.getSize() > 0 && this.addressList.getSelectedItem() != null && !this.addressList.getSelectedItem().getAddress().isEmpty()) {
+                    localGate.resetStargate(); //Reset before starting to account for half dialed sequences
+                    PddNetworkHandler.sendPddInputToServer((SGBaseTE) localGate, 3, ""); // Reset server TE.
+                    if (localGate.chevronsLockOnDial) {
+                        if (!isAdmin) {
+                            startProgressiveDialSelectedAddress(); // Progressive Dial Sequence
+                        } else {
+                            immediateDialSelectedAddress(); // Immediate Dial all and lock.
+                        }
+                    } else {
+                        immediateDialSelectedAddress(); // Immediate Dial but display ring rotation.
+                        this.close();
+                    }
                 }
             })
             .build("button.dial");
@@ -219,7 +234,6 @@ public class PddScreen extends BasicScreen {
         if (this.lastUpdate == 50 || this.lastUpdate == 100) {
             if (delayedUpdate) {
                 if (this.addressList.getSize() == 0) {
-                    System.out.println("List size = 0");
                     this.readAddresses(player);
                     if (this.addressList.getSize() > 0) {
                         this.addressList.setSelectedItem(this.addressList.getItem(0));
@@ -230,7 +244,7 @@ public class PddScreen extends BasicScreen {
         }
 
         if (this.lastUpdate == 100) {
-            this.dialAddress();
+            this.checkDiallingStatus();
         }
 
         if (++this.lastUpdate > 100) {
@@ -238,42 +252,63 @@ public class PddScreen extends BasicScreen {
         }
     }
 
-    private void refresh() {
+    private void refresh() { // Method is checked every frame.
         if (localGate != null) {
-            this.localGateAddressLabel.setText(SGAddressing.formatAddress(((SGBaseTE) localGate).homeAddress, "-", "-"));
+            this.localGateAddressLabel.setText(SGAddressing.formatAddress(localGate.homeAddress, "-", "-"));
             if (localGate != null) {
                 if ((this.dialling || this.last || localGate.state == SGState.SyncAwait || localGate.state == SGState.Transient)) {
-                    this.drawAddressSymbols(xStart, this.gateStatusLabel.screenY() + 20, this.enteredAddress);
                     this.buttonDial.setVisible(false);
                     this.addressList.setVisible(false);
                     this.availableAddressesLabel.setVisible(false);
                     this.localGateAddressLabel.setVisible(false);
                     if (localGate.state == SGState.SyncAwait || localGate.state == SGState.Transient) {
                         this.gateStatusLabel.setText("... Establishing ...");
+                        if (this.enteredAddress.isEmpty()) {
+                            this.enteredAddress = localGate.dialledAddress;
+                        }
                     }
                 } else {
+
                     if (localGate.state == SGState.Idle && !localGate.errorState && !dialling) {
                         this.addressList.setVisible(true);
                         this.buttonDial.setVisible(true);
                         this.localGateAddressLabel.setVisible(true);
                         this.availableAddressesLabel.setVisible(true);
+                        this.buttonReset.setVisible(false);
                     }
+
+                    if (localGate.state == SGState.Dialling) {
+                        if (this.enteredAddress.isEmpty()) {
+                            this.enteredAddress = localGate.dialledAddress;
+                        }
+                        if (this.diallingAddress.isEmpty()) {
+                            this.diallingAddress = this.enteredAddress;
+                        }
+
+                        this.addressList.setVisible(false);
+                        this.gateStatusLabel.setVisible(true);
+                        this.buttonDisconnect.setVisible(true);
+                        this.gateStatusLabel.setText(" ... Dialling ...");
+                        this.buttonReset.setVisible(true);
+                    }
+
                     if (localGate.state == SGState.Disconnecting) {
                         this.addressList.setVisible(false);
                         this.gateStatusLabel.setVisible(true);
                         this.gateStatusLabel.setText(" ... Disconnecting ...");
-                        this.drawAddressSymbols(xStart, this.gateStatusLabel.screenY() + 20, this.enteredAddress);
                     }
                     if (localGate.state == SGState.Connected) {
                         if (this.enteredAddress.isEmpty()) {
                             this.enteredAddress = localGate.dialledAddress;
-                            xStart = (this.gateStatusLabel.screenX() - 30) + (enteredAddress.length() * 12);
                         }
+                        if (this.diallingAddress.isEmpty()) {
+                            this.diallingAddress = this.enteredAddress;
+                        }
+
                         this.addressList.setVisible(false);
                         this.gateStatusLabel.setVisible(true);
                         this.buttonDisconnect.setVisible(true);
                         this.gateStatusLabel.setText(" ... Connected ...");
-                        this.drawAddressSymbols(xStart, this.gateStatusLabel.screenY() + 20, this.enteredAddress);
                     }
                 }
 
@@ -282,11 +317,15 @@ public class PddScreen extends BasicScreen {
                     this.gateStatusLabel.setVisible(true);
                     this.buttonDisconnect.setVisible(true);
                     this.gateStatusLabel.setText(" ... Error ...");
+                    this.diallingAddress = localGate.dialledAddress; // Account for someone opening the GUI to a connected gate.
                     dialling = false;
                     this.buttonDial.setVisible(false);
                     this.buttonReset.setVisible(true);
                 }
 
+                if (!this.addressList.isVisible() && (!(localGate.state == SGState.Disconnecting))) {
+                    this.drawAddressSymbols(getXStartLocation(diallingAddress), this.gateStatusLabel.screenY() + 40, this.enteredAddress);
+                }
 
                 if (localGate.isConnected() && localGate.state == SGState.Connected) {
                     this.last = false;
@@ -301,6 +340,8 @@ public class PddScreen extends BasicScreen {
                 this.editAddressButton.setVisible(this.addressList.isVisible());
                 this.availableAddressesLabel.setVisible(this.addressList.isVisible());
                 this.localGateAddressLabel.setVisible(this.addressList.isVisible());
+                this.valuesSeparator.setVisible(!this.addressList.isVisible());
+
             }
         }
     }
@@ -317,7 +358,7 @@ public class PddScreen extends BasicScreen {
         this.buttonDial.setVisible(true);
         localGate.dialledAddress = "";
         localGate.errorState = false; // Force this upon the local gate because the server/client is out of sync at this point.
-        localGate.resetStargate();
+        localGate.connectOrDisconnect("", player);
     }
 
     @Override
@@ -365,54 +406,73 @@ public class PddScreen extends BasicScreen {
         this.lastUpdate = 0;
     }
 
-    private void dialSelectedAddress() {
-        final TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, true);
-        if (localGate != null) {
-            if (!(localGate instanceof SGBaseTE)) {
-                return;
-            }
-            if (this.addressList.getSelectedItem() != null) {
+    private void immediateDialSelectedAddress() {
+        final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+        if (localGateTE instanceof SGBaseTE) {
+            localGate = (SGBaseTE) localGateTE;
+        }
+       if (localGate != null) {
+            if (this.addressList.getSelectedItem() != null && !this.addressList.getSelectedItem().getAddress().isEmpty()) {
+                this.gateStatusLabel.setText("... Dialling ...");
                 String address = this.addressList.getSelectedItem().getAddress().toUpperCase().replaceAll("-", "");
-                PddNetworkHandler.sendPddInputToServer((SGBaseTE) localGate, 1, address); // Immediate dial all chevrons.
-                this.close();
+                this.enteredAddress = address;
+                PddNetworkHandler.sendPddInputToServer(localGate, 1, address); // Dials specified address based on Gates configuration, rotation vs. immediate dial.
             }
         }
     }
 
-    private void dialAddress() {
-        if (dialling && !localGate.errorState) {
-            firstOpen = false;
-            String address = this.addressList.getSelectedItem().getAddress().toUpperCase().replaceAll("-", "");
-            if (address.length() > localGate.getNumChevrons()) {
-                player.sendMessage(new TextComponentString("Gate does not have 9 chevrons."));
-                dialling = false;
-                return;
-            }
-            this.addressList.setVisible(false);
-            final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
-            if (localGateTE instanceof SGBaseTE) {
-                SGBaseTE localGate = (SGBaseTE) localGateTE;
-                this.last = false;
-                PddNetworkHandler.sendEnterSymbolToServer(localGate, address, this.digit);
-                char currentSymbol = address.charAt(digit);
-                enteredAddress += currentSymbol;
-                if (address.length() == 7) {
-                    xStart = (this.gateStatusLabel.screenX() - 30) + (enteredAddress.length() * 12);
-                } else {
-                    xStart = (this.gateStatusLabel.screenX() - 50) + (enteredAddress.length() * 12);
+    private void startProgressiveDialSelectedAddress() {
+        final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+        if (localGateTE instanceof SGBaseTE) {
+            localGate = (SGBaseTE) localGateTE;
+        }
+        if (localGate != null) {
+            this.enteredAddress = "";
+            this.gateStatusLabel.setText("... Dialling ...");
+            this.dialling = true; // Allows checkDiallingStatus method to execute.
+            this.digit = 0;
+        }
+    }
+
+    private void checkDiallingStatus() { // Method is checked every 100 frames.
+        if (localGate != null) {
+            if (dialling && !localGate.errorState) {
+                firstOpen = false;
+                diallingAddress = this.addressList.getSelectedItem().getAddress().toUpperCase().replaceAll("-", "");
+                if (diallingAddress.length() > localGate.getNumChevrons()) {
+                    player.sendMessage(new TextComponentString("Gate does not have 9 chevrons."));
+                    dialling = false;
+                    return;
                 }
-                this.digit += 1;
-            }
-            if (this.digit >= address.length()) {
-                this.dialling = false;
-                this.last = true;
-                this.digit = 0;
+                this.addressList.setVisible(false);
+                final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+                if (localGateTE instanceof SGBaseTE) {
+                    SGBaseTE localGate = (SGBaseTE) localGateTE;
+                    this.last = false;
+                    PddNetworkHandler.sendEnterSymbolToServer(localGate, diallingAddress, this.digit);
+                    char currentSymbol = diallingAddress.charAt(digit);
+                    enteredAddress += currentSymbol;
+                    this.digit += 1;
+                }
+                if (this.digit >= diallingAddress.length()) {
+                    this.dialling = false;
+                    this.last = true;
+                    this.digit = 0;
+                }
             }
         }
     }
 
     public void stopDialing() {
         this.dialling = false;
+    }
+
+    private int getXStartLocation(String address) {
+        if (address.length() == 7) {
+            return 395 + (enteredAddress.length() * 12);
+        } else {
+            return 375 + (enteredAddress.length() * 12);
+        }
     }
 
     private void drawAddressSymbols(int x, int y, String address) {
@@ -473,7 +533,7 @@ public class PddScreen extends BasicScreen {
 
         public AddressItemComponent(final MalisisGui gui, final BasicList<AddressData> parent, final AddressData item) {
             super(gui, parent, item);
-            this.setOnDoubleClickConsumer(i -> dialSelectedAddress());
+            //this.setOnDoubleClickConsumer(i -> dialSelectedAddress());
         }
 
         @Override

@@ -6,6 +6,7 @@ import gcewing.sg.features.pdd.AddressData;
 import gcewing.sg.features.pdd.client.gui.PddScreen;
 import gcewing.sg.network.SGChannel;
 import gcewing.sg.tileentity.SGBaseTE;
+import gcewing.sg.util.SGState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
@@ -71,7 +72,8 @@ public class PddNetworkHandler extends SGChannel {
             }
         }
         if (setting == 3) {
-            localGate.resetStargate();
+            localGate.connectOrDisconnect("", player);
+            localGate.errorState = false; // Force this on the servers' TE.
         }
     }
 

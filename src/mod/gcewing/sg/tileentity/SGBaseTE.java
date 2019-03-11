@@ -8,6 +8,7 @@ package gcewing.sg.tileentity;
 
 import static gcewing.sg.BaseBlockUtils.getWorldTileEntity;
 import static gcewing.sg.BaseMod.isModLoaded;
+import static gcewing.sg.BaseMod.reportExceptionCause;
 import static gcewing.sg.BaseUtils.max;
 import static gcewing.sg.BaseUtils.min;
 
@@ -1031,7 +1032,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     public String operationFailure(EntityPlayer player, String msg, Object... args) {
-        resetStargate();
         if (player != null)
             sendErrorMsg(player, msg, args);
         return msg;
@@ -1041,7 +1041,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         this.enteredAddress = "";
         this.dialledAddress = "";
         this.dialedDigit = 0;
-        this.numEngagedChevrons = 0;
         markChanged();
     }
 
@@ -1203,14 +1202,20 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                         break;
                     case Dialling:
                         if (isInitiator) {
-                            char charTargetSymbol = dialledAddress.charAt(numEngagedChevrons);
-                            char charOwnSymbol = homeAddress.charAt(numEngagedChevrons);
-                            String targetSymbol = Character.toString(charTargetSymbol);
-                            String ownSymbol = Character.toString(charOwnSymbol);
-                            // Note:  CC interfaces can't use CHAR!
-                            finishDiallingSymbol(targetSymbol, true, true, !symbolsRemaining(true));
-                            SGBaseTE targetGate = SGBaseTE.at(connectedLocation);
-                            targetGate.finishDiallingSymbol(ownSymbol, false, true, !targetGate.symbolsRemaining(true));
+                            try {
+                                char charTargetSymbol = dialledAddress.charAt(numEngagedChevrons);
+                                char charOwnSymbol = homeAddress.charAt(numEngagedChevrons);
+                                String targetSymbol = Character.toString(charTargetSymbol);
+                                String ownSymbol = Character.toString(charOwnSymbol);
+                                // Note:  CC interfaces can't use CHAR!
+                                finishDiallingSymbol(targetSymbol, true, true, !symbolsRemaining(true));
+                                SGBaseTE targetGate = SGBaseTE.at(connectedLocation);
+                                targetGate.finishDiallingSymbol(ownSymbol, false, true, !targetGate.symbolsRemaining(true));
+                            }
+                            catch (Exception e) {  // Fall back.
+                                this.clearConnection();
+                                this.resetStargate();
+                            }
                         }
                         break;
                     case InterDialling:
