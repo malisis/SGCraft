@@ -21,18 +21,23 @@ public class PddNetworkHandler extends SGChannel {
         pddChannel = this;
     }
 
-    public static void updatePddList(EntityPlayer player) {
+    public static void updatePdd(EntityPlayer player, boolean value, int status) {
         ChannelOutput data = pddChannel.openPlayer(player,"UpdatePdd");
-        data.writeBoolean(true);
+        data.writeInt(status);
+        data.writeBoolean(value);
         data.close();
     }
 
     @ClientMessageHandler("UpdatePdd")
     public void handleUpdatePddListRequest(EntityPlayer player, ChannelInput data) {
+        int status = data.readInt();
         boolean update = data.readBoolean();
         if (Minecraft.getMinecraft().currentScreen instanceof PddScreen) {
             PddScreen screen = (PddScreen) Minecraft.getMinecraft().currentScreen;
-            screen.delayedUpdate();
+            if (status == 1) // Update Address List
+                screen.delayedUpdate();
+            if (status == 2)
+                screen.stopDialing();
         }
     }
 
@@ -64,6 +69,9 @@ public class PddNetworkHandler extends SGChannel {
             if (localGate.isConnected()) {
                 localGate.disconnect(player);
             }
+        }
+        if (setting == 3) {
+            localGate.resetStargate();
         }
     }
 
@@ -97,7 +105,7 @@ public class PddNetworkHandler extends SGChannel {
                 AddressData.updateAddress(player, compound, unid, name, address, index, locked);
                 stack.setTagCompound(compound);
                 player.inventoryContainer.detectAndSendChanges();
-                PddNetworkHandler.updatePddList(player);
+                PddNetworkHandler.updatePdd(player, false, 1);
             }
         }
     }

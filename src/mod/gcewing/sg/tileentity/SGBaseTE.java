@@ -16,6 +16,7 @@ import gcewing.sg.BaseBlockUtils;
 import gcewing.sg.BaseConfiguration;
 import gcewing.sg.BaseTileInventory;
 import gcewing.sg.BaseUtils;
+import gcewing.sg.features.pdd.network.PddNetworkHandler;
 import gcewing.sg.util.SGAddressing;
 import gcewing.sg.SGCraft;
 import gcewing.sg.util.SGLocation;
@@ -185,8 +186,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public int lastIrisPhase = maxIrisPhase;
     public OCWirelessEndpoint ocWirelessEndpoint; //[OC]
     public boolean debugCCInterface = false;
-    private int dialedDigit = 0;
-    private String enteredAddress = "";
+    public int dialedDigit = 0;
+    public String enteredAddress = "";
+    public boolean errorState = false;
 
     public SGLocation connectedLocation;
     public boolean isInitiator, redstoneInput, loaded;
@@ -589,11 +591,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
 
         this.facingDirectionOfBase = nbt.getInteger("facingDirectionOfBase");
+        this.errorState = nbt.getBoolean("errorState");
 
         // Set values after NBT load
         this.ticksToStayOpen = 20 * this.secondsToStayOpen;
         this.energyToOpen = this.energyPerFuelItem / this.gateOpeningsPerFuelItem;
         this.energyUsePerTick = this.energyPerFuelItem / (this.minutesOpenPerFuelItem * 60 * 20);
+
     }
 
     protected String getStringOrNull(NBTTagCompound nbt, String name) {
@@ -647,6 +651,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setInteger("facingDirectionOfBase", facingDirectionOfBase);
         nbt.setBoolean("requiresNoPower", requiresNoPower);
         nbt.setBoolean("transientDamage", transientDamage);
+        nbt.setBoolean("errorState", errorState);
 
         if (connectedLocation != null) {
             nbt.setTag("connectedLocation", connectedLocation.toNBT());
@@ -865,7 +870,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     public String connect(String address, EntityPlayer player) {
-        Thread.dumpStack();
         if (state != SGState.Idle) {
             return diallingFailure(player, "selfBusy");
         }
@@ -1022,6 +1026,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             if (state == SGState.Idle)
                 playSGSoundEffect(dialFailSound, 1F, 1F);
         }
+        errorState = true;
         return operationFailure(player, msg, args);
     }
 
@@ -1032,7 +1037,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return msg;
     }
 
-    private void resetStargate() {
+    public void resetStargate() {
         this.enteredAddress = "";
         this.dialledAddress = "";
         this.dialedDigit = 0;
@@ -1128,9 +1133,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     void startDiallingStargate(String address, SGBaseTE dte, boolean initiator, boolean immediate) {
-        //System.out.printf("SGBaseTE.startDiallingStargate %s, initiator = %s\n",
-        //  dte, initiator);
-        System.out.println("Starting to Dial");
         dialledAddress = address;
         connectedLocation = new SGLocation(dte);
         isInitiator = initiator;
