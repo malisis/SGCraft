@@ -37,10 +37,9 @@ public class SGChannel extends BaseDataChannel {
         String address = data.readUTF();
         SGBaseTE te = SGBaseTE.at(player.world, pos);
         if (te != null) {
-            //DHDTE dhd = te.getLinkedControllerTE();
-            //dhd.immediateDialDHD = true;
-            //System.out.println("Set Auto Dial true");
+            DHDTE dhd = te.getLinkedControllerTE();
             te.connectOrDisconnect(address, player);
+            System.out.println("Server Handler for connectorDisconnect: " + address);
         }
     }
 

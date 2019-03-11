@@ -136,7 +136,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
 
     final static int interDiallingTime = 10; // ticks
-    public int syncAwaitTime = 10; // ticks  // 10 - withinWorld, 30 - dimensional
+    public int syncAwaitTime = 30; // ticks  // 10 - withinWorld, 30 - dimensional
     final static int transientDuration = 20; // ticks
     final static int disconnectTime = 40; // ticks
 
@@ -185,6 +185,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public int lastIrisPhase = maxIrisPhase;
     public OCWirelessEndpoint ocWirelessEndpoint; //[OC]
     public boolean debugCCInterface = false;
+    private int dialedDigit = 0;
+    private String enteredAddress = "";
 
     public SGLocation connectedLocation;
     public boolean isInitiator, redstoneInput, loaded;
@@ -863,6 +865,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     public String connect(String address, EntityPlayer player) {
+        Thread.dumpStack();
         if (state != SGState.Idle) {
             return diallingFailure(player, "selfBusy");
         }
@@ -1023,9 +1026,18 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     public String operationFailure(EntityPlayer player, String msg, Object... args) {
+        resetStargate();
         if (player != null)
             sendErrorMsg(player, msg, args);
         return msg;
+    }
+
+    private void resetStargate() {
+        this.enteredAddress = "";
+        this.dialledAddress = "";
+        this.dialedDigit = 0;
+        this.numEngagedChevrons = 0;
+        markChanged();
     }
 
     public static void sendErrorMsg(EntityPlayer player, String msg, Object... args) {
@@ -1057,6 +1069,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public void clearConnection() {
         if (state != SGState.Idle || connectedLocation != null) {
             dialledAddress = "";
+            dialedDigit = 0;
+            enteredAddress = "";
             connectedLocation = null;
             isInitiator = false;
             markChanged();
@@ -1078,9 +1092,45 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
+    public void immediateDialSymbol(String address, EntityPlayer player, int digit) {
+        // Validate symbol being sent from PDD
+        char currentSymbol = address.charAt(digit);
+        String check = String.valueOf(currentSymbol);
+
+        if (!SGAddressing.isValidSymbolChar(check)) {
+            diallingFailure(player, "malformedAddress", address);
+            return;
+        }
+
+        if (address.length()> this.getNumChevrons()) {
+            diallingFailure(player, "selfLackChevrons", address);
+            return;
+        }
+
+        if (address.length() <= this.getNumChevrons()) {
+            enteredAddress += currentSymbol;
+            this.dialedDigit += 1;
+            boolean last = address.length() == this.dialedDigit;
+            this.finishDiallingSymbol(Character.toString(currentSymbol), true, false, last);
+            this.dialledAddress = enteredAddress;
+            this.numEngagedChevrons = enteredAddress.length() - 1;
+
+            System.out.println("Char: " + currentSymbol + " digit: " + digit + " dialedDigit: " + this.dialedDigit + " numChev: " + this.numEngagedChevrons + " last: " + last + " Entered: " + enteredAddress);
+
+            if (last) {
+                if (connect(address, player) != null) {
+                    System.out.println("Initiating real Stargate");
+                }
+            } else {
+                this.markChanged();
+            }
+        }
+    }
+
     void startDiallingStargate(String address, SGBaseTE dte, boolean initiator, boolean immediate) {
         //System.out.printf("SGBaseTE.startDiallingStargate %s, initiator = %s\n",
         //  dte, initiator);
+        System.out.println("Starting to Dial");
         dialledAddress = address;
         connectedLocation = new SGLocation(dte);
         isInitiator = initiator;
@@ -1461,6 +1511,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (debugState) {
             System.out.printf("SGBaseTE.startDiallingNextSymbol: %s of %s\n", numEngagedChevrons, dialledAddress);
         }
+
         startDiallingSymbol(dialledAddress.charAt(numEngagedChevrons));
     }
 
@@ -1502,7 +1553,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 enterState(SGState.SyncAwait, syncAwaitTime);
             }
             if (!world.isRemote) {
-                playSGSoundEffect(outgoing ? lockOutgoingSound : lockIncomingSound, 1F, 1F);
+               //playSGSoundEffect(outgoing ? lockOutgoingSound : lockIncomingSound, 1F, 1F);
+                playSGSoundEffect(outgoing ? chevronOutgoingSound : chevronIncomingSound, 1F, 1F);
             }
         } else {
             if (changeState) {

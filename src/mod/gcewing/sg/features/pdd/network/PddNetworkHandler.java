@@ -101,4 +101,24 @@ public class PddNetworkHandler extends SGChannel {
             }
         }
     }
+
+    public static void sendEnterSymbolToServer(SGBaseTE te, String address, int digit) {
+        ChannelOutput data = pddChannel.openServer("EnterImmediateSymbol");
+        writeCoords(data, te);
+        data.writeUTF(address);
+        data.writeInt(digit);
+        data.close();
+    }
+
+    @ServerMessageHandler("EnterImmediateSymbol")
+    public void handleEnterSymbolFromClient(EntityPlayer player, ChannelInput data) {
+        BlockPos pos = readCoords(data);
+        String address = data.readUTF();
+        int digit = data.readInt();
+
+        SGBaseTE localGate = SGBaseTE.at(player.world, pos);
+        if (localGate != null) {
+            localGate.immediateDialSymbol(address, player, digit);
+        }
+    }
 }

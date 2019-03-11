@@ -122,7 +122,7 @@ public class BaseBlock<TE extends TileEntity>
             teID = "gcewing.sg.SGRingTE";
         if (teClass.getName().equalsIgnoreCase("gcewing.sg.tileentity.SGPowerTE"))
             teID = "gcewing.sg.SGPowerTE";
-        
+
         // Addon TE's
         if (teClass.getName().equalsIgnoreCase("gcewing.sg.features.ic2.IC2PowerTE"))
             teID = "gcewing.sg.ic2.IC2PowerTE";
