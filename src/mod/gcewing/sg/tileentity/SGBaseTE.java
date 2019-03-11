@@ -32,7 +32,6 @@ import gcewing.sg.features.ic2.zpm.ZpmInterfaceCartTE;
 import gcewing.sg.features.oc.OCIntegration;
 import gcewing.sg.features.oc.OCInterfaceTE;
 import gcewing.sg.features.oc.OCWirelessEndpoint;
-import gcewing.sg.features.rf.RFPowerTE;
 import gcewing.sg.interfaces.IComputerInterface;
 import gcewing.sg.interfaces.ISGEnergySource;
 import gcewing.sg.util.IrisState;
@@ -1330,7 +1329,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     }
                 }
 
-                if (rsfLoaded && nte instanceof RFPowerTE) {
+                if (rsfLoaded && nte instanceof SGPowerTE) {
                     result.add((ISGEnergySource) nte);
                     if (debugEnergyUse) {
                         System.out.println("Found RFPowerTE at: " + nte.getPos());

@@ -10,6 +10,7 @@ import gcewing.sg.block.DHDBlock;
 import gcewing.sg.block.NaquadahBlock;
 import gcewing.sg.block.NaquadahOreBlock;
 import gcewing.sg.block.SGBaseBlock;
+import gcewing.sg.block.SGPowerBlock;
 import gcewing.sg.block.SGRingBlock;
 import gcewing.sg.client.gui.SGGui;
 import gcewing.sg.container.DHDFuelContainer;
@@ -31,7 +32,6 @@ import gcewing.sg.features.pdd.network.PddNetworkHandler;
 import gcewing.sg.features.tokra.SGTradeHandler;
 import gcewing.sg.features.tokra.TokraVillagerWorldRegistry;
 import gcewing.sg.features.oc.OCIntegration;
-import gcewing.sg.features.rf.RFIntegration;
 import gcewing.sg.generator.FeatureGeneration;
 import gcewing.sg.generator.FeatureUnderDesertPyramid;
 import gcewing.sg.interfaces.IIntegration;
@@ -56,7 +56,6 @@ import net.minecraft.client.audio.SoundHandler;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
@@ -109,13 +108,14 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static SGRingBlock sgRingBlock;
     public static DHDBlock sgControllerBlock;
     public static Block naquadahBlock, naquadahOre;
+    public static SGPowerBlock sgPowerUnit;
     
     public static Item naquadah, naquadahIngot, sgCoreCrystal, sgControllerCrystal, sgChevronUpgrade,
         sgIrisUpgrade, sgIrisBlade;
     
     public static Block ic2PowerUnit;
     public static Item ic2Capacitor;
-    public static Block rfPowerUnit;
+    //public static Block rfPowerUnit;
     
     public static boolean addOresToExistingWorlds;
     public static NaquadahOreWorldGen naquadahOreGenerator;
@@ -123,8 +123,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static BaseSubsystem ic2Integration; //[IC2]
     public static IIntegration ccIntegration; //[CC]
     public static OCIntegration ocIntegration; //[OC]
-    public static RFIntegration rfIntegration; //[RF]
-//     public static MystcraftIntegration mystcraftIntegration; //[MYST]
+    //public static RFIntegration rfIntegration; //[RF]
+    //public static MystcraftIntegration mystcraftIntegration; //[MYST]
 
     public static Block zpm_interface_cart;
     public static Item zpm, gdo, pdd, configurator;
@@ -145,9 +145,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static double Ic2euPerSGEnergyUnit = 20.0;
     public static int Ic2PowerTETier = 3;
 
-    // Redstone Flux Options
-    public static int RfMaxEnergyBuffer = 4000000;
-    public static double RfPerSGEnergyUnit = 80.0;
+    // SG Power Block Options
+    public static int SGMaxEnergyBuffer = 4000000;
+    public static double SGPerSGEnergyUnit = 80.0;
 
     //Client Options
     public static boolean useHDEventHorizionTexture = true;
@@ -176,7 +176,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             }
         };
         FMLCommonHandler.instance().bus().register(this);
-        rfIntegration = (RFIntegration) integrateWithMod("redstoneflux", "gcewing.sg.features.rf.RFIntegration"); //[RF]
+        //rfIntegration = (RFIntegration) integrateWithMod("redstoneflux", "gcewing.sg.features.rf.RFIntegration"); //[RF]
         ic2Integration = integrateWithMod("ic2", "gcewing.sg.features.ic2.IC2Integration"); //[IC2]
         ccIntegration = (IIntegration) integrateWithMod("computercraft", "gcewing.sg.features.cc.CCIntegration"); //[CC]
         ocIntegration = (OCIntegration)integrateWithMod("opencomputers", "gcewing.sg.features.oc.OCIntegration"); //[OC]
@@ -263,6 +263,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         sgControllerBlock = newBlock("stargateController", DHDBlock.class);
         naquadahBlock = newBlock("naquadahBlock", NaquadahBlock.class);
         naquadahOre = newBlock("naquadahOre", NaquadahOreBlock.class);
+        sgPowerUnit = newBlock("sgPowerUnit", SGPowerBlock.class);
+
         if (isModLoaded("ic2")) {
             zpm_interface_cart = newBlock("zpm_interface_cart", ZpmInterfaceCart.class);
         }
@@ -385,6 +387,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 
         if (config.getBoolean("recipes", "sgControllerCrystalItem", false)) {
             newRecipe("sgcontrollercrystal", sgControllerCrystal, 1, "roo", "odr", "oor", 'o', orangeDye, 'r', Items.REDSTONE, 'd', Items.DIAMOND);
+        }
+        if (config.getBoolean("recipes", "sgPowerUnit", true)) {
+            newRecipe("rfPowerUnit", sgPowerUnit, 1, "cgc", "gIg", "crc", 'c', mod.ic2Capacitor, 'g', "ingotGold", 'I', "blockIron", 'r', Items.REDSTONE);
         }
 
         if (!isModLoaded("ic2")) {
@@ -510,8 +515,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         Ic2PowerTETier = config.getInteger("ic2", "PowerTETier", Ic2PowerTETier);
 
         // Redstone Flux
-        RfMaxEnergyBuffer = config.getInteger("rf", "energyBufferSize", RfMaxEnergyBuffer);
-        RfPerSGEnergyUnit = config.getDouble("rf", "rfPerSGEnergyUnit", RfPerSGEnergyUnit);
+        SGMaxEnergyBuffer = config.getInteger("rf", "energyBufferSize", SGMaxEnergyBuffer);
+        SGPerSGEnergyUnit = config.getDouble("rf", "rfPerSGEnergyUnit", SGPerSGEnergyUnit);
 
         // World Update / Fixes
         forceSGBaseTEUpdate = config.getBoolean("stargate", "force-default-configs", forceSGBaseTEUpdate);

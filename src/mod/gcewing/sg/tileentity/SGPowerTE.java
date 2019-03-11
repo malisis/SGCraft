@@ -4,9 +4,8 @@
 //
 //------------------------------------------------------------------------------------------------
 
-package gcewing.sg.features.rf;
+package gcewing.sg.tileentity;
 
-import gcewing.sg.tileentity.PowerTE;
 import gcewing.sg.SGCraft;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
@@ -17,25 +16,23 @@ import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
 
-public class RFPowerTE extends PowerTE implements IEnergyStorage {
+public class SGPowerTE extends PowerTE implements IEnergyStorage {
 
-    // Addon for Redstone Flux
-
-    private EnergyStorage storage = new EnergyStorage(SGCraft.RfMaxEnergyBuffer);
+    private EnergyStorage storage = new EnergyStorage(SGCraft.SGMaxEnergyBuffer);
     private int update = 0;
 
-    public RFPowerTE() {
-        super(SGCraft.RfMaxEnergyBuffer, SGCraft.RfPerSGEnergyUnit);
+    public SGPowerTE() {
+        super(SGCraft.SGMaxEnergyBuffer, SGCraft.SGPerSGEnergyUnit);
     }
 
     @Override
     public String getScreenTitle() {
-        return "RF SGPU";
+        return "SGPU";
     }
 
     @Override
     public String getUnitName() {
-        return "RF";
+        return "SG";
     }
 
     @Override

@@ -4,16 +4,16 @@
 //
 //------------------------------------------------------------------------------------------------
 
-package gcewing.sg.features.rf;
+package gcewing.sg.item;
 
 import gcewing.sg.item.PowerItem;
 import net.minecraft.block.*;
 
-public class RFPowerItem extends PowerItem {
+public class SGPowerItem extends PowerItem {
 
     // Todo: fix this if its needed.
-    public RFPowerItem(Block block) {
-        super(block, "RF");
+    public SGPowerItem(Block block) {
+        super(block, "SG");
     }
 
 }
