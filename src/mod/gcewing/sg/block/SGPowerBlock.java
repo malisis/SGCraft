@@ -4,14 +4,15 @@
 //
 //------------------------------------------------------------------------------------------------
 
-package gcewing.sg.features.rf;
+package gcewing.sg.block;
 
 import gcewing.sg.block.PowerBlock;
+import gcewing.sg.tileentity.SGPowerTE;
 
-public class RFPowerBlock extends PowerBlock<RFPowerTE> {
+public class SGPowerBlock extends PowerBlock<SGPowerTE> {
 
-    public RFPowerBlock() {
-        super(RFPowerTE.class);
+    public SGPowerBlock() {
+        super(SGPowerTE.class);
         setModelAndTextures("block/power.smeg",
             "rfPowerUnit-bottom", "rfPowerUnit-top", "rfPowerUnit-side");
     }
