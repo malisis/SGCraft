@@ -509,8 +509,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         Ic2PowerTETier = config.getInteger("ic2", "PowerTETier", Ic2PowerTETier);
 
         // Redstone Flux
-        SGMaxEnergyBuffer = config.getInteger("rf", "energyBufferSize", SGMaxEnergyBuffer);
-        SGPerSGEnergyUnit = config.getDouble("rf", "rfPerSGEnergyUnit", SGPerSGEnergyUnit);
+        SGMaxEnergyBuffer = config.getInteger("sgpower", "energyBufferSize", SGMaxEnergyBuffer);
+        SGPerSGEnergyUnit = config.getDouble("sgpower", "sgPerSGEnergyUnit", SGPerSGEnergyUnit);
 
         // World Update / Fixes
         forceSGBaseTEUpdate = config.getBoolean("stargate", "force-default-configs", forceSGBaseTEUpdate);

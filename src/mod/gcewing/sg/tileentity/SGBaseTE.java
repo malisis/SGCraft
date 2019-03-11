@@ -1332,7 +1332,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 if (rsfLoaded && nte instanceof SGPowerTE) {
                     result.add((ISGEnergySource) nte);
                     if (debugEnergyUse) {
-                        System.out.println("Found RFPowerTE at: " + nte.getPos());
+                        System.out.println("Found SGPowerTE at: " + nte.getPos());
                     }
                 }
 

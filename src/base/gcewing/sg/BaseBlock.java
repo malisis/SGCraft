@@ -120,6 +120,9 @@ public class BaseBlock<TE extends TileEntity>
             teID = "gcewing.sg.SGInterfaceTE";
         if (teClass.getName().equalsIgnoreCase("gcewing.sg.tileentity.SGRingTE"))
             teID = "gcewing.sg.SGRingTE";
+        if (teClass.getName().equalsIgnoreCase("gcewing.sg.tileentity.SGPowerTE"))
+            teID = "gcewing.sg.SGPowerTE";
+        
         // Addon TE's
         if (teClass.getName().equalsIgnoreCase("gcewing.sg.features.ic2.IC2PowerTE"))
             teID = "gcewing.sg.ic2.IC2PowerTE";
@@ -127,8 +130,6 @@ public class BaseBlock<TE extends TileEntity>
             teID = "gcewing.sg.cc.CCInterfaceTE";
         if (teClass.getName().equalsIgnoreCase("gcewing.sg.features.oc.OCInterfaceTE"))
             teID = "gcewing.sg.oc.OCInterfaceTE";
-        if (teClass.getName().equalsIgnoreCase("gcewing.sg.features.rf.RFPowerTE"))
-            teID = "gcewing.sg.rf.RFPowerTE";
         if (teClass.getName().equalsIgnoreCase("gcewing.sg.features.ic2.zpm.ZPMInterfaceCartTE"))
             teID = "gcewing.sg.ic2.zpm.ZPMInterfaceCartTE";
         // End TE World Fixer.

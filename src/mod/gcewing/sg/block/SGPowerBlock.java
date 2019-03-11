@@ -14,7 +14,7 @@ public class SGPowerBlock extends PowerBlock<SGPowerTE> {
     public SGPowerBlock() {
         super(SGPowerTE.class);
         setModelAndTextures("block/power.smeg",
-            "rfPowerUnit-bottom", "rfPowerUnit-top", "rfPowerUnit-side");
+            "sgPowerUnit-bottom", "sgPowerUnit-top", "sgPowerUnit-side");
     }
     
 }
