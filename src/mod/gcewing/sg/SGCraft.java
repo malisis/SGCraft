@@ -103,28 +103,24 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 
     public static SGChannel channel;
     public static BaseTEChunkManager chunkManager;
-    
+
     public static SGBaseBlock sgBaseBlock;
     public static SGRingBlock sgRingBlock;
     public static DHDBlock sgControllerBlock;
     public static Block naquadahBlock, naquadahOre;
     public static SGPowerBlock sgPowerUnit;
-    
-    public static Item naquadah, naquadahIngot, sgCoreCrystal, sgControllerCrystal, sgChevronUpgrade,
-        sgIrisUpgrade, sgIrisBlade;
-    
+
+    public static Item naquadah, naquadahIngot, sgCoreCrystal, sgControllerCrystal, sgChevronUpgrade, sgIrisUpgrade, sgIrisBlade;
+
     public static Block ic2PowerUnit;
     public static Item ic2Capacitor;
-    //public static Block rfPowerUnit;
-    
+
     public static boolean addOresToExistingWorlds;
     public static NaquadahOreWorldGen naquadahOreGenerator;
-    
+
     public static BaseSubsystem ic2Integration; //[IC2]
     public static IIntegration ccIntegration; //[CC]
     public static OCIntegration ocIntegration; //[OC]
-    //public static RFIntegration rfIntegration; //[RF]
-    //public static MystcraftIntegration mystcraftIntegration; //[MYST]
 
     public static Block zpm_interface_cart;
     public static Item zpm, gdo, pdd, configurator;
@@ -176,18 +172,16 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             }
         };
         FMLCommonHandler.instance().bus().register(this);
-        //rfIntegration = (RFIntegration) integrateWithMod("redstoneflux", "gcewing.sg.features.rf.RFIntegration"); //[RF]
         ic2Integration = integrateWithMod("ic2", "gcewing.sg.features.ic2.IC2Integration"); //[IC2]
         ccIntegration = (IIntegration) integrateWithMod("computercraft", "gcewing.sg.features.cc.CCIntegration"); //[CC]
         ocIntegration = (OCIntegration)integrateWithMod("opencomputers", "gcewing.sg.features.oc.OCIntegration"); //[OC]
-//         mystcraftIntegration = (MystcraftIntegration)integrateWithMod("Mystcraft", "gcewing.sg.MystcraftIntegration"); //[MYST]
 
         if (isModLoaded("ic2")) {
             GameRegistry.registerTileEntity(ZpmInterfaceCartTE.class, new ResourceLocation(this.modID));
         }
         super.preInit(e);
     }
-    
+
     @Mod.EventHandler
     @Override
     public void init(FMLInitializationEvent e) {
@@ -209,7 +203,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         super.postInit(e);
     }
 
-    @Override   
+    @Override
     protected SGCraftClient initClient() {
         return new SGCraftClient(this);
     }
@@ -239,17 +233,17 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
-            // Tokra Villager World configuration loader
-            final ConfigurationNode tokraNode;
-            try {
-                tokraNode = TokraVillagerWorldRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "tokra.yml"));
-                TokraVillagerWorldRegistry.populateTokraVillagerWorlds(tokraNode);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         }
-    }       
+
+        // Tokra Villager World configuration loader
+        final ConfigurationNode tokraNode;
+        try {
+            tokraNode = TokraVillagerWorldRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "tokra.yml"));
+            TokraVillagerWorldRegistry.populateTokraVillagerWorlds(tokraNode);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     protected void registerOther() {
@@ -271,7 +265,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 
         this.setOptions();
     }
-    
+
     @Override
     protected void registerItems() {
         naquadah = newItem("naquadah"); //, "Naquadah");
@@ -281,7 +275,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         sgChevronUpgrade = addItem(new SGChevronUpgradeItem(), "sgChevronUpgrade");
         sgIrisUpgrade = addItem(new SGIrisUpgradeItem(), "sgIrisUpgrade");
         sgIrisBlade = newItem("sgIrisBlade");
-        if (isModLoaded("ic2") || !isModLoaded("thermalexpansion")) {
+        if (isModLoaded("ic2")) {
             ic2Capacitor = newItem("ic2Capacitor");
         }
         if (isModLoaded("ic2")) {
@@ -317,11 +311,11 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     private static SoundHandler getSoundHandler() {
         return Minecraft.getMinecraft().getSoundHandler();
     }
-    
+
     public static boolean isValidStargateUpgrade(Item item) {
         return item == sgChevronUpgrade || item == sgIrisUpgrade;
     }
-    
+
     @Override
     protected void registerOres() {
         addOre("oreNaquadah", naquadahOre);
@@ -389,14 +383,14 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             newRecipe("sgcontrollercrystal", sgControllerCrystal, 1, "roo", "odr", "oor", 'o', orangeDye, 'r', Items.REDSTONE, 'd', Items.DIAMOND);
         }
         if (config.getBoolean("recipes", "sgPowerUnit", true)) {
-            newRecipe("rfPowerUnit", sgPowerUnit, 1, "cgc", "gIg", "crc", 'c', mod.ic2Capacitor, 'g', "ingotGold", 'I', "blockIron", 'r', Items.REDSTONE);
+            newRecipe("sgPowerUnit", sgPowerUnit, 1, "cgc", "gIg", "crc", 'c', mod.ic2Capacitor, 'g', "ingotGold", 'I', "blockIron", 'r', Items.REDSTONE);
         }
 
         if (!isModLoaded("ic2")) {
             addGenericCapacitorRecipe();
         }
     }
-    
+
     protected void addGenericCapacitorRecipe() {
         if (config.getBoolean("recipes", "genericCapacitorItem", true)) {
             newRecipe("ic2capacitor", ic2Capacitor, 1, "iii", "ppp", "iii", 'i', "ingotIron", 'p', "paper");
@@ -410,7 +404,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         addContainer(SGGui.PowerUnit, PowerContainer.class);
         addContainer(SGGui.ZPMInterfaceCart, ZpmContainer.class);
     }
-   
+
     @Override
     protected void registerWorldGenerators() {
         if (config.getBoolean("options", "enableNaquadahOre", true)) {
@@ -420,7 +414,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         }
         MapGenStructureIO.registerStructureComponent(FeatureUnderDesertPyramid.class, "SGCraft:FeatureUnderDesertPyramid");
     }
-    
+
     @Override //[VILL]
     protected void registerVillagers() {
         tokraProfession = new VillagerProfession("sgcraft:tokra", "sgcraft:textures/skins/tokra.png","sgcraft:textures/skins/tokra.png");
@@ -434,7 +428,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     protected void registerEntities() {
         addEntity(EntityStargateIris.class, "stargate_iris", SGEntity.Iris, 1000000, false);
     }
-    
+
     @Override
     protected void registerSounds() {
         SGBaseTE.registerSounds(this);
@@ -451,12 +445,12 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         Chunk chunk = e.getChunk();
         SGChunkData.onChunkSave(e);
     }
-    
+
     @SubscribeEvent
     public void onInitMapGen(InitMapGenEvent e) {
         FeatureGeneration.onInitMapGen(e);
     }
-    
+
     @SubscribeEvent
     public void onServerTick(TickEvent.ServerTickEvent e) {
         switch (e.phase) {
@@ -468,7 +462,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             }
         }
     }
-    
+
     @SubscribeEvent
     public void onChunkUnload(ChunkEvent.Unload e) {
         Chunk chunk = e.getChunk();
