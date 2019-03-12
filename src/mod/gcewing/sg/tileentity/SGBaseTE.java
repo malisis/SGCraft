@@ -66,6 +66,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.IBlockAccess;
@@ -323,39 +324,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         updateChunkLoadingStatus();
     }
 
-    @Override
-    public float getSoundVolume(SoundEvent sound) {
-        return soundVolume;
-    }
-
-    @Override
-    public World getSoundWorld() {
-        return this.world;
-    }
-
-    @Override
-    public BlockPos getSoundPos() {
-        return this.pos;
-    }
-
-    @Override
-    public boolean isSoundActive(SoundEvent sound) {
-        if (this.isInvalid() || !this.world.isBlockLoaded(this.pos) || this.world.getTileEntity(this.pos) != this) {
-            return false;
-        }
-        if (sound == gateRollSound) {
-            return state == SGState.Dialling;
-        } else if (sound == irisOpenSound) {
-            return irisState == IrisState.Opening;
-        } else if (sound == irisCloseSound) {
-            return irisState == IrisState.Closing;
-        } else if (sound == eventHorizonSound) {
-            return state == SGState.Connected;
-        } else {
-            return false;
-        }
-    }
-
     void updateChunkLoadingStatus() {
         if (state != SGState.Idle || state == SGState.attemptToDial) {
             int n = chunkLoadingRange;
@@ -385,39 +353,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public static SGBaseTE at(IBlockAccess world, NBTTagCompound nbt) {
         BlockPos pos = new BlockPos(nbt.getInteger("x"), nbt.getInteger("y"), nbt.getInteger("z"));
         return SGBaseTE.at(world, pos);
-    }
-
-    public void setMerged(boolean state) {
-        if (isMerged != state) {
-            isMerged = state;
-            markBlockChanged();
-
-            String address = tryToGetHomeAddress();
-            if (address != null) {
-                Logger log = LogManager.getLogger();
-                String action = isMerged ? "ADDED" : "REMOVED";
-                String name = getWorld().getWorldInfo().getWorldName();
-                if (isMerged) {
-                    this.homeAddress = address;
-                }
-                if (logStargateEvents) {
-                    log.info(String.format("STARGATE %s %s %s %s", action, name, pos, address));
-                }
-            }
-            updateIrisEntity();
-        }
-    }
-
-    String tryToGetHomeAddress() {
-        try {
-            return getHomeAddress();
-        } catch (SGAddressing.AddressingError e) {
-            return null;
-        }
-    }
-
-    public int dimension() {
-        return this.world != null ? world.provider.getDimension() : -999;
     }
 
     @Override
@@ -667,13 +602,29 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return nbt;
     }
 
+    // *********************************************************************************************
+    // Core Stargate Control Systems
+    // *********************************************************************************************
+
+    private String tryToGetHomeAddress() {
+        try {
+            return getHomeAddress();
+        } catch (SGAddressing.AddressingError e) {
+            return null;
+        }
+    }
+
+    //public int dimension() {
+    //    return this.world != null ? world.provider.getDimension() : -999;
+    //}
+
     public boolean isActive() {
         return state != SGState.Idle && state != SGState.Disconnecting;
     }
 
-    static boolean isValidSymbolChar(String c) {
-        return SGAddressing.isValidSymbolChar(c);
-    }
+    //static boolean isValidSymbolChar(String c) {
+    //    return SGAddressing.isValidSymbolChar(c);
+    //}
 
     public static char symbolToChar(int i) {
         return SGAddressing.symbolToChar(i);
@@ -683,30 +634,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return SGAddressing.charToSymbol(c);
     }
 
-    static int charToSymbol(String c) {
-        return SGAddressing.charToSymbol(c);
-    }
-
-    public EnumActionResult applyChevronUpgrade(ItemStack stack, EntityPlayer player) {
-        if (!getWorld().isRemote && !hasChevronUpgrade && stack.getCount() > 0) {
-            //System.out.printf("SGBaseTE.applyChevronUpgrade: Installing chevron upgrade\n");
-            hasChevronUpgrade = true;
-            stack.shrink(1);
-            markChanged();
-        }
-        return EnumActionResult.SUCCESS;
-    }
-
-    public EnumActionResult applyIrisUpgrade(ItemStack stack, EntityPlayer player) {
-        if (!getWorld().isRemote && !hasIrisUpgrade && stack.getCount() > 0) {
-            //System.out.printf("SGBaseTE.applyIrisUpgrade: Installing iris upgrade\n");
-            hasIrisUpgrade = true;
-            stack.shrink(1);
-            markChanged();
-            updateIrisEntity();
-        }
-        return EnumActionResult.SUCCESS;
-    }
+    //static int charToSymbol(String c) {
+    //    return SGAddressing.charToSymbol(c);
+    //}
 
     public int getNumChevrons() {
         return hasChevronUpgrade ? 9 : 7;
@@ -738,6 +668,27 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return isInitiator ? lastRingAngle + (ringAngle - lastRingAngle) * partialTicks : 0;
     }
 
+    public void setMerged(boolean state) {
+        if (isMerged != state) {
+            isMerged = state;
+            markBlockChanged();
+
+            String address = tryToGetHomeAddress();
+            if (address != null) {
+                Logger log = LogManager.getLogger();
+                String action = isMerged ? "ADDED" : "REMOVED";
+                String name = getWorld().getWorldInfo().getWorldName();
+                if (isMerged) {
+                    this.homeAddress = address;
+                }
+                if (logStargateEvents) {
+                    log.info(String.format("STARGATE %s %s %s %s", action, name, pos, address));
+                }
+            }
+            updateIrisEntity();
+        }
+    }
+
     @Override
     public void update() {
         if (world.isRemote) {
@@ -757,11 +708,26 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    String side() {
+    public void onNeighborBlockChange() {
+        if (!world.isRemote) {
+            boolean newInput = BaseBlockUtils.blockIsGettingExternallyPowered(world, pos);
+            if (redstoneInput != newInput) {
+                redstoneInput = newInput;
+                markDirty();
+                if (redstoneInput) {
+                    closeIris();
+                } else {
+                    openIris();
+                }
+            }
+        }
+    }
+
+    private String side() {
         return world.isRemote ? "Client" : "Server";
     }
 
-    void enterState(SGState newState, int newTimeout) {
+    private void enterState(SGState newState, int newTimeout) {
         if (debugState) {
             System.out.printf("SGBaseTE: at %s in dimension %s entering state %s with timeout %s\n", pos, world.provider.getDimension(), newState, newTimeout);
         }
@@ -1018,16 +984,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return f;
     }
 
-    public void playSGSoundEffect(SoundEvent se, float volume, float pitch) {
-        playSoundEffect(se, volume * soundVolume, pitch);
-    }
-
     public String diallingFailure(EntityPlayer player, String msg, Object... args) {
         if (player != null) {
             if (state == SGState.Idle)
                 playSGSoundEffect(dialFailSound, 1F, 1F);
         }
         errorState = true;
+        resetStargate();
         return operationFailure(player, msg, args);
     }
 
@@ -1037,7 +1000,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return msg;
     }
 
-    public void resetStargate() {
+    public void resetStargate() { // Specifically for usage with PDD.
         this.enteredAddress = "";
         this.dialledAddress = "";
         this.dialedDigit = 0;
@@ -1049,6 +1012,17 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         component.getStyle().setColor(TextFormatting.RED);
         player.sendMessage(component);
     }
+
+    //Todo: get rid of this and add all translations.
+    public static void sendGenericErrorMsg(EntityPlayer player, String message) {
+        TextComponentString component = new TextComponentString(message);
+        component.getStyle().setColor(TextFormatting.RED);
+        player.sendMessage(component);
+    }
+
+    // *********************************************************************************************
+    // Dialing Subsystem
+    // *********************************************************************************************
 
     String findHomeAddress() {
         try {
@@ -1080,7 +1054,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             markChanged();
             if (state == SGState.Connected) {
                 enterState(SGState.Disconnecting, disconnectTime);
-                //sendClientEvent(SGEvent.StartDisconnecting, 0);
                 playSGSoundEffect(disconnectSound, 1F, 1F);
 
             } else {
@@ -1091,13 +1064,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     playSGSoundEffect(chevronOutgoingSound, 1F, 1F);
                 }
                 enterState(SGState.Idle, 0);
-                //sendClientEvent(SGEvent.FinishDisconnecting, 0);
             }
         }
     }
 
     public void immediateDialSymbol(String address, EntityPlayer player, int digit) {
-        // Validate symbol being sent from PDD
+        // This method is ony used for the PDD's progressive dialling when this.chevronsLockOnDial=true.
         char currentSymbol = address.charAt(digit);
         String check = String.valueOf(currentSymbol);
 
@@ -1119,14 +1091,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             this.dialledAddress = enteredAddress;
             this.numEngagedChevrons = enteredAddress.length() - 1;
 
-            System.out.println("Char: " + currentSymbol + " digit: " + digit + " dialedDigit: " + this.dialedDigit + " numChev: " + this.numEngagedChevrons + " last: " + last + " Entered: " + enteredAddress);
-
             if (last) {
                 if (connect(address, player) != null) {
-                    System.out.println("Initiating real Stargate");
                 }
             } else {
-                this.markChanged();
+                this.markChanged(); // need current state of server TE sent to client so thing stay in sync.
             }
         }
     }
@@ -1152,105 +1121,92 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     }
 
-    void serverUpdate() {
-        if (!loaded) {
-            loaded = true;
-            try {
-                homeAddress = getHomeAddress();
-                addressError = "";
-            } catch (SGAddressing.AddressingError e) {
-                homeAddress = null;
-                addressError = e.getMessage();
-            }
-            if (SGCraft.ocIntegration != null) { //[OC]
-                ((OCIntegration)SGCraft.ocIntegration).onSGBaseTEAdded(this);
-            }
+    private void startDiallingSymbol(char c) {
+        int i = SGAddressing.charToSymbol(c);
+        if (debugState) {
+            System.out.printf("SGBaseTE.startDiallingSymbol: %s\n", i);
         }
-        if (isMerged) {
-            if (debugState && state != SGState.Connected && timeout > 0) {
-                int dimension = world.provider.getDimension();
-                System.out.printf("SGBaseTE.serverUpdate at %s in dimension %d: state %s, timeout %s\n", pos, dimension, state, timeout);
+        if (i >= 0 && i < numRingSymbols) {
+            double targetAngle = i * ringSymbolAngle;
+            double diff = targetAngle - ringAngle;
+            if (Math.abs(diff) < 180) {
+                targetAngle -= Math.copySign(360.0, ringAngle);
+                diff = targetAngle - ringAngle;
             }
-            tickEnergyUsage();
-            if (timeout > 0) {
-                switch (state) {
-                    case Transient:
-                        if (!irisIsClosed()) {
-                            if (this.transientDamage) {
-                                performTransientDamage();
-                            }
-                        }
-                        break;
-                    case Dialling:
-                        double step = (double) (maxTimeout - timeout) / (double) maxTimeout;
-                        ringAngle = startRingAngle + (targetRingAngle - startRingAngle) * step;
-                        break;
 
-                    case EstablishingConnection:
-                        if (timeout == 25) {
-                            playSGSoundEffect(connectSound, 1F, 1F); // Play sound before gate actually opens.
-                        }
-                        break;
-                }
-                --timeout;
-            } else {
-                switch(state) { // Next Stage
-                    case Idle:
-                        if (symbolsRemaining(false) && isInitiator) {
-                            startDiallingNextSymbol();
-                        }
-                        break;
-                    case Dialling:
-                        if (isInitiator) {
-                            try {
-                                char charTargetSymbol = dialledAddress.charAt(numEngagedChevrons);
-                                char charOwnSymbol = homeAddress.charAt(numEngagedChevrons);
-                                String targetSymbol = Character.toString(charTargetSymbol);
-                                String ownSymbol = Character.toString(charOwnSymbol);
-                                // Note:  CC interfaces can't use CHAR!
-                                finishDiallingSymbol(targetSymbol, true, true, !symbolsRemaining(true));
-                                SGBaseTE targetGate = SGBaseTE.at(connectedLocation);
-                                targetGate.finishDiallingSymbol(ownSymbol, false, true, !targetGate.symbolsRemaining(true));
-                            }
-                            catch (Exception e) {  // Fall back.
-                                this.clearConnection();
-                                this.resetStargate();
-                            }
-                        }
-                        break;
-                    case InterDialling:
-                        if (isInitiator) {
-                            startDiallingNextSymbol();
-                        }
-                        break;
-                    case SyncAwait:
-                        attemptToLockStargate();
-                        break;
-                    case EstablishingConnection:
-                        openStargate();
-                        break;
-                    case Transient:
-                        enterState(SGState.Connected, isInitiator ? ticksToStayOpen : 0);
-                        break;
-                    case Connected:
-                        if (isInitiator && ticksToStayOpen > 0) {
-                            disconnect();
-                        }
-                        break;
-                    case Disconnecting:
-                        numEngagedChevrons = 0;
-                        enterState(SGState.Idle, 0);
+            int delay = (int)Math.abs(diff / ringRotationSpeed);
+            targetRingAngle = targetAngle;
+            //System.out.println(homeAddress + " -> Delay: " + delay + " (From angle " + ringAngle + " to angle " + targetAngle + ")");
+            enterState(SGState.Dialling, delay);
+        } else {
+            System.out.printf("SGCraft: Stargate jammed trying to dial symbol %s\n", c);
+            dialledAddress = "";
+            enterState(SGState.Idle, 0);
+        }
+    }
 
-                        if (this.hasIrisUpgrade && this.returnToPreviousIrisState && this.wasIrisClosed) {
-                            this.closeIris();
-                            // Note: this is fired at both the origin and destination gates.
-                        }
+    public void unsetSymbol(char symbol) {
+        --numEngagedChevrons; // Needs to be pre-event
+        postEvent("sgChevronUnset", numEngagedChevrons, symbol);
+    }
 
-                        break;
-                }
+    public void finishDiallingSymbol(String symbol, boolean outgoing, boolean changeState, boolean lastOne) {
+        ++numEngagedChevrons;
+        postEvent("sgChevronEngaged", numEngagedChevrons, symbol);
+
+        if (lastOne) {
+            if (changeState) {
+                enterState(SGState.SyncAwait, syncAwaitTime);
+            }
+            if (!world.isRemote) {
+                //playSGSoundEffect(outgoing ? lockOutgoingSound : lockIncomingSound, 1F, 1F);
+                playSGSoundEffect(outgoing ? chevronOutgoingSound : chevronIncomingSound, 1F, 1F);
+            }
+        } else {
+            if (changeState) {
+                enterState(SGState.InterDialling, interDiallingTime);
+            }
+            if (!world.isRemote) {
+                playSGSoundEffect(outgoing ? chevronOutgoingSound : chevronIncomingSound, 1F, 1F);
             }
         }
     }
+
+    private void attemptToLockStargate() {
+        if (!isInitiator || useEnergy(energyToOpen * distanceFactor)) {
+            enterState(SGState.EstablishingConnection, 30);
+        } else {
+            disconnect();
+        }
+    }
+
+    private void openStargate() {
+        if (debugConnect) {
+            System.out.printf("SGBaseTE: Connecting to '%s'\n", dialledAddress);
+        }
+        enterState(SGState.Transient, transientDuration);
+    }
+
+    public boolean canTravelFromThisEnd() {
+        return isInitiator || !oneWayTravel;
+    }
+
+    private boolean symbolsRemaining(boolean before) {
+        int n = numEngagedChevrons;
+        return n < dialledAddress.length() - (before ? 1 : 0);
+    }
+
+    private void startDiallingNextSymbol() {
+        if (debugState) {
+            System.out.printf("SGBaseTE.startDiallingNextSymbol: %s of %s\n", numEngagedChevrons, dialledAddress);
+        }
+
+        startDiallingSymbol(dialledAddress.charAt(numEngagedChevrons));
+    }
+
+    // *********************************************************************************************
+    // Energy Sub System
+    // *********************************************************************************************
 
     void tickEnergyUsage() {
         if (state == SGState.Connected && isInitiator) {
@@ -1509,88 +1465,71 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    private boolean symbolsRemaining(boolean before) {
-        int n = numEngagedChevrons;
-        return n < dialledAddress.length() - (before ? 1 : 0);
+    // *********************************************************************************************
+    // Inventory Subsystem of TE.
+    // *********************************************************************************************
+
+    @Override
+    public IInventory getInventory() {
+        return inventory;
     }
 
-    private void startDiallingNextSymbol() {
-        if (debugState) {
-            System.out.printf("SGBaseTE.startDiallingNextSymbol: %s of %s\n", numEngagedChevrons, dialledAddress);
+    public ItemStack getCamouflageStack(BlockPos cpos) {
+        //System.out.printf("SGBaseTE.getCamouflageStack: for %s from base at %s\n", cpos, pos);
+        Trans3 t = localToGlobalTransformation();
+        Vector3 p = t.ip(Vector3.blockCenter(cpos));
+        //System.out.printf("SGBaseTE.getCamouflageStack: p = %s\n", p);
+        if (p.y == 0) {
+            int i = 2 + p.roundX();
+            //System.out.printf("SGBaseTE.getCamouflageStack: i = %s\n", i);
+            if (i >= 0 && i < 5)
+                return getStackInSlot(firstCamouflageSlot + i);
         }
-
-        startDiallingSymbol(dialledAddress.charAt(numEngagedChevrons));
+        return null;
     }
 
-    private void startDiallingSymbol(char c) {
-        int i = SGAddressing.charToSymbol(c);
-        if (debugState) {
-            System.out.printf("SGBaseTE.startDiallingSymbol: %s\n", i);
-        }
-        if (i >= 0 && i < numRingSymbols) {
-            double targetAngle = i * ringSymbolAngle;
-            double diff = targetAngle - ringAngle;
-            if (Math.abs(diff) < 180) {
-                targetAngle -= Math.copySign(360.0, ringAngle);
-                diff = targetAngle - ringAngle;
-            }
+    boolean isCamouflageSlot(int slot) {
+        return slot >= firstCamouflageSlot && slot < firstCamouflageSlot + numCamouflageSlots;
+    }
 
-            int delay = (int)Math.abs(diff / ringRotationSpeed);
-            targetRingAngle = targetAngle;
-            //System.out.println(homeAddress + " -> Delay: " + delay + " (From angle " + ringAngle + " to angle " + targetAngle + ")");
-            enterState(SGState.Dialling, delay);
-        } else {
-            System.out.printf("SGCraft: Stargate jammed trying to dial symbol %s\n", c);
-            dialledAddress = "";
-            enterState(SGState.Idle, 0);
+    @Override
+    protected void onInventoryChanged(int slot) {
+        //System.out.printf("SGBaseTE.onInventoryChanged: %s\n", slot);
+        super.onInventoryChanged(slot);
+        if (isCamouflageSlot(slot)) {
+            //System.out.printf("SGBaseTE.onInventoryChanged: Camouflage slot changed\n");
+            for (int dx = -2; dx <= 2; dx++)
+                for (int dz = -2; dz <= 2; dz++)
+                    BaseBlockUtils.markBlockForUpdate(world, pos.add(dx, 0, dz));
         }
     }
 
-    public void unsetSymbol(char symbol) {
-        --numEngagedChevrons; // Needs to be pre-event
-        postEvent("sgChevronUnset", numEngagedChevrons, symbol);
+    protected int baseCornerCamouflage() {
+        return max(baseCamouflageAt(0), baseCamouflageAt(4));
     }
 
-    public void finishDiallingSymbol(String symbol, boolean outgoing, boolean changeState, boolean lastOne) {
-        ++numEngagedChevrons;
-        postEvent("sgChevronEngaged", numEngagedChevrons, symbol);
-
-        if (lastOne) {
-            if (changeState) {
-                enterState(SGState.SyncAwait, syncAwaitTime);
-            }
-            if (!world.isRemote) {
-               //playSGSoundEffect(outgoing ? lockOutgoingSound : lockIncomingSound, 1F, 1F);
-                playSGSoundEffect(outgoing ? chevronOutgoingSound : chevronIncomingSound, 1F, 1F);
-            }
-        } else {
-            if (changeState) {
-                enterState(SGState.InterDialling, interDiallingTime);
-            }
-            if (!world.isRemote) {
-                playSGSoundEffect(outgoing ? chevronOutgoingSound : chevronIncomingSound, 1F, 1F);
+    @SuppressWarnings("deprecation")
+    protected int baseCamouflageAt(int i) {
+        ItemStack stack = getStackInSlot(i);
+        if (stack != null) {
+            Item item = stack.getItem();
+            Block block = Block.getBlockFromItem(stack.getItem());
+            if (block != Blocks.AIR) {
+                if (block instanceof BlockSlab)
+                    return 1;
+                int meta = item.getMetadata(stack);
+                IBlockState state = block.getStateFromMeta(meta);
+                if (state.isFullCube()) {
+                    return 2;
+                }
             }
         }
+        return 0;
     }
 
-    private void attemptToLockStargate() {
-        if (!isInitiator || useEnergy(energyToOpen * distanceFactor)) {
-            enterState(SGState.EstablishingConnection, 30);
-        } else {
-            disconnect();
-        }
-    }
-
-    private void openStargate() {
-        if (debugConnect) {
-            System.out.printf("SGBaseTE: Connecting to '%s'\n", dialledAddress);
-        }
-        enterState(SGState.Transient, transientDuration);
-    }
-
-    public boolean canTravelFromThisEnd() {
-        return isInitiator || !oneWayTravel;
-    }
+    // *********************************************************************************************
+    // Entity Subsystem & Teleportation
+    // *********************************************************************************************
 
     String repr(Entity entity) {
         if (entity != null) {
@@ -1819,24 +1758,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return SGAddressing.getWorld(dimension);
     }
 
-    void playIrisHitSound(World world, Vector3 pos, Entity entity) {
-        float volume = (float) min(entity.width * entity.height, 1.0);
-        float pitch = 2F - volume;
-        if (debugTeleport) {
-            System.out.printf("SGBaseTE.playIrisHitSound: at (%.3f,%.3f,%.3f) volume %.3f pitch %.3f\n", pos.x, pos.y, pos.z, volume, pitch);
-        }
-        playSoundEffect(world, pos.x, pos.y, pos.z, irisHitSound, volume * soundVolume, pitch);
-    }
-
-    void playTeleportSound(World world, Vector3 pos, Entity entity) {
-        float volume = (float) min(entity.width * entity.height, 1.0);
-        float pitch = 2F - volume;
-        if (debugTeleport) {
-            System.out.printf("SGBaseTE.playTeleportSound: at (%.3f,%.3f,%.3f) volume %.3f pitch %.3f\n", pos.x, pos.y, pos.z, volume, pitch);
-        }
-        playSoundEffect(world, pos.x, pos.y, pos.z, teleportSound, volume * soundVolume, pitch);
-    }
-
     Entity teleportWithinDimension(Entity entity, Vector3 p, Vector3 v, double a, boolean destBlocked) {
         if (entity instanceof EntityPlayerMP) {
             return teleportPlayerWithinDimension((EntityPlayerMP) entity, p, v, a);
@@ -1944,7 +1865,196 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         entity.motionZ = v.z;
     }
 
-    //------------------------------------   Client   --------------------------------------------
+    void updateIrisEntity() {
+        if (isMerged && hasIrisUpgrade) {
+            if (!hasIrisEntity()) {
+                EntityStargateIris ent = new EntityStargateIris(this);
+                world.spawnEntity(ent);
+            }
+        } else {
+            for (EntityStargateIris ent : findIrisEntities()) {
+                world.removeEntity(ent);
+            }
+        }
+    }
+
+    boolean hasIrisEntity() {
+        return findIrisEntities().size() != 0;
+    }
+
+    List<EntityStargateIris> findIrisEntities() {
+        int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        AxisAlignedBB box = new AxisAlignedBB(x, y, z, x + 1, y + 2, z + 1);
+        //System.out.printf("SGBaseTE.findIrisEntities: in %s\n", box);
+        return world.getEntitiesWithinAABB(EntityStargateIris.class, box);
+    }
+
+    // *********************************************************************************************
+    // Sound Subsystem
+    // *********************************************************************************************
+
+    @Override
+    public float getSoundVolume(SoundEvent sound) {
+        return soundVolume;
+    }
+
+    @Override
+    public World getSoundWorld() {
+        return this.world;
+    }
+
+    @Override
+    public BlockPos getSoundPos() {
+        return this.pos;
+    }
+
+    @Override
+    public boolean isSoundActive(SoundEvent sound) {
+        if (this.isInvalid() || !this.world.isBlockLoaded(this.pos) || this.world.getTileEntity(this.pos) != this) {
+            return false;
+        }
+        if (sound == gateRollSound) {
+            return state == SGState.Dialling;
+        } else if (sound == irisOpenSound) {
+            return irisState == IrisState.Opening;
+        } else if (sound == irisCloseSound) {
+            return irisState == IrisState.Closing;
+        } else if (sound == eventHorizonSound) {
+            return state == SGState.Connected;
+        } else {
+            return false;
+        }
+    }
+
+    void playIrisHitSound(World world, Vector3 pos, Entity entity) {
+        float volume = (float) min(entity.width * entity.height, 1.0);
+        float pitch = 2F - volume;
+        if (debugTeleport) {
+            System.out.printf("SGBaseTE.playIrisHitSound: at (%.3f,%.3f,%.3f) volume %.3f pitch %.3f\n", pos.x, pos.y, pos.z, volume, pitch);
+        }
+        playSoundEffect(world, pos.x, pos.y, pos.z, irisHitSound, volume * soundVolume, pitch);
+    }
+
+    void playTeleportSound(World world, Vector3 pos, Entity entity) {
+        float volume = (float) min(entity.width * entity.height, 1.0);
+        float pitch = 2F - volume;
+        if (debugTeleport) {
+            System.out.printf("SGBaseTE.playTeleportSound: at (%.3f,%.3f,%.3f) volume %.3f pitch %.3f\n", pos.x, pos.y, pos.z, volume, pitch);
+        }
+        playSoundEffect(world, pos.x, pos.y, pos.z, teleportSound, volume * soundVolume, pitch);
+    }
+
+    public void playSGSoundEffect(SoundEvent se, float volume, float pitch) {
+        playSoundEffect(se, volume * soundVolume, pitch);
+    }
+
+    // *********************************************************************************************
+    // OnTick for server thread
+    // *********************************************************************************************
+
+    void serverUpdate() {
+        if (!loaded) {
+            loaded = true;
+            try {
+                homeAddress = getHomeAddress();
+                addressError = "";
+            } catch (SGAddressing.AddressingError e) {
+                homeAddress = null;
+                addressError = e.getMessage();
+            }
+            if (SGCraft.ocIntegration != null) { //[OC]
+                ((OCIntegration)SGCraft.ocIntegration).onSGBaseTEAdded(this);
+            }
+        }
+        if (isMerged) {
+            if (debugState && state != SGState.Connected && timeout > 0) {
+                int dimension = world.provider.getDimension();
+                System.out.printf("SGBaseTE.serverUpdate at %s in dimension %d: state %s, timeout %s\n", pos, dimension, state, timeout);
+            }
+            tickEnergyUsage();
+            if (timeout > 0) {
+                switch (state) {
+                    case Transient:
+                        if (!irisIsClosed()) {
+                            if (this.transientDamage) {
+                                performTransientDamage();
+                            }
+                        }
+                        break;
+                    case Dialling:
+                        double step = (double) (maxTimeout - timeout) / (double) maxTimeout;
+                        ringAngle = startRingAngle + (targetRingAngle - startRingAngle) * step;
+                        break;
+
+                    case EstablishingConnection:
+                        if (timeout == 25) {
+                            playSGSoundEffect(connectSound, 1F, 1F); // Play sound before gate actually opens.
+                        }
+                        break;
+                }
+                --timeout;
+            } else {
+                switch(state) { // Next Stage
+                    case Idle:
+                        if (symbolsRemaining(false) && isInitiator) {
+                            startDiallingNextSymbol();
+                        }
+                        break;
+                    case Dialling:
+                        if (isInitiator) {
+                            try {
+                                char charTargetSymbol = dialledAddress.charAt(numEngagedChevrons);
+                                char charOwnSymbol = homeAddress.charAt(numEngagedChevrons);
+                                String targetSymbol = Character.toString(charTargetSymbol);
+                                String ownSymbol = Character.toString(charOwnSymbol);
+                                // Note:  CC interfaces can't use CHAR!
+                                finishDiallingSymbol(targetSymbol, true, true, !symbolsRemaining(true));
+                                SGBaseTE targetGate = SGBaseTE.at(connectedLocation);
+                                targetGate.finishDiallingSymbol(ownSymbol, false, true, !targetGate.symbolsRemaining(true));
+                            }
+                            catch (Exception e) {  // Fall back.
+                                this.clearConnection();
+                                this.resetStargate();
+                            }
+                        }
+                        break;
+                    case InterDialling:
+                        if (isInitiator) {
+                            startDiallingNextSymbol();
+                        }
+                        break;
+                    case SyncAwait:
+                        attemptToLockStargate();
+                        break;
+                    case EstablishingConnection:
+                        openStargate();
+                        break;
+                    case Transient:
+                        enterState(SGState.Connected, isInitiator ? ticksToStayOpen : 0);
+                        break;
+                    case Connected:
+                        if (isInitiator && ticksToStayOpen > 0) {
+                            disconnect();
+                        }
+                        break;
+                    case Disconnecting:
+                        numEngagedChevrons = 0;
+                        enterState(SGState.Idle, 0);
+
+                        if (this.hasIrisUpgrade && this.returnToPreviousIrisState && this.wasIrisClosed) {
+                            this.closeIris();
+                            // Note: this is fired at both the origin and destination gates.
+                        }
+
+                        break;
+                }
+            }
+        }
+    }
+
+    // *********************************************************************************************
+    // Client Handlers
+    // *********************************************************************************************
 
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
@@ -2005,6 +2115,31 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 updateEventHorizon();
                 break;
         }
+    }
+
+    // *********************************************************************************************
+    // Event Horizon and Iris Controllers
+    // *********************************************************************************************
+
+    public EnumActionResult applyChevronUpgrade(ItemStack stack, EntityPlayer player) {
+        if (!getWorld().isRemote && !hasChevronUpgrade && stack.getCount() > 0) {
+            //System.out.printf("SGBaseTE.applyChevronUpgrade: Installing chevron upgrade\n");
+            hasChevronUpgrade = true;
+            stack.shrink(1);
+            markChanged();
+        }
+        return EnumActionResult.SUCCESS;
+    }
+
+    public EnumActionResult applyIrisUpgrade(ItemStack stack, EntityPlayer player) {
+        if (!getWorld().isRemote && !hasIrisUpgrade && stack.getCount() > 0) {
+            //System.out.printf("SGBaseTE.applyIrisUpgrade: Installing iris upgrade\n");
+            hasIrisUpgrade = true;
+            stack.shrink(1);
+            markChanged();
+            updateIrisEntity();
+        }
+        return EnumActionResult.SUCCESS;
     }
 
     public double[][][] getEventHorizonGrid() {
@@ -2093,11 +2228,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    @Override
-    public IInventory getInventory() {
-        return inventory;
-    }
-
     public boolean irisIsClosed() {
         //System.out.printf("SGBaseTE.irisIsClosed: irisPhase = %s\n", irisPhase);
         return hasIrisUpgrade && irisPhase <= maxIrisPhase / 2;
@@ -2149,97 +2279,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    public void onNeighborBlockChange() {
-        if (!world.isRemote) {
-            boolean newInput = BaseBlockUtils.blockIsGettingExternallyPowered(world, pos);
-            if (redstoneInput != newInput) {
-                redstoneInput = newInput;
-                markDirty();
-                if (redstoneInput) {
-                    closeIris();
-                } else {
-                    openIris();
-                }
-            }
-        }
-    }
 
-    void updateIrisEntity() {
-        if (isMerged && hasIrisUpgrade) {
-            if (!hasIrisEntity()) {
-                EntityStargateIris ent = new EntityStargateIris(this);
-                world.spawnEntity(ent);
-            }
-        } else {
-            for (EntityStargateIris ent : findIrisEntities()) {
-                world.removeEntity(ent);
-            }
-        }
-    }
-
-    boolean hasIrisEntity() {
-        return findIrisEntities().size() != 0;
-    }
-
-    List<EntityStargateIris> findIrisEntities() {
-        int x = pos.getX(), y = pos.getY(), z = pos.getZ();
-        AxisAlignedBB box = new AxisAlignedBB(x, y, z, x + 1, y + 2, z + 1);
-        //System.out.printf("SGBaseTE.findIrisEntities: in %s\n", box);
-        return world.getEntitiesWithinAABB(EntityStargateIris.class, box);
-    }
-
-    public ItemStack getCamouflageStack(BlockPos cpos) {
-        //System.out.printf("SGBaseTE.getCamouflageStack: for %s from base at %s\n", cpos, pos);
-        Trans3 t = localToGlobalTransformation();
-        Vector3 p = t.ip(Vector3.blockCenter(cpos));
-        //System.out.printf("SGBaseTE.getCamouflageStack: p = %s\n", p);
-        if (p.y == 0) {
-            int i = 2 + p.roundX();
-            //System.out.printf("SGBaseTE.getCamouflageStack: i = %s\n", i);
-            if (i >= 0 && i < 5)
-                return getStackInSlot(firstCamouflageSlot + i);
-        }
-        return null;
-    }
-
-    boolean isCamouflageSlot(int slot) {
-        return slot >= firstCamouflageSlot && slot < firstCamouflageSlot + numCamouflageSlots;
-    }
-
-    @Override
-    protected void onInventoryChanged(int slot) {
-        //System.out.printf("SGBaseTE.onInventoryChanged: %s\n", slot);
-        super.onInventoryChanged(slot);
-        if (isCamouflageSlot(slot)) {
-            //System.out.printf("SGBaseTE.onInventoryChanged: Camouflage slot changed\n");
-            for (int dx = -2; dx <= 2; dx++)
-                for (int dz = -2; dz <= 2; dz++)
-                    BaseBlockUtils.markBlockForUpdate(world, pos.add(dx, 0, dz));
-        }
-    }
-
-    protected int baseCornerCamouflage() {
-        return max(baseCamouflageAt(0), baseCamouflageAt(4));
-    }
-
-    @SuppressWarnings("deprecation")
-    protected int baseCamouflageAt(int i) {
-        ItemStack stack = getStackInSlot(i);
-        if (stack != null) {
-            Item item = stack.getItem();
-            Block block = Block.getBlockFromItem(stack.getItem());
-            if (block != Blocks.AIR) {
-                if (block instanceof BlockSlab)
-                    return 1;
-                int meta = item.getMetadata(stack);
-                IBlockState state = block.getStateFromMeta(meta);
-                if (state.isFullCube()) {
-                    return 2;
-                }
-            }
-        }
-        return 0;
-    }
 
     static int rdx[] = {1, 0, -1, 0};
     static int rdz[] = {0, -1, 0, 1};

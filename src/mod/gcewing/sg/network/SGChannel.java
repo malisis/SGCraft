@@ -54,12 +54,14 @@ public class SGChannel extends BaseDataChannel {
     }
 
     public static void sendUnsetSymbolToServer(DHDTE te) {
+        // Network channel for DHD Controller on Client
         ChannelOutput data = channel.openServer("UnsetSymbol");
         writeCoords(data, te);
         data.close();
     }
 
     @ServerMessageHandler("UnsetSymbol") public void handleUnsetSymbolFromClient(EntityPlayer player, ChannelInput data) {
+        // Network channel for DHD Controller on Server
         BlockPos pos = readCoords(data);
         if (player.world.isBlockLoaded(pos)) {
             DHDTE te = DHDTE.at(player.world, pos);
@@ -70,6 +72,7 @@ public class SGChannel extends BaseDataChannel {
     }
 
     public static void sendEnterSymbolToServer(DHDTE te, char symbol) {
+        // Network channel for DHD Controller on Client
         ChannelOutput data = channel.openServer("EnterSymbol");
         writeCoords(data, te);
         data.writeChar(symbol);
@@ -77,12 +80,15 @@ public class SGChannel extends BaseDataChannel {
     }
 
     @ServerMessageHandler("EnterSymbol") public void handleEnterSymbolFromClient(EntityPlayer player, ChannelInput data) {
+        // Network channel for DHD Controller on Server
         BlockPos pos = readCoords(data);
         char symbol = data.readChar();
         if (player.world.isBlockLoaded(pos)) {
             DHDTE te = DHDTE.at(player.world, pos);
             if (te != null) {
                 te.enterSymbol(player, symbol);
+            } else {
+                SGBaseTE.sendGenericErrorMsg(player,"Dialling exception.  No DHD detected within range.");
             }
         }
     }
