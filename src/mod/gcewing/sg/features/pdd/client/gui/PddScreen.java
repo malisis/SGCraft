@@ -260,7 +260,11 @@ public class PddScreen extends BasicScreen {
 
     private void refresh() { // Method is checked every frame.
         if (localGate != null) {
-            this.localGateAddressLabel.setText(SGAddressing.formatAddress(localGate.homeAddress, "-", "-"));
+            if (localGate.isMerged) {
+                this.localGateAddressLabel.setText(SGAddressing.formatAddress(localGate.homeAddress, "-", "-"));
+            } else {
+                this.localGateAddressLabel.setText("No Local Stargate Found");
+            }
             if (localGate != null) {
                 if ((this.dialling || this.last || localGate.state == SGState.SyncAwait || localGate.state == SGState.Transient)) {
                     this.buttonDial.setVisible(false);
