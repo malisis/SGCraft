@@ -81,7 +81,7 @@ public class SGBaseTERenderer extends BaseTileEntityRenderer {
         SGBaseTE gate = (SGBaseTE)te;
         if (gate.isMerged) {
             glPushMatrix();
-            if (SGBaseTE.transparency) {
+            if (gate.transparency) {
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             } else {

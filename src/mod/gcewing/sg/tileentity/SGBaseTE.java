@@ -168,7 +168,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     static boolean variableChevronPositions = true;
     public static double energyToOpen;
     static double energyUsePerTick;
-    public static boolean transparency = true;
     static Random random = new Random();
     static DamageSource transientDamageSource = new DamageSource("sgcraft:transient");
     public static BaseConfiguration cfg;
@@ -231,6 +230,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public int facingDirectionOfBase = 0;
     public boolean requiresNoPower = false;
     public boolean transientDamage = true;
+    public boolean transparency = true;
 
     double ehGrid[][][];
     private static Set<UUID> messagesQueue = Sets.newHashSet();
@@ -253,6 +253,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         this.chevronsLockOnDial = cfg.getBoolean("stargate", "chevronsLockOnDial", this.chevronsLockOnDial);
         this.returnToPreviousIrisState = cfg.getBoolean("stargate", "returnToPreviousIrisState", this.returnToPreviousIrisState);
         this.requiresNoPower = cfg.getBoolean("stargate", "requiresNoPower", this.requiresNoPower);
+        this.transparency = cfg.getBoolean("stargate", "transparency", this.transparency);
     }
 
     public static void configure(BaseConfiguration cfg) {
@@ -279,11 +280,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         cfg.getBoolean("stargate", "chevronUpgrade", false);
         cfg.getBoolean("stargate", "requiresNoPower", false);
         cfg.getBoolean("stargate", "transientDamage", true);
+        cfg.getBoolean("stargate", "transparency", true);
 
         // Global static config values
         minutesOpenPerFuelItem = cfg.getInteger("stargate", "minutesOpenPerFuelItem", minutesOpenPerFuelItem);
         chunkLoadingRange = cfg.getInteger("options", "chunkLoadingRange", chunkLoadingRange);
-        transparency = cfg.getBoolean("stargate", "transparency", transparency);
         logStargateEvents = cfg.getBoolean("options", "logStargateEvents", logStargateEvents);
         soundVolume = (float)cfg.getDouble("stargate", "soundVolume", soundVolume);
         variableChevronPositions = cfg.getBoolean("stargate", "variableChevronPositions", variableChevronPositions);
@@ -526,6 +527,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             this.transientDamage = cfg.getBoolean("stargate", "transientDamage", this.requiresNoPower);
         }
 
+        if (nbt.hasKey("transparency") && !SGCraft.forceSGBaseTEUpdate) {
+            this.transparency = nbt.getBoolean("transparency");
+        } else {
+            this.transparency = cfg.getBoolean("stargate", "transparency", this.transparency);
+        }
+
         this.facingDirectionOfBase = nbt.getInteger("facingDirectionOfBase");
         this.errorState = nbt.getBoolean("errorState");
 
@@ -587,6 +594,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setInteger("facingDirectionOfBase", facingDirectionOfBase);
         nbt.setBoolean("requiresNoPower", requiresNoPower);
         nbt.setBoolean("transientDamage", transientDamage);
+        nbt.setBoolean("transparency", transparency);
         nbt.setBoolean("errorState", errorState);
 
         if (connectedLocation != null) {

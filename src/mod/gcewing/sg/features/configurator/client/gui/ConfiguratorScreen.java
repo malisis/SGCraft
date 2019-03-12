@@ -32,7 +32,7 @@ public class ConfiguratorScreen extends BasicScreen {
     private boolean isAdmin;
     private BasicForm form, numericOptionsArea, checkboxOptionsArea;
     private UILabel gateAddressLabel;
-    private UICheckBox oneWayTravelCheckbox, irisUpgradeCheckbox, chevronUpgradeCheckbox, gateTypeCheckbox, reverseWormholeKillsCheckbox, acceptIncomingConnectionsCheckbox, closeFromEitherEndCheckbox, preserveInventoryCheckbox, noPowerRequiredCheckbox, chevronsLockOnDialCheckbox, returnIrisToPreviousStateCheckbox, transientDamageCheckbox;
+    private UICheckBox oneWayTravelCheckbox, irisUpgradeCheckbox, chevronUpgradeCheckbox, gateTypeCheckbox, reverseWormholeKillsCheckbox, acceptIncomingConnectionsCheckbox, closeFromEitherEndCheckbox, preserveInventoryCheckbox, noPowerRequiredCheckbox, chevronsLockOnDialCheckbox, returnIrisToPreviousStateCheckbox, transientDamageCheckbox, transparencyCheckbox;
     private UITextField secondsToStayOpen, gateRotationSpeed, energyBufferSize, energyPerNaquadah, gateOpeningsPerNaquadah, distanceMultiplier, dimensionalMultiplier;
     private BlockPos location;
     private World world;
@@ -338,9 +338,16 @@ public class ConfiguratorScreen extends BasicScreen {
         this.transientDamageCheckbox.setName("checkbox.transientDamage");
         this.transientDamageCheckbox.register(this);
 
+        this.transparencyCheckbox = new UICheckBox(this);
+        this.transparencyCheckbox.setText(TextFormatting.WHITE + "Enable Event Horizion Transparency");
+        this.transparencyCheckbox.setPosition(checkboxIndentPadding, this.transientDamageCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
+        this.transparencyCheckbox.setEnabled(true);
+        this.transparencyCheckbox.setName("checkbox.eventhorizontransparent");
+        this.transparencyCheckbox.register(this);
+
         this.checkboxOptionsArea.add(booleanValuesLabel, checkboxSeparator, this.oneWayTravelCheckbox, this.irisUpgradeCheckbox, this.chevronUpgradeCheckbox, this.gateTypeCheckbox);
         this.checkboxOptionsArea.add(this.reverseWormholeKillsCheckbox, this.acceptIncomingConnectionsCheckbox, this.closeFromEitherEndCheckbox, this.preserveInventoryCheckbox, this.noPowerRequiredCheckbox);
-        this.checkboxOptionsArea.add(this.chevronsLockOnDialCheckbox, this.returnIrisToPreviousStateCheckbox, this.transientDamageCheckbox);
+        this.checkboxOptionsArea.add(this.chevronsLockOnDialCheckbox, this.returnIrisToPreviousStateCheckbox, this.transientDamageCheckbox, this.transparencyCheckbox);
 
         // Load Defaults button
         final UIButton buttonDefaults = new UIButtonBuilder(this)
@@ -365,6 +372,7 @@ public class ConfiguratorScreen extends BasicScreen {
                 noPowerRequiredCheckbox.setChecked(false);
                 chevronsLockOnDialCheckbox.setChecked(false);
                 returnIrisToPreviousStateCheckbox.setChecked(false);
+                transparencyCheckbox.setChecked(true);
             })
             .listener(this)
             .build("button.defaults");
@@ -399,6 +407,7 @@ public class ConfiguratorScreen extends BasicScreen {
                 ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 17, 0, chevronsLockOnDialCheckbox.isChecked(), 0.0);
                 ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 18, 0, returnIrisToPreviousStateCheckbox.isChecked(), 0.0);
                 ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 19, 0, transientDamageCheckbox.isChecked(), 0.0);
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 20, 0, transparencyCheckbox.isChecked(), 0.0);
 
                 this.close();
             })
@@ -492,6 +501,7 @@ public class ConfiguratorScreen extends BasicScreen {
             this.chevronsLockOnDialCheckbox.setChecked(localGate.chevronsLockOnDial);
             this.returnIrisToPreviousStateCheckbox.setChecked(localGate.returnToPreviousIrisState);
             this.transientDamageCheckbox.setChecked(localGate.transientDamage);
+            this.transparencyCheckbox.setChecked(localGate.transparency);
         }
     }
 

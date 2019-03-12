@@ -79,9 +79,11 @@ public class ConfiguratorNetworkHandler extends SGChannel {
             te.returnToPreviousIrisState = b;
         } else if (setting == 19 && SGCraft.hasPermission(player, "sgcraft.configurator.transientDamage")) {
             te.transientDamage = b;
+        } else if (setting == 20 && SGCraft.hasPermission(player, "sgcraft.configurator.transparency")) {
+            te.transparency = b;
         }
 
-        if (setting == 19) { // Always the last packet to refresh the TE
+        if (setting == 20) { // Always the last packet to refresh the TE
             player.sendMessage(new TextComponentString("Changes Saved!"));
             te.markForUpdate(); // Force Client to Update but only after the last packet
         }
