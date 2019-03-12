@@ -176,7 +176,6 @@ public class PddScreen extends BasicScreen {
             .onClick(() -> {
                 if (this.addressList.getSize() > 0 && this.addressList.getSelectedItem() != null && !this.addressList.getSelectedItem().getAddress().isEmpty()) {
                     localGate.resetStargate(); //Reset before starting to account for half dialed sequences
-                    PddNetworkHandler.sendPddInputToServer((SGBaseTE) localGate, 3, ""); // Reset server TE.
                     if (localGate.chevronsLockOnDial) {
                         if (!isAdmin) {
                             startProgressiveDialSelectedAddress(); // Progressive Dial Sequence
@@ -212,7 +211,7 @@ public class PddScreen extends BasicScreen {
                     if (!(localGate instanceof SGBaseTE)) {
                         return;
                     }
-                    PddNetworkHandler.sendPddInputToServer((SGBaseTE) localGate, 2, "");
+                    PddNetworkHandler.sendPddInputToServer((SGBaseTE) localGate, 2, "", "");
                 }
             })
             .build("button.disconnect");
@@ -364,7 +363,7 @@ public class PddScreen extends BasicScreen {
 
     private void resetGui() {
         System.out.println("Reset GUI");
-        PddNetworkHandler.sendPddInputToServer(localGate, 3, "");
+        PddNetworkHandler.sendPddInputToServer(localGate, 3, "", "");
         dialling = false;
         firstOpen = true;
         showError = false;
@@ -431,9 +430,9 @@ public class PddScreen extends BasicScreen {
        if (localGate != null) {
             if (this.addressList.getSelectedItem() != null && !this.addressList.getSelectedItem().getAddress().isEmpty()) {
                 this.gateStatusLabel.setText("... Dialling ...");
-                String address = this.addressList.getSelectedItem().getAddress().toUpperCase().replaceAll("-", "");
-                this.enteredAddress = address;
-                PddNetworkHandler.sendPddInputToServer(localGate, 1, address); // Dials specified address based on Gates configuration, rotation vs. immediate dial.
+                String destination = this.addressList.getSelectedItem().getAddress().toUpperCase().replaceAll("-", "");
+                this.enteredAddress = destination;
+                PddNetworkHandler.sendPddInputToServer(localGate, 1, localGate.homeAddress ,destination); // Dials specified address based on Gates configuration, rotation vs. immediate dial.
             }
         }
     }
@@ -457,6 +456,11 @@ public class PddScreen extends BasicScreen {
             if (dialling && !localGate.errorState) {
                 firstOpen = false;
                 diallingAddress = this.addressList.getSelectedItem().getAddress().toUpperCase().replaceAll("-", "");
+
+                if (SGAddressing.inSameDimension(localGate.homeAddress, diallingAddress)) {
+                    diallingAddress = diallingAddress.substring(0,7);
+                }
+                
                 if (diallingAddress.length() != 7 && diallingAddress.length() != 9) {
                     SGBaseTE.sendGenericErrorMsg(player, "Invalid Address Specified.");
                     dialling = false;

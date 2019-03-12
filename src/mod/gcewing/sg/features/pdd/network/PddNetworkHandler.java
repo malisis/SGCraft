@@ -57,11 +57,12 @@ public class PddNetworkHandler extends SGChannel {
         }
     }
 
-    public static void sendPddInputToServer(SGBaseTE te, int function, String address) {
+    public static void sendPddInputToServer(SGBaseTE te, int function, String origin, String destination) {
         ChannelOutput data = pddChannel.openServer("PddInput");
         writeCoords(data, te);
         data.writeInt(function);
-        data.writeUTF(address);
+        data.writeUTF(origin);
+        data.writeUTF(destination);
         data.close();
     }
 
@@ -69,7 +70,14 @@ public class PddNetworkHandler extends SGChannel {
         BlockPos pos = readCoords(data);
         int setting = data.readInt();
         SGBaseTE localGate = SGBaseTE.at(player.world, pos);
-        String address = data.readUTF();
+        String origin = data.readUTF();
+        String destination = data.readUTF();
+
+        if (!origin.isEmpty() && !destination.isEmpty()) {
+            if (SGAddressing.inSameDimension(origin, destination)) {
+                destination = destination.substring(0, 7);
+            }
+        }
 
         if (!SGCraft.hasPermission(player, "sgcraft.gui.pdd")) {
             System.err.println("SGCraft - Hacked Client detected!");
@@ -78,7 +86,7 @@ public class PddNetworkHandler extends SGChannel {
 
         if (setting == 1) { // Connect / Dial / Double Click
             if (!localGate.isConnected()) {
-                localGate.connect(address, player);
+                localGate.connect(destination, player);
             }
         }
         if (setting == 2) {

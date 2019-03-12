@@ -124,21 +124,37 @@ public class SGAddressing {
 //         return relativeAddress(normalizeAddress(targetAddress), contextAddress);
 //     }
     
-//     public static boolean addressesInSameDimension(String a1, String a2) {
-//         int l1 = a1.length(), l2 = a2.length();
-//         if (debugAddressing)
-//             System.out.printf("SGAddressing.addressesInSameDimension(%s,%s): %s %s %s %s\n",
-//                 a1, a2, l1, l2, dimensionSymbolsOf(a1), dimensionSymbolsOf(a2));
-//         return l1 == numCoordSymbols || l2 == numCoordSymbols ||
-//             dimensionSymbolsOf(a1).equals(dimensionSymbolsOf(a2));
-//     }
 
     public static String coordSymbolsOf(String address) {
         return address.substring(0, numCoordSymbols);
     }
     
-    protected static String dimensionSymbolsOf(String address) {
-        return address.substring(numCoordSymbols);
+    public static int dimensionSymbolsOf(String address) {
+        int dimensionID = -999;
+        try {
+            validateAddress(address);
+        } catch (AddressingError addressingError) {
+            addressingError.printStackTrace();
+        }
+        String csyms = address.substring(0, numCoordSymbols);
+        long c = longFromSymbols(csyms);
+        if (address.length() == maxAddressLength) {
+            String dsyms = address.substring(numCoordSymbols);
+            int d = intFromSymbols(dsyms);
+            int dp = hash(d, qd, md);
+            dimensionID = unpermuteDimension(c, dp);
+        }
+        return dimensionID;
+    }
+
+    public static boolean inSameDimension(String origin, String destination) {
+        int originDimension = dimensionSymbolsOf(origin);
+        int destinationDimension = dimensionSymbolsOf(destination);
+        if (originDimension == destinationDimension) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public static String addressForLocation(SGLocation loc) throws AddressingError {
