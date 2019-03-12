@@ -1777,6 +1777,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     Entity teleportPlayerWithinDimension(EntityPlayerMP entity, Vector3 p, Vector3 v, double a) {
         entity.rotationYaw = (float)a;
         entity.setPositionAndUpdate(p.x, p.y, p.z);
+        setVelocity(entity, v);
         entity.world.updateEntityWithOptionalForce(entity, false);
         entity.velocityChanged = true; // Have to mark entity velocity changed.
 
@@ -1787,7 +1788,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (entity instanceof EntityPlayerMP) {
             EntityPlayerMP player = (EntityPlayerMP)entity;
             Vector3 q = p.add(yawVector(a));
-            transferPlayerToDimension(player, dimension, q, a);
+            transferPlayerToDimension(player, dimension, q, v, a);
             return player;
         } else {
             setVelocity(entity,v); // Make sure riding entity exits at the same speed they entered otherwise event horizon will kill them.
@@ -1795,17 +1796,16 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    void transferPlayerToDimension(EntityPlayerMP player, int newDimension, Vector3 p, double a) {
+    void transferPlayerToDimension(EntityPlayerMP player, int newDimension, Vector3 p, Vector3 v, double a) {
         FakeTeleporter fakeTeleporter = new FakeTeleporter();
         double x = player.motionX;
         double y = player.motionY;
         double z = player.motionZ;
         player.changeDimension(newDimension, fakeTeleporter);
-
         // Now check to see if the player made it through the above server method, if it did, then update their location.
         if (player.dimension == newDimension) {
             player.connection.setPlayerLocation(p.x, p.y, p.z, (float) a, player.rotationPitch);
-            player.setVelocity(x, y, z);
+            setVelocity(player, v);
             player.velocityChanged = true;
         }
     }
