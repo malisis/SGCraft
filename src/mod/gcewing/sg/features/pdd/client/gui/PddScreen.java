@@ -15,7 +15,6 @@ import static org.lwjgl.opengl.GL11.glVertex3d;
 import gcewing.sg.SGCraft;
 import gcewing.sg.features.pdd.AddressData;
 import gcewing.sg.features.pdd.network.PddNetworkHandler;
-import gcewing.sg.network.SGChannel;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.GateUtil;
 import gcewing.sg.util.SGAddressing;
@@ -33,7 +32,6 @@ import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.client.gui.component.interaction.button.builder.UIButtonBuilder;
 import net.malisis.core.renderer.font.FontOptions;
 import net.malisis.core.util.FontColors;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -46,6 +44,9 @@ import net.minecraft.world.World;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class PddScreen extends BasicScreen {
     private int lastUpdate = 0;
     private boolean unlockMouse = true;
@@ -53,7 +54,7 @@ public class PddScreen extends BasicScreen {
     private BasicForm form;
     private BasicContainer<?> addressContainer;
     private UIButton addAddressButton, editAddressButton, deleteAddressButton, buttonReset, closeButton, buttonDial, buttonDisconnect;
-    private UILabel localGateAddressLabel, gateStatusLabel, availableAddressesLabel;
+    private UILabel localGateAddressLabel, gateStatusLabel, availableAddressesLabel, addressTextureLabel;
     private UISeparator valuesSeparator;
     private BlockPos location;
     private World world;
@@ -90,9 +91,11 @@ public class PddScreen extends BasicScreen {
             localGate = (SGBaseTE) localGateTE;
         }
 
+        System.out.println("Construct: " + " State Error: " + localGate.errorState);
+
         // Master Panel
         this.form = new BasicForm(this, 300, 225, "Personal Dialer Device");
-        this.form.setMovable(false);
+        this.form.setMovable(true);
         this.form.setBackgroundAlpha(255);
 
         // ****************************************************************************************************************************
@@ -116,6 +119,11 @@ public class PddScreen extends BasicScreen {
         gateStatusLabel.setPosition(-5, 50, Anchor.CENTER | Anchor.TOP);
         gateStatusLabel.setVisible(true);
 
+        addressTextureLabel = new UILabel(this, "... template ...");
+        addressTextureLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
+        addressTextureLabel.setPosition(-5, 60, Anchor.CENTER | Anchor.TOP);
+        addressTextureLabel.setVisible(false);
+
         valuesSeparator = new UISeparator(this);
         valuesSeparator.setSize(this.addressContainer.getWidth() - 55, 1);
         valuesSeparator.setPosition(0, 70, Anchor.TOP | Anchor.CENTER);
@@ -128,7 +136,7 @@ public class PddScreen extends BasicScreen {
         this.addressList.setBorder(FontColors.WHITE, 1, 185);
         this.addressList.setBorders(FontColors.WHITE, 185, 0, 1, 0, 0);
 
-        this.addressContainer.add(availableAddressesLabel, localGateAddressLabel, gateStatusLabel, this.addressList);
+        this.addressContainer.add(availableAddressesLabel, localGateAddressLabel, gateStatusLabel, addressTextureLabel, this.addressList);
 
         // ****************************************************************************************************************************
 
@@ -233,13 +241,11 @@ public class PddScreen extends BasicScreen {
 
         if (this.lastUpdate == 50 || this.lastUpdate == 100) {
             if (delayedUpdate) {
-                if (this.addressList.getSize() == 0) {
-                    this.readAddresses(player);
-                    if (this.addressList.getSize() > 0) {
-                        this.addressList.setSelectedItem(this.addressList.getItem(0));
-                        this.delayedUpdate = false; // Leave this in the loop in case it takes longer for some users, it will force it to keep auto-refreshing until it gets something.
-                    }
+                this.readAddresses(player);
+                if (this.addressList.getSize() > 0) {
+                    this.delayedUpdate = false; // Leave this in the loop in case it takes longer for some users, it will force it to keep auto-refreshing until it gets something.
                 }
+
             }
         }
 
@@ -263,6 +269,7 @@ public class PddScreen extends BasicScreen {
                     this.localGateAddressLabel.setVisible(false);
                     if (localGate.state == SGState.SyncAwait || localGate.state == SGState.Transient) {
                         this.gateStatusLabel.setText("... Establishing ...");
+                        gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.GREEN_FO).shadow(true).scale(1.8F).build());
                         if (this.enteredAddress.isEmpty()) {
                             this.enteredAddress = localGate.dialledAddress;
                         }
@@ -288,14 +295,17 @@ public class PddScreen extends BasicScreen {
                         this.addressList.setVisible(false);
                         this.gateStatusLabel.setVisible(true);
                         this.buttonDisconnect.setVisible(true);
-                        this.gateStatusLabel.setText(" ... Dialling ...");
+                        this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
+                        this.gateStatusLabel.setText(" ... Diallinvvg ...");
                         this.buttonReset.setVisible(true);
                     }
 
                     if (localGate.state == SGState.Disconnecting) {
                         this.addressList.setVisible(false);
                         this.gateStatusLabel.setVisible(true);
+                        this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.YELLOW_FO).shadow(true).scale(1.8F).build());
                         this.gateStatusLabel.setText(" ... Disconnecting ...");
+
                     }
                     if (localGate.state == SGState.Connected) {
                         if (this.enteredAddress.isEmpty()) {
@@ -309,6 +319,7 @@ public class PddScreen extends BasicScreen {
                         this.gateStatusLabel.setVisible(true);
                         this.buttonDisconnect.setVisible(true);
                         this.gateStatusLabel.setText(" ... Connected ...");
+                        this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
                     }
                 }
 
@@ -316,6 +327,7 @@ public class PddScreen extends BasicScreen {
                     this.addressList.setVisible(false);
                     this.gateStatusLabel.setVisible(true);
                     this.buttonDisconnect.setVisible(true);
+                    this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.RED_FO).shadow(true).scale(1.8F).build());
                     this.gateStatusLabel.setText(" ... Error ...");
                     this.diallingAddress = localGate.dialledAddress; // Account for someone opening the GUI to a connected gate.
                     dialling = false;
@@ -397,6 +409,7 @@ public class PddScreen extends BasicScreen {
 
         if (compound != null) {
             this.addressList.clearItems();
+            final List<AddressData> addresses = AddressData.getAddresses(compound);
             this.addressList.addItems(AddressData.getAddresses(compound));
         }
     }
@@ -428,6 +441,7 @@ public class PddScreen extends BasicScreen {
         }
         if (localGate != null) {
             this.enteredAddress = "";
+            this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
             this.gateStatusLabel.setText("... Dialling ...");
             this.dialling = true; // Allows checkDiallingStatus method to execute.
             this.digit = 0;
@@ -439,11 +453,18 @@ public class PddScreen extends BasicScreen {
             if (dialling && !localGate.errorState) {
                 firstOpen = false;
                 diallingAddress = this.addressList.getSelectedItem().getAddress().toUpperCase().replaceAll("-", "");
-                if (diallingAddress.length() > localGate.getNumChevrons()) {
-                    player.sendMessage(new TextComponentString("Gate does not have 9 chevrons."));
+                if (diallingAddress.length() != 7 && diallingAddress.length() != 9) {
+                    SGBaseTE.sendGenericErrorMsg(player, "Invalid Address Specified.");
                     dialling = false;
                     return;
                 }
+
+                if (diallingAddress.length()  > localGate.getNumChevrons()) {
+                    SGBaseTE.sendGenericErrorMsg(player, "Gate does not have Chevron Upgrade.");
+                    dialling = false;
+                    return;
+                }
+
                 this.addressList.setVisible(false);
                 final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
                 if (localGateTE instanceof SGBaseTE) {
@@ -469,9 +490,9 @@ public class PddScreen extends BasicScreen {
 
     private int getXStartLocation(String address) {
         if (address.length() == 7) {
-            return 395 + (enteredAddress.length() * 12);
+            return (this.addressTextureLabel.screenX() - 25) + (enteredAddress.length() * 12);
         } else {
-            return 375 + (enteredAddress.length() * 12);
+            return  (this.addressTextureLabel.screenX() - 55) + (enteredAddress.length() * 12);
         }
     }
 

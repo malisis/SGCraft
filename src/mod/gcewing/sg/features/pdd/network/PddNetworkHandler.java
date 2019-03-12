@@ -3,9 +3,11 @@ package gcewing.sg.features.pdd.network;
 import gcewing.sg.BaseDataChannel;
 import gcewing.sg.SGCraft;
 import gcewing.sg.features.pdd.AddressData;
+import gcewing.sg.features.pdd.client.gui.PddEntryScreen;
 import gcewing.sg.features.pdd.client.gui.PddScreen;
 import gcewing.sg.network.SGChannel;
 import gcewing.sg.tileentity.SGBaseTE;
+import gcewing.sg.util.SGAddressing;
 import gcewing.sg.util.SGState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -20,6 +22,19 @@ public class PddNetworkHandler extends SGChannel {
     public PddNetworkHandler(String name) {
         super(name);
         pddChannel = this;
+    }
+
+    public static void addPddEntryFromServer(EntityPlayer player, String address) {
+        ChannelOutput data = pddChannel.openPlayer(player,"AddPddEntry");
+        data.writeUTF(address);
+        data.close();
+    }
+
+    @ClientMessageHandler("AddPddEntry")
+    public void handlePddAddAddressRequest(EntityPlayer player, ChannelInput data) {
+        String address = data.readUTF();
+        address = SGAddressing.formatAddress(address, "-", "-");
+        new PddEntryScreen(null, player, "Name Here", address, 10, 0, false, false).display();
     }
 
     public static void updatePdd(EntityPlayer player, boolean value, int status) {

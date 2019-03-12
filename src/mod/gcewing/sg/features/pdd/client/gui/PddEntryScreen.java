@@ -58,6 +58,15 @@ public class PddEntryScreen extends BasicScreen {
         final UILabel titleLabel = new UILabel(this, "PDD Entry");
         titleLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
         titleLabel.setPosition(0, -15, Anchor.CENTER | Anchor.TOP);
+        if (this.name.equalsIgnoreCase("name here")) {
+            titleLabel.setText("Add PDD Entry");
+        } else {
+            if (!delete) {
+                titleLabel.setText("Edit PDD Entry");
+            } else {
+                titleLabel.setText("Delete PDD Entry");
+            }
+        }
 
         final UILabel nameLabel = new UILabel(this, "Name:");
         nameLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
@@ -144,7 +153,12 @@ public class PddEntryScreen extends BasicScreen {
             unlockMouse = false; // Only unlock once per session.
         }
 
-        if (++this.lastUpdate > 120) {
+        if (++this.lastUpdate > 30) {
+            if (delete) {
+                this.nameTextField.setEditable(false);
+                this.addressTextField.setEditable(false);
+                this.indexTextField.setEditable(false);
+            }
             this.lastUpdate = 0;
         }
     }
