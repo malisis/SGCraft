@@ -48,7 +48,9 @@ public class DHDFuelScreen extends SGScreen {
         super(new DHDFuelContainer(player, te), guiWidth, guiHeight);
         this.te = te;
         this.baseTe = te.getLinkedStargateTE();
-        this.energyPerFuelItem = baseTe.energyPerFuelItem;
+        if (baseTe != null) { // Handle DHD placed but no linked stargate.
+            this.energyPerFuelItem = baseTe.energyPerFuelItem;
+        }
     }
 
     @Override
