@@ -25,6 +25,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import scala.Int;
 
 public class ConfiguratorScreen extends BasicScreen {
     private int lastUpdate = 0;
@@ -32,8 +33,11 @@ public class ConfiguratorScreen extends BasicScreen {
     private boolean isAdmin;
     private BasicForm form, numericOptionsArea, checkboxOptionsArea;
     private UILabel gateAddressLabel;
-    private UICheckBox oneWayTravelCheckbox, irisUpgradeCheckbox, chevronUpgradeCheckbox, gateTypeCheckbox, reverseWormholeKillsCheckbox, acceptIncomingConnectionsCheckbox, closeFromEitherEndCheckbox, preserveInventoryCheckbox, noPowerRequiredCheckbox, chevronsLockOnDialCheckbox, returnIrisToPreviousStateCheckbox, transientDamageCheckbox, transparencyCheckbox;
+    private UICheckBox oneWayTravelCheckbox, irisUpgradeCheckbox, chevronUpgradeCheckbox, gateTypeCheckbox, reverseWormholeKillsCheckbox, allowIncomingConnectionsCheckbox, allowOutgoingConnectionsCheckbox;
+    private UICheckBox closeFromEitherEndCheckbox, preserveInventoryCheckbox, noPowerRequiredCheckbox, chevronsLockOnDialCheckbox, returnIrisToPreviousStateCheckbox;
+    private UICheckBox transientDamageCheckbox, transparencyCheckbox;
     private UITextField secondsToStayOpen, gateRotationSpeed, energyBufferSize, energyPerNaquadah, gateOpeningsPerNaquadah, distanceMultiplier, dimensionalMultiplier;
+    private UIButton gateAddressAccessListButton, playerAccessListButton;
     private BlockPos location;
     private World world;
     private EntityPlayer player;
@@ -61,7 +65,7 @@ public class ConfiguratorScreen extends BasicScreen {
         SGBaseTE localGate = (SGBaseTE) localGateTE;
 
         // Master Panel
-        this.form = new BasicForm(this, 500, 225, "");
+        this.form = new BasicForm(this, 500, 275, "");
         this.form.setAnchor(Anchor.CENTER | Anchor.MIDDLE);
         this.form.setMovable(true);
         this.form.setClosable(true);
@@ -78,7 +82,7 @@ public class ConfiguratorScreen extends BasicScreen {
 
         // ****************************************************************************************************************************
 
-        this.numericOptionsArea = new BasicForm(this, 245, 185, "");
+        this.numericOptionsArea = new BasicForm(this, 245, 235, "");
         this.numericOptionsArea.setPosition(0, 0, Anchor.LEFT | Anchor.MIDDLE);
         this.numericOptionsArea.setMovable(false);
         this.numericOptionsArea.setClosable(false);
@@ -232,12 +236,43 @@ public class ConfiguratorScreen extends BasicScreen {
         });
         this.dimensionalMultiplier.register(this);
 
-        this.numericOptionsArea.add(numericValuesLabel, valuesSeparator, secondsToStayOpenLabel, gateRotationSpeedLabel, energyBufferMaxSizeLabel, energyPerItemLabel, energyPerOpeningLabel, distanceFactorMultiplierLabel, interDimensionalMultiplierLabel);
-        this.numericOptionsArea.add(this.secondsToStayOpen, this.gateRotationSpeed, this.energyBufferSize, this.energyPerNaquadah, this.gateOpeningsPerNaquadah, this.distanceMultiplier, this.dimensionalMultiplier);
+        // ****************************************************************************************************************************
+
+        gateAddressAccessListButton = new UIButtonBuilder(this)
+            .width(160)
+            .anchor(Anchor.TOP | Anchor.CENTER)
+            .position(0, this.dimensionalMultiplier.getY() + 60)
+            .text("Gate Address Access List")
+            .onClick(() -> {
+                new GateAddressAccessScreen(this, player, world, true).display();
+            })
+            .listener(this)
+            .build("button.gateaddressaccesslist");
+
+        playerAccessListButton = new UIButtonBuilder(this)
+            .width(160)
+            .anchor(Anchor.TOP | Anchor.CENTER)
+            .position(0, this.gateAddressAccessListButton.getY() + 20)
+            .text("Player Access List")
+            .onClick(() -> {
+                // Player access list GUI
+            })
+            .listener(this)
+            .build("button.playeraccesslist");
 
         // ****************************************************************************************************************************
 
-        this.checkboxOptionsArea = new BasicForm(this, 245, 185, "");
+        this.numericOptionsArea.add(numericValuesLabel, valuesSeparator, secondsToStayOpenLabel, gateRotationSpeedLabel, energyBufferMaxSizeLabel, energyPerItemLabel, energyPerOpeningLabel, distanceFactorMultiplierLabel, interDimensionalMultiplierLabel);
+        this.numericOptionsArea.add(this.secondsToStayOpen, this.gateRotationSpeed, this.energyBufferSize, this.energyPerNaquadah, this.gateOpeningsPerNaquadah, this.distanceMultiplier, this.dimensionalMultiplier);
+        this.numericOptionsArea.add(gateAddressAccessListButton, playerAccessListButton);
+
+        // ****************************************************************************************************************************
+
+
+
+        // ****************************************************************************************************************************
+
+        this.checkboxOptionsArea = new BasicForm(this, 245, 235, "");
         this.checkboxOptionsArea.setPosition(0, 0, Anchor.RIGHT | Anchor.MIDDLE);
         this.checkboxOptionsArea.setMovable(false);
         this.checkboxOptionsArea.setClosable(false);
@@ -289,16 +324,23 @@ public class ConfiguratorScreen extends BasicScreen {
         this.reverseWormholeKillsCheckbox.setName("checkbox.reversekills");
         this.reverseWormholeKillsCheckbox.register(this);
 
-        this.acceptIncomingConnectionsCheckbox = new UICheckBox(this);
-        this.acceptIncomingConnectionsCheckbox.setText(TextFormatting.WHITE + "Accept Incoming Connections");
-        this.acceptIncomingConnectionsCheckbox.setPosition(checkboxIndentPadding, this.reverseWormholeKillsCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
-        this.acceptIncomingConnectionsCheckbox.setEnabled(true);
-        this.acceptIncomingConnectionsCheckbox.setName("checkbox.acceptincomingconnections");
-        this.acceptIncomingConnectionsCheckbox.register(this);
+        this.allowIncomingConnectionsCheckbox = new UICheckBox(this);
+        this.allowIncomingConnectionsCheckbox.setText(TextFormatting.WHITE + "Allow Incoming Connections");
+        this.allowIncomingConnectionsCheckbox.setPosition(checkboxIndentPadding, this.reverseWormholeKillsCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
+        this.allowIncomingConnectionsCheckbox.setEnabled(true);
+        this.allowIncomingConnectionsCheckbox.setName("checkbox.acceptincomingconnections");
+        this.allowIncomingConnectionsCheckbox.register(this);
+
+        this.allowOutgoingConnectionsCheckbox = new UICheckBox(this);
+        this.allowOutgoingConnectionsCheckbox.setText(TextFormatting.WHITE + "Allow Outgoing Connections");
+        this.allowOutgoingConnectionsCheckbox.setPosition(checkboxIndentPadding, this.allowIncomingConnectionsCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
+        this.allowOutgoingConnectionsCheckbox.setEnabled(true);
+        this.allowOutgoingConnectionsCheckbox.setName("checkbox.allowoutgoingconnections");
+        this.allowOutgoingConnectionsCheckbox.register(this);
 
         this.closeFromEitherEndCheckbox = new UICheckBox(this);
         this.closeFromEitherEndCheckbox.setText(TextFormatting.WHITE + "Close from Either End");
-        this.closeFromEitherEndCheckbox.setPosition(checkboxIndentPadding, this.acceptIncomingConnectionsCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
+        this.closeFromEitherEndCheckbox.setPosition(checkboxIndentPadding, this.allowOutgoingConnectionsCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
         this.closeFromEitherEndCheckbox.setName("checkbox.canbedialedto");
         this.closeFromEitherEndCheckbox.register(this);
 
@@ -346,8 +388,9 @@ public class ConfiguratorScreen extends BasicScreen {
         this.transparencyCheckbox.register(this);
 
         this.checkboxOptionsArea.add(booleanValuesLabel, checkboxSeparator, this.oneWayTravelCheckbox, this.irisUpgradeCheckbox, this.chevronUpgradeCheckbox, this.gateTypeCheckbox);
-        this.checkboxOptionsArea.add(this.reverseWormholeKillsCheckbox, this.acceptIncomingConnectionsCheckbox, this.closeFromEitherEndCheckbox, this.preserveInventoryCheckbox, this.noPowerRequiredCheckbox);
-        this.checkboxOptionsArea.add(this.chevronsLockOnDialCheckbox, this.returnIrisToPreviousStateCheckbox, this.transientDamageCheckbox, this.transparencyCheckbox);
+        this.checkboxOptionsArea.add(this.reverseWormholeKillsCheckbox, this.allowIncomingConnectionsCheckbox, this.allowOutgoingConnectionsCheckbox, this.closeFromEitherEndCheckbox);
+        this.checkboxOptionsArea.add(this.preserveInventoryCheckbox, this.noPowerRequiredCheckbox, this.chevronsLockOnDialCheckbox, this.returnIrisToPreviousStateCheckbox);
+        this.checkboxOptionsArea.add( this.transientDamageCheckbox, this.transparencyCheckbox);
 
         // Load Defaults button
         final UIButton buttonDefaults = new UIButtonBuilder(this)
@@ -355,6 +398,7 @@ public class ConfiguratorScreen extends BasicScreen {
             .anchor(Anchor.BOTTOM | Anchor.LEFT)
             .text("Load Defaults")
             .onClick(() -> {
+                // Todo: make this match config....
                 secondsToStayOpen.setText(String.valueOf(SGBaseTE.cfg.getInteger("stargate", "secondsToStayOpen", 500)));
                 gateRotationSpeed.setText(String.valueOf(2.0)); // Isn't contained in base config file
                 energyBufferSize.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "maxEnergyBuffer", 2500.0)));
@@ -366,12 +410,14 @@ public class ConfiguratorScreen extends BasicScreen {
                 irisUpgradeCheckbox.setChecked(false);
                 chevronUpgradeCheckbox.setChecked(false);
                 reverseWormholeKillsCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "reverseWormholeKills", false));
-                acceptIncomingConnectionsCheckbox.setChecked(true);
+                allowIncomingConnectionsCheckbox.setChecked(true);
+                allowOutgoingConnectionsCheckbox.setChecked(true);
                 closeFromEitherEndCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "closeFromEitherEnd", true));
                 preserveInventoryCheckbox.setChecked(SGBaseTE.cfg.getBoolean("iris", "preserveInventory", false));
                 noPowerRequiredCheckbox.setChecked(false);
                 chevronsLockOnDialCheckbox.setChecked(false);
                 returnIrisToPreviousStateCheckbox.setChecked(false);
+                transientDamageCheckbox.setChecked(true);
                 transparencyCheckbox.setChecked(true);
             })
             .listener(this)
@@ -384,30 +430,15 @@ public class ConfiguratorScreen extends BasicScreen {
             .position(-40, 0)
             .text("Save")
             .onClick(() -> {
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 1, Integer.valueOf(secondsToStayOpen.getText()), false, 0.0);
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 2, 0, false, Double.valueOf(gateRotationSpeed.getText()));
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 3, 0, false, Double.valueOf(energyBufferSize.getText()));
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 4, 0, false, Double.valueOf(energyPerNaquadah.getText()));
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 5, Integer.valueOf(gateOpeningsPerNaquadah.getText()), false, 0.0);
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 6, 0, false, Double.valueOf(distanceMultiplier.getText()));
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 7, 0, false, Double.valueOf(dimensionalMultiplier.getText()));
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 8, 0, oneWayTravelCheckbox.isChecked(), 0.0);
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 9, 0, irisUpgradeCheckbox.isChecked(), 0.0);
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 10, 0, chevronUpgradeCheckbox.isChecked(), 0.0);
-                if (gateTypeCheckbox.isChecked()) {
-                    ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 11, 2, false, 0.0);
-                } else {
-                    ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 11, 1, false, 0.0);
+                int gateType = 1; // Default
+                if (this.gateTypeCheckbox.isChecked()) {
+                    gateType = 2; // Pegasus
                 }
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 12, 0, reverseWormholeKillsCheckbox.isChecked(), 0.0);
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 13, 0, acceptIncomingConnectionsCheckbox.isChecked(), 0.0);
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 14, 0, closeFromEitherEndCheckbox.isChecked(), 0.0);
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 15, 0, preserveInventoryCheckbox.isChecked(), 0.0);
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 16, 0, noPowerRequiredCheckbox.isChecked(), 0.0);
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 17, 0, chevronsLockOnDialCheckbox.isChecked(), 0.0);
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 18, 0, returnIrisToPreviousStateCheckbox.isChecked(), 0.0);
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 19, 0, transientDamageCheckbox.isChecked(), 0.0);
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, 20, 0, transparencyCheckbox.isChecked(), 0.0);
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, Integer.valueOf(secondsToStayOpen.getText()), Double.valueOf(gateRotationSpeed.getText()), Double.valueOf(energyBufferSize.getText()),
+                    Double.valueOf(energyPerNaquadah.getText()), Integer.valueOf(gateOpeningsPerNaquadah.getText()), Double.valueOf(distanceMultiplier.getText()), Double.valueOf(dimensionalMultiplier.getText()),
+                    oneWayTravelCheckbox.isChecked(), irisUpgradeCheckbox.isChecked(), chevronUpgradeCheckbox.isChecked(), gateType, reverseWormholeKillsCheckbox.isChecked(),
+                allowIncomingConnectionsCheckbox.isChecked(), allowOutgoingConnectionsCheckbox.isChecked(), closeFromEitherEndCheckbox.isChecked(), preserveInventoryCheckbox.isChecked(),
+                noPowerRequiredCheckbox.isChecked(), chevronsLockOnDialCheckbox.isChecked(), returnIrisToPreviousStateCheckbox.isChecked(), transientDamageCheckbox.isChecked(), transparencyCheckbox.isChecked());
 
                 this.close();
             })
@@ -494,7 +525,8 @@ public class ConfiguratorScreen extends BasicScreen {
                 this.gateTypeCheckbox.setChecked(true);
             }
             this.reverseWormholeKillsCheckbox.setChecked(localGate.reverseWormholeKills);
-            this.acceptIncomingConnectionsCheckbox.setChecked(localGate.acceptIncomingConnections);
+            this.allowIncomingConnectionsCheckbox.setChecked(localGate.allowIncomingConnections);
+            this.allowOutgoingConnectionsCheckbox.setChecked(localGate.allowOutgoingConnections);
             this.closeFromEitherEndCheckbox.setChecked(localGate.closeFromEitherEnd);
             this.preserveInventoryCheckbox.setChecked(localGate.preserveInventory);
             this.noPowerRequiredCheckbox.setChecked(localGate.requiresNoPower);
