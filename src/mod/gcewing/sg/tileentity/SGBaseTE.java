@@ -8,7 +8,6 @@ package gcewing.sg.tileentity;
 
 import static gcewing.sg.BaseBlockUtils.getWorldTileEntity;
 import static gcewing.sg.BaseMod.isModLoaded;
-import static gcewing.sg.BaseMod.reportExceptionCause;
 import static gcewing.sg.BaseUtils.max;
 import static gcewing.sg.BaseUtils.min;
 
@@ -17,7 +16,8 @@ import gcewing.sg.BaseBlockUtils;
 import gcewing.sg.BaseConfiguration;
 import gcewing.sg.BaseTileInventory;
 import gcewing.sg.BaseUtils;
-import gcewing.sg.features.pdd.network.PddNetworkHandler;
+import gcewing.sg.tileentity.data.GateAccessData;
+import gcewing.sg.tileentity.data.PlayerAccessData;
 import gcewing.sg.util.SGAddressing;
 import gcewing.sg.SGCraft;
 import gcewing.sg.util.SGLocation;
@@ -222,7 +222,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public boolean reverseWormholeKills = false;
     public boolean closeFromEitherEnd = true;
     public boolean preserveInventory = false;
-    public boolean acceptIncomingConnections = true;
+    public boolean allowIncomingConnections = true;
+    public boolean allowOutgoingConnections = true;
     public boolean chevronsLockOnDial = false;
     public boolean returnToPreviousIrisState = false;
     public boolean allowOnlySpecifiedDestination = false;
@@ -231,6 +232,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public boolean requiresNoPower = false;
     public boolean transientDamage = true;
     public boolean transparency = true;
+    public boolean defaultAllowIncoming = true;
+    public boolean defaultAllowOutgoing = true;
+
+    // Access Control Lists
+    private List<PlayerAccessData> playerAccessData;
+    private List<GateAccessData> gateAccessData;
 
     double ehGrid[][][];
     private static Set<UUID> messagesQueue = Sets.newHashSet();
@@ -254,6 +261,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         this.returnToPreviousIrisState = cfg.getBoolean("stargate", "returnToPreviousIrisState", this.returnToPreviousIrisState);
         this.requiresNoPower = cfg.getBoolean("stargate", "requiresNoPower", this.requiresNoPower);
         this.transparency = cfg.getBoolean("stargate", "transparency", this.transparency);
+        this.defaultAllowIncoming = cfg.getBoolean("stargate", "defaultAllowIncoming", this.defaultAllowIncoming);
+        this.defaultAllowOutgoing = cfg.getBoolean("stargate", "defaultAllowOutgoing", this.defaultAllowOutgoing);
+
     }
 
     public static void configure(BaseConfiguration cfg) {
@@ -281,6 +291,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         cfg.getBoolean("stargate", "requiresNoPower", false);
         cfg.getBoolean("stargate", "transientDamage", true);
         cfg.getBoolean("stargate", "transparency", true);
+        cfg.getBoolean("stargate", "defaultAllowIncoming", true);
+        cfg.getBoolean("stargate", "defaultAllowOutgoing", true);
 
         // Global static config values
         minutesOpenPerFuelItem = cfg.getInteger("stargate", "minutesOpenPerFuelItem", minutesOpenPerFuelItem);
@@ -479,10 +491,16 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             this.preserveInventory = cfg.getBoolean("iris", "preserveInventory", this.preserveInventory);
         }
 
-        if (nbt.hasKey("acceptIncomingConnections") && !SGCraft.forceSGBaseTEUpdate) {
-            this.acceptIncomingConnections = nbt.getBoolean("acceptIncomingConnections");
+        if (nbt.hasKey("allowIncomingConnections") && !SGCraft.forceSGBaseTEUpdate) {
+            this.allowIncomingConnections = nbt.getBoolean("allowIncomingConnections");
         } else {
-            this.acceptIncomingConnections = true;
+            this.allowIncomingConnections = true;
+        }
+
+        if (nbt.hasKey("allowOutgoingConnections") && !SGCraft.forceSGBaseTEUpdate) {
+            this.allowOutgoingConnections = nbt.getBoolean("allowOutgoingConnections");
+        } else {
+            this.allowOutgoingConnections = true;
         }
 
         if (nbt.hasKey("chevronsLockOnDial") && !SGCraft.forceSGBaseTEUpdate) {
@@ -541,6 +559,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         this.energyToOpen = this.energyPerFuelItem / this.gateOpeningsPerFuelItem;
         this.energyUsePerTick = this.energyPerFuelItem / (this.minutesOpenPerFuelItem * 60 * 20);
 
+        if (SGCraft.pdd != null) { // Skip this if the PDD is not in-use.
+            this.playerAccessData = PlayerAccessData.getPlayerAccessList(nbt);
+            this.gateAccessData = GateAccessData.getGateAccessList(nbt);
+        }
+        this.defaultAllowIncoming = nbt.getBoolean("defaultAllowIncoming");
+        this.defaultAllowOutgoing = nbt.getBoolean("defaultAllowOutgoing");
     }
 
     protected String getStringOrNull(NBTTagCompound nbt, String name) {
@@ -585,7 +609,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setBoolean("reverseWormholeKills", reverseWormholeKills);
         nbt.setBoolean("closeFromEitherEnd", closeFromEitherEnd);
         nbt.setBoolean("preserveInventory", preserveInventory);
-        nbt.setBoolean("acceptIncomingconnections", acceptIncomingConnections);
+        nbt.setBoolean("allowIncomingConnections", allowIncomingConnections);
+        nbt.setBoolean("allowOutgoingConnections", allowOutgoingConnections);
         nbt.setBoolean("chevronsLockOnDial", chevronsLockOnDial);
         nbt.setBoolean("returnToPreviousIrisState", returnToPreviousIrisState);
         nbt.setBoolean("allowOnlySpecifiedDestination", allowOnlySpecifiedDestination);
@@ -607,8 +632,21 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             nbt.setString("addressError", addressError);
         }
 
+        // Access Lists...
+        if (SGCraft.pdd != null) {
+            if (this.playerAccessData != null)
+                PlayerAccessData.writeAddresses(nbt, this.playerAccessData);
+            if (this.gateAccessData != null)
+                GateAccessData.writeAddresses(nbt, this.gateAccessData);
+        }
+
+        nbt.setBoolean("defaultAllowIncoming", defaultAllowIncoming);
+        nbt.setBoolean("defaultAllowOutgoing", defaultAllowOutgoing);
+
         return nbt;
     }
+
+
 
     // *********************************************************************************************
     // Core Stargate Control Systems
@@ -871,8 +909,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             address = SGAddressing.localAddress(address);
             homeAddress = SGAddressing.localAddress(homeAddress);
         }
-        if (!targetGate.acceptIncomingConnections) {
-            return diallingFailure(player, "cannotDialThisGate", address);
+        if (!targetGate.allowIncomingConnections) {
+            return diallingFailure(player, "cannotDialToThisGate", address);
+        }
+        if (!this.allowOutgoingConnections) {
+            return diallingFailure(player, "cannotDialFromThisGate", address);
         }
         if (address.length() > getNumChevrons()) {
             return diallingFailure(player, "selfLackChevrons", address);
@@ -1026,6 +1067,61 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         TextComponentString component = new TextComponentString(message);
         component.getStyle().setColor(TextFormatting.RED);
         player.sendMessage(component);
+    }
+
+    // *********************************************************************************************
+    // Access Control Subsystem
+    // *********************************************************************************************
+
+    //return this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().map(GateAccessData::hasOutgoingAccess).orElse(false);
+
+    public boolean allowOutgoingAddress(String address) {
+        if (this.gateAccessData != null && this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().isPresent()) {
+            GateAccessData gateAccessEntry = this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().get();
+            return gateAccessEntry.hasOutgoingAccess();
+        }
+        return true;
+    }
+
+    public void setAllowOutgoingAddress(String address, boolean value) {
+
+        if (this.gateAccessData != null && this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().isPresent()) {
+            GateAccessData gateAccessEntry = this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().get();
+            gateAccessEntry.setOutgoingAccess(value);
+        }
+    }
+
+    public boolean allowIncomingAddress(String address) {
+        if (this.gateAccessData != null && this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().isPresent()) {
+            GateAccessData gateAccessEntry = this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().get();
+            return gateAccessEntry.hasIncomingAccess();
+        }
+        return true;
+    }
+
+    public void setAllowIncomingAddress(String address, boolean value) {
+        if (this.gateAccessData != null && this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().isPresent()) {
+            GateAccessData gateAccessEntry = this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().get();
+            gateAccessEntry.setIncomingAccess(value);
+        }
+    }
+
+    public boolean allowAccessToIrisController(EntityPlayer player) {
+        UUID uuid = player.getUniqueID();
+
+        if (uuid != null && this.playerAccessData != null && this.playerAccessData.stream().filter(g -> g.getPlayerUUID().equals(uuid)).findFirst().isPresent()) {
+            PlayerAccessData playerAccessEntry = this.playerAccessData.stream().filter(g -> g.getPlayerUUID().equals(uuid)).findFirst().get();
+            return playerAccessEntry.hasIrisAccess();
+        }
+        return true;
+    }
+
+    public List getGateAccessData() {
+        return this.gateAccessData;
+    }
+
+    public List getPlayerAccessData() {
+       return this.playerAccessData;
     }
 
     // *********************************************************************************************
