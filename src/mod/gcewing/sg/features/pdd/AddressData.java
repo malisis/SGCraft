@@ -3,11 +3,6 @@ package gcewing.sg.features.pdd;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import com.google.common.collect.Lists;
-import gcewing.sg.SGCraft;
-import gcewing.sg.network.SGChannel;
-import gcewing.sg.tileentity.SGBaseTE;
-import gcewing.sg.util.SGState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
