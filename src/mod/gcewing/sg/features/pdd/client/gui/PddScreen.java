@@ -460,7 +460,7 @@ public class PddScreen extends BasicScreen {
                 if (SGAddressing.inSameDimension(localGate.homeAddress, diallingAddress)) {
                     diallingAddress = diallingAddress.substring(0,7);
                 }
-                
+
                 if (diallingAddress.length() != 7 && diallingAddress.length() != 9) {
                     SGBaseTE.sendGenericErrorMsg(player, "Invalid Address Specified.");
                     dialling = false;
