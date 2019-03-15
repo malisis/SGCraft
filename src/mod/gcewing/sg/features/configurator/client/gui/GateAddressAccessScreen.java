@@ -30,20 +30,26 @@ import net.minecraft.world.World;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 public class GateAddressAccessScreen extends BasicScreen {
     private int lastUpdate = 0;
     private boolean unlockMouse = true;
     private boolean isAdmin;
+    private boolean delayedUpdate = false;
     private BasicForm form;
-    private BasicContainer<?> addressContainer;
-    private UIButton buttonClose;
-    private UILabel addressListLabel, gateDefaultIncomingLabel, gateDefaultOutgoingLabel;
+    private BasicContainer<?> addressContainer, addressOptionsContainer;
+    private UIButton buttonClose, addAddressButton, editAddressButton, deleteAddressButton, saveOptionsButton, saveDefaultOptionsButton;
+    private UILabel addressListLabel, gateDefaultIncomingLabel, gateDefaultOutgoingLabel, perAddressOptionsLabel, gateIncomingLabel, gateOutgoingLabel;
     private UICheckBox defaultAllowIncomingCheckbox, defaultDenyIncomingCheckbox, defaultAllowOutgoingCheckbox, defaultDenyOutgoingCheckbox;
+    private UICheckBox allowIncomingCheckbox, denyIncomingCheckbox, allowOutgoingCheckbox, denyOutgoingCheckbox;
     private BlockPos location;
     private World world;
     private EntityPlayer player;
     private SGBaseTE localGate;
-
+    private List<GateAccessData> clonedList;
     private BasicList<GateAccessData> gateAccessList;
 
     public GateAddressAccessScreen(BasicScreen parent, EntityPlayer player, World worldIn, boolean isAdmin) {
@@ -86,6 +92,11 @@ public class GateAddressAccessScreen extends BasicScreen {
         this.gateAccessList.setItemComponentFactory(GateItemComponent::new);
         this.gateAccessList.setItemComponentSpacing(1);
         this.gateAccessList.setPadding(2);
+        this.gateAccessList.setName("List");
+        //this.gateAccessList.setSelectConsumer(g -> {
+        //    System.out.println("Hi");
+        //});
+        this.gateAccessList.register(this);
         this.gateAccessList.setBorder(FontColors.WHITE, 1, 185);
         this.gateAccessList.setBorders(FontColors.WHITE, 185, 0, 1, 0, 0);
 
@@ -93,13 +104,104 @@ public class GateAddressAccessScreen extends BasicScreen {
 
         // ****************************************************************************************************************************
 
+        this.perAddressOptionsLabel = new UILabel(this, "Per Address Options");
+        this.perAddressOptionsLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
+        this.perAddressOptionsLabel.setPosition(0, 0, Anchor.CENTER | Anchor.TOP);
+
+        final UISeparator optionsSeparator = new UISeparator(this);
+        optionsSeparator.setSize(this.perAddressOptionsLabel.getWidth() - 10, 1);
+        optionsSeparator.setPosition(0, 10, Anchor.TOP | Anchor.CENTER);
+
+        this.addressOptionsContainer = new BasicContainer(this, 150, 145);
+        this.addressOptionsContainer.setPosition(0, 0, Anchor.RIGHT | Anchor.TOP);
+        this.addressOptionsContainer.setBorder(FontColors.WHITE, 1, 185);
+        this.addressOptionsContainer.setPadding(0, 3);
+        this.addressOptionsContainer.setBackgroundAlpha(0);
+
+        this.gateIncomingLabel = new UILabel(this, "Incoming:");
+        this.gateIncomingLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
+        this.gateIncomingLabel.setPosition(5, 20, Anchor.TOP| Anchor.LEFT);
+
+        this.allowIncomingCheckbox = new UICheckBox(this);
+        this.allowIncomingCheckbox.setText(TextFormatting.WHITE + "Allow");
+        this.allowIncomingCheckbox.setPosition(this.gateIncomingLabel.getX() + this.gateIncomingLabel.getWidth() + 10, this.gateIncomingLabel.getY(), Anchor.LEFT | Anchor.TOP);
+        this.allowIncomingCheckbox.setName("checkbox.allowincoming");
+        this.allowIncomingCheckbox.setChecked(localGate.defaultAllowIncoming);
+        this.allowIncomingCheckbox.register(this);
+
+        this.denyIncomingCheckbox = new UICheckBox(this);
+        this.denyIncomingCheckbox.setText(TextFormatting.WHITE + "Deny");
+        this.denyIncomingCheckbox.setPosition(this.gateIncomingLabel.getX() + this.gateIncomingLabel.getWidth() + 10 + this.allowIncomingCheckbox.getWidth() + 10, this.gateIncomingLabel.getY(), Anchor.LEFT | Anchor.TOP);
+        this.denyIncomingCheckbox.setName("checkbox.denyincoming");
+        this.denyIncomingCheckbox.setChecked(!localGate.defaultAllowIncoming);
+        this.denyIncomingCheckbox.register(this);
+
+        this.gateOutgoingLabel = new UILabel(this, "Outgoing:");
+        this.gateOutgoingLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
+        this.gateOutgoingLabel.setPosition(5, this.gateIncomingLabel.getY() + 15, Anchor.TOP | Anchor.LEFT);
+
+        this.allowOutgoingCheckbox = new UICheckBox(this);
+        this.allowOutgoingCheckbox.setText(TextFormatting.WHITE + "Allow");
+        this.allowOutgoingCheckbox.setPosition(this.gateIncomingLabel.getX() + this.gateIncomingLabel.getWidth() + 10, this.gateOutgoingLabel.getY(), Anchor.LEFT | Anchor.TOP);
+        this.allowOutgoingCheckbox.setName("checkbox.allowoutgoing");
+        this.allowOutgoingCheckbox.setChecked(localGate.defaultAllowOutgoing);
+        this.allowOutgoingCheckbox.register(this);
+
+        this.denyOutgoingCheckbox = new UICheckBox(this);
+        this.denyOutgoingCheckbox.setText(TextFormatting.WHITE + "Deny");
+        this.denyOutgoingCheckbox.setPosition(this.gateOutgoingLabel.getX() + this.gateIncomingLabel.getWidth() + 10 + this.allowIncomingCheckbox.getWidth() + 10, this.gateOutgoingLabel.getY(), Anchor.LEFT | Anchor.TOP);
+        this.denyOutgoingCheckbox.setName("checkbox.denyoutgoing");
+        this.denyOutgoingCheckbox.setChecked(!localGate.defaultAllowOutgoing);
+        this.denyOutgoingCheckbox.register(this);
+
+        this.saveOptionsButton = new UIButtonBuilder(this)
+                .text("Save")
+                //.onClick(() -> PddNetworkHandler.sendGAAEntryUpdateToServer()
+                .anchor(Anchor.BOTTOM | Anchor.RIGHT)
+                .position(-5,0)
+                //.visible(this.canModify)
+                .build("button.save");
+
+        this.addressOptionsContainer.add(this.perAddressOptionsLabel, optionsSeparator, this.gateIncomingLabel, this.allowIncomingCheckbox, this.denyIncomingCheckbox, gateOutgoingLabel, this.allowOutgoingCheckbox, this.denyOutgoingCheckbox, this.saveOptionsButton);
+
+        // ****************************************************************************************************************************
+
+        this.addAddressButton = new UIButtonBuilder(this)
+                .text(TextFormatting.GREEN + "+")
+                .onClick(() -> new GateAddressAccessEntryScreen(this, player, localGate,"", "Address Here", 1).display())
+                .anchor(Anchor.TOP | Anchor.LEFT)
+                .position(this.addressContainer.getWidth() + 17, 40)
+                //.visible(this.canAdd)
+                .build("button.add");
+
+        this.editAddressButton = new UIButtonBuilder(this)
+                .text(TextFormatting.YELLOW + "?")
+                .onClick(() -> {
+                    new GateAddressAccessEntryScreen(this, player, localGate,this.gateAccessList.getSelectedItem().getAddress(), "", 2).display();
+                })
+                .anchor(Anchor.TOP | Anchor.LEFT)
+                .position(this.addAddressButton.getX(), this.addAddressButton.getY() + 20)
+                //.visible(this.canModify)
+                .build("button.details");
+
+        this.deleteAddressButton = new UIButtonBuilder(this)
+                .text(TextFormatting.RED + "-")
+                .onClick(() -> {
+                    new GateAddressAccessEntryScreen(this, player, localGate,this.gateAccessList.getSelectedItem().getAddress(), "", 3).display();
+                })
+                .anchor(Anchor.TOP | Anchor.LEFT)
+                .position(this.addAddressButton.getX(), this.editAddressButton.getY() + 20)
+                .build("button.remove");
+
+        // ****************************************************************************************************************************
+
         final UISeparator defaultsSeparator = new UISeparator(this);
-        defaultsSeparator.setSize(-60, 1);
-        defaultsSeparator.setPosition(0, 10, Anchor.BOTTOM | Anchor.CENTER);
+        defaultsSeparator.setSize(this.form.getWidth() - 10, 1);
+        defaultsSeparator.setPosition(0, -43, Anchor.BOTTOM | Anchor.CENTER);
 
         this.gateDefaultIncomingLabel = new UILabel(this, "Default Incoming:");
         this.gateDefaultIncomingLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
-        this.gateDefaultIncomingLabel.setPosition(0, -25, Anchor.BOTTOM | Anchor.LEFT);
+        this.gateDefaultIncomingLabel.setPosition(5, -25, Anchor.BOTTOM | Anchor.LEFT);
 
         this.defaultAllowIncomingCheckbox = new UICheckBox(this);
         this.defaultAllowIncomingCheckbox.setText(TextFormatting.WHITE + "Allow");
@@ -115,25 +217,31 @@ public class GateAddressAccessScreen extends BasicScreen {
         this.defaultDenyIncomingCheckbox.setChecked(!localGate.defaultAllowIncoming);
         this.defaultDenyIncomingCheckbox.register(this);
 
-        this.gateDefaultOutgoingLabel = new UILabel(this, "Default Outgoing");
+        this.gateDefaultOutgoingLabel = new UILabel(this, "Default Outgoing:");
         this.gateDefaultOutgoingLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
-        this.gateDefaultOutgoingLabel.setPosition(0, -5, Anchor.BOTTOM | Anchor.LEFT);
+        this.gateDefaultOutgoingLabel.setPosition(5, -5, Anchor.BOTTOM | Anchor.LEFT);
 
         this.defaultAllowOutgoingCheckbox = new UICheckBox(this);
         this.defaultAllowOutgoingCheckbox.setText(TextFormatting.WHITE + "Allow");
-        this.defaultAllowOutgoingCheckbox.setPosition(this.gateDefaultOutgoingLabel.getX() + this.gateDefaultOutgoingLabel.getWidth() + 10, this.gateDefaultOutgoingLabel.getY(), Anchor.LEFT | Anchor.BOTTOM);
+        this.defaultAllowOutgoingCheckbox.setPosition(this.gateDefaultIncomingLabel.getX() + this.gateDefaultIncomingLabel.getWidth() + 10, this.gateDefaultOutgoingLabel.getY(), Anchor.LEFT | Anchor.BOTTOM);
         this.defaultAllowOutgoingCheckbox.setName("checkbox.defaultallowoutgoing");
         this.defaultAllowOutgoingCheckbox.setChecked(localGate.defaultAllowOutgoing);
         this.defaultAllowOutgoingCheckbox.register(this);
 
         this.defaultDenyOutgoingCheckbox = new UICheckBox(this);
         this.defaultDenyOutgoingCheckbox.setText(TextFormatting.WHITE + "Deny");
-        this.defaultDenyOutgoingCheckbox.setPosition(this.gateDefaultOutgoingLabel.getX() + this.gateDefaultOutgoingLabel.getWidth() + 10 + this.defaultAllowOutgoingCheckbox.getWidth() + 10, this.gateDefaultOutgoingLabel.getY(), Anchor.LEFT | Anchor.BOTTOM);
+        this.defaultDenyOutgoingCheckbox.setPosition(this.gateDefaultIncomingLabel.getX() + this.gateDefaultIncomingLabel.getWidth() + 10 + this.defaultAllowIncomingCheckbox.getWidth() + 10, this.gateDefaultOutgoingLabel.getY(), Anchor.LEFT | Anchor.BOTTOM);
         this.defaultDenyOutgoingCheckbox.setName("checkbox.defaultdenyoutgoing");
         this.defaultDenyOutgoingCheckbox.setChecked(!localGate.defaultAllowOutgoing);
         this.defaultDenyOutgoingCheckbox.register(this);
 
-
+        this.saveDefaultOptionsButton = new UIButtonBuilder(this)
+                .text("Save")
+                //.onClick(() -> new PddEntryScreen(this, player, addressList.getSelectedItem().getName(), addressList.getSelectedItem().getAddress(), addressList.getSelectedItem().getIndex(), addressList.getSelectedItem().getUnid(), addressList.getSelectedItem().isLocked(), false).display())
+                .anchor(Anchor.BOTTOM | Anchor.RIGHT)
+                .position(-45,0)
+                //.visible(this.canModify)
+                .build("button.savedefaults");
 
         buttonClose = new UIButtonBuilder(this)
             .width(40)
@@ -142,7 +250,8 @@ public class GateAddressAccessScreen extends BasicScreen {
             .onClick(this::close)
             .build("button.close");
 
-        this.form.add(this.addressContainer, defaultsSeparator, this.gateDefaultIncomingLabel, this.gateDefaultOutgoingLabel, buttonClose);
+        this.form.add(this.addressContainer, defaultsSeparator, this.addAddressButton, this.editAddressButton, this.deleteAddressButton, this.gateDefaultIncomingLabel, this.gateDefaultOutgoingLabel, buttonClose);
+        this.form.add(this.addressOptionsContainer, saveDefaultOptionsButton);
         this.form.add(this.defaultAllowIncomingCheckbox, this.defaultDenyIncomingCheckbox, this.defaultAllowOutgoingCheckbox, this.defaultDenyOutgoingCheckbox);
         addToScreen(this.form);
 
@@ -150,7 +259,22 @@ public class GateAddressAccessScreen extends BasicScreen {
     }
 
     @Subscribe
+    public void onListChange(BasicList.SelectEvent<GateAccessData> event) {
+        boolean firstClick = (event.getOldValue() == null);
+        if (localGate.getGateAccessData().size() > 0) {
+            this.allowIncomingCheckbox.setChecked(localGate.allowIncomingAddress(event.getNewValue().getAddress()));
+            this.denyIncomingCheckbox.setChecked(!localGate.allowIncomingAddress(event.getNewValue().getAddress()));
+            this.allowOutgoingCheckbox.setChecked(localGate.allowOutgoingAddress(event.getNewValue().getAddress()));
+            this.denyOutgoingCheckbox.setChecked(!localGate.allowOutgoingAddress(event.getNewValue().getAddress()));
+            this.addressOptionsContainer.setEnabled(true);
+        } else {
+            this.addressOptionsContainer.setEnabled(false);
+        }
+    }
+
+    @Subscribe
     public void onValueChange(ComponentEvent.ValueChange event) {
+
         switch (event.getComponent().getName()) {
             case "checkbox.defaultallowincoming":
                 this.defaultDenyIncomingCheckbox.setChecked(this.defaultAllowIncomingCheckbox.isChecked());
@@ -164,6 +288,18 @@ public class GateAddressAccessScreen extends BasicScreen {
             case "checkbox.defaultdenyoutgoing":
                 this.defaultAllowOutgoingCheckbox.setChecked(this.defaultDenyOutgoingCheckbox.isChecked());
                 break;
+            case "checkbox.allowincoming":
+                this.denyIncomingCheckbox.setChecked(this.allowIncomingCheckbox.isChecked());
+                break;
+            case "checkbox.denyincoming":
+                this.allowIncomingCheckbox.setChecked(this.denyIncomingCheckbox.isChecked());
+                break;
+            case "checkbox.allowoutgoing":
+                this.denyOutgoingCheckbox.setChecked(this.allowOutgoingCheckbox.isChecked());
+                break;
+            case "checkbox.denyoutgoing":
+                this.allowOutgoingCheckbox.setChecked(this.denyOutgoingCheckbox.isChecked());
+                break;
         }
     }
 
@@ -175,9 +311,22 @@ public class GateAddressAccessScreen extends BasicScreen {
             unlockMouse = false; // Only unlock once per session.
         }
 
-        if (++this.lastUpdate > 100) {
+        if (this.lastUpdate == 20) {
+            this.editAddressButton.setEnabled(this.gateAccessList.getSize() > 0);
+            this.deleteAddressButton.setEnabled(this.gateAccessList.getSize() > 0);
+            if (!localGate.getGateAccessData().equals(this.clonedList)) {
+                this.loadData();
+            }
+        }
+
+        if (++this.lastUpdate > 60) {
             this.lastUpdate = 0;
         }
+    }
+
+    public void delayedUpdate() {
+        this.lastUpdate = 0;
+        this.delayedUpdate = true;
     }
 
     @Override
@@ -199,10 +348,10 @@ public class GateAddressAccessScreen extends BasicScreen {
 
     private void loadData() {
         if (localGate != null) {
-
             if (localGate.getGateAccessData() != null) {
-                this.gateAccessList.clearItems();
-                this.gateAccessList.addItems(localGate.getGateAccessData());
+                this.gateAccessList.setItems(localGate.getGateAccessData());
+                this.gateAccessList.setSelectedItem(this.gateAccessList.getItems().stream().findFirst().orElse(null));
+                this.clonedList = new ArrayList<>(localGate.getGateAccessData());
             }
         }
     }

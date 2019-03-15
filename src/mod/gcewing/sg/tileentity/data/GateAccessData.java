@@ -9,6 +9,7 @@ import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class GateAccessData {
     static final String GATEACCESSLIST = "gateaccesslist";
@@ -85,6 +86,9 @@ public class GateAccessData {
             System.out.println("getGateAccessList: TE missing GATEACCESSLIST, adding default for testing purposes");
             List<GateAccessData> genericAddressList = Lists.newArrayList();
             genericAddressList.add(new GateAccessData( "T9FH-3VW-VL", true, true));
+            genericAddressList.add(new GateAccessData( "X35A-008-YC", false, false));
+            genericAddressList.add(new GateAccessData( "A44A-0C8-AC", true, false));
+            genericAddressList.add(new GateAccessData( "BFEZ-878-AY", false, true));
             GateAccessData.writeAddresses(compound, genericAddressList);
         }
 
@@ -127,5 +131,23 @@ public class GateAccessData {
         }
 
         return compound;
+    }
+
+    // Very Important this is needed when doing list equal comparisons
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        GateAccessData that = (GateAccessData) o;
+        return Objects.equals(address, that.address);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(address);
     }
 }

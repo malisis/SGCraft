@@ -634,8 +634,15 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         // Access Lists...
         if (SGCraft.pdd != null) {
+            if (this.playerAccessData == null)
+                this.playerAccessData = PlayerAccessData.getPlayerAccessList(nbt);
+
+            if (this.getGateAccessData() == null)
+                this.gateAccessData = GateAccessData.getGateAccessList(nbt);
+
             if (this.playerAccessData != null)
                 PlayerAccessData.writeAddresses(nbt, this.playerAccessData);
+
             if (this.gateAccessData != null)
                 GateAccessData.writeAddresses(nbt, this.gateAccessData);
         }
@@ -1174,7 +1181,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return true;
     }
 
-    public List getGateAccessData() {
+    public List<GateAccessData> getGateAccessData() {
         return this.gateAccessData;
     }
 
