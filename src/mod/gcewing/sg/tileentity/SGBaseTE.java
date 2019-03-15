@@ -921,6 +921,65 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (targetGate == this) {
             return diallingFailure(player, "diallingItself");
         }
+
+        // Access Control System
+        boolean debugAccessControlSystem = true;
+        boolean accessSystemDialDestination = true;
+        if (debugAccessControlSystem)
+            System.err.println(this.homeAddress + " defaultAllowOutgoing: " + this.defaultAllowIncoming);
+
+        if (this.defaultAllowOutgoing) {
+            if (!this.allowOutgoingAddress(address)) {
+                if (debugAccessControlSystem)
+                    System.err.println(this.homeAddress + " allowOutgoingAddress: " + this.allowOutgoingAddress(address));
+                accessSystemDialDestination = false;
+            }
+        } else {
+            if (!this.allowOutgoingAddress(address)) {
+                if (debugAccessControlSystem)
+                    System.err.println(this.homeAddress + " allowOutgoingAddress: " + this.allowOutgoingAddress(address));
+                accessSystemDialDestination = false;
+            }
+        }
+
+        if (!accessSystemDialDestination) {
+            if (!SGCraft.hasPermission(player, "SGCraft.admin")) {
+                // Todo: language Entry for this.
+                return diallingFailure(player, "accessSystemDeniedDestination");
+            } else {
+                if (debugAccessControlSystem)
+                System.err.println("Dialling from: " + this.homeAddress + " allowed because permissions SGCraft.admin");
+            }
+        }
+
+        boolean accessSystemAcceptIncoming = true;
+        if (debugAccessControlSystem)
+            System.err.println(targetGate.homeAddress + " defaultAllowOutgoing: " + targetGate.defaultAllowIncoming);
+        if (targetGate.defaultAllowIncoming) {
+            if (!targetGate.allowOutgoingAddress(this.homeAddress)) {
+                if (debugAccessControlSystem)
+                    System.err.println(targetGate.homeAddress + " allowOutgoingAddress: " + targetGate.allowOutgoingAddress(address));
+                accessSystemAcceptIncoming = false;
+            }
+        } else {
+            if (!this.allowIncomingAddress(this.homeAddress)) {
+                if (debugAccessControlSystem)
+                    System.err.println(targetGate.homeAddress + " allowOutgoingAddress: " + targetGate.allowOutgoingAddress(address));
+                accessSystemAcceptIncoming = false;
+            }
+        }
+
+        if (!accessSystemAcceptIncoming) {
+            if (!SGCraft.hasPermission(player, "SGCraft.admin")) {
+                // Todo: language Entry for this.
+                return diallingFailure(player, "accessSystemDeniedIncoming");
+            } else {
+                if (debugAccessControlSystem)
+                System.err.println("Dialling into " + targetGate.homeAddress + " allowed because permissions SGCraft.admin");
+            }
+        }
+        // End Access Control System
+
         if (debugConnect) {
             System.out.printf("SGBaseTE.connect: to %s in dimension %d with state %s\n", targetGate.getPos(), targetGate.getWorld().provider.getDimension(), targetGate.state);
         }
@@ -1084,7 +1143,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     public void setAllowOutgoingAddress(String address, boolean value) {
-
         if (this.gateAccessData != null && this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().isPresent()) {
             GateAccessData gateAccessEntry = this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().get();
             gateAccessEntry.setOutgoingAccess(value);

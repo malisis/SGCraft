@@ -40,15 +40,15 @@ public class GdoItem extends Item {
             if (localGateTE instanceof SGBaseTE) {
                 SGBaseTE localGate = (SGBaseTE) localGateTE;
 
-                boolean canEditLocal = localGate.getWorld().isBlockModifiable(player, localGate.getPos());
-                boolean canEditRemote = false;
+                boolean canAccessLocal = localGate.allowAccessToIrisController(player);
+                boolean canAccessRemote = true;
                 if (localGate.isConnected() && localGate.state == SGState.Connected) {
                     SGBaseTE remoteGate = localGate.getConnectedStargateTE();
-                    canEditRemote = remoteGate.getWorld().isBlockModifiable(player, remoteGate.getPos());
+                    canAccessRemote = remoteGate.allowAccessToIrisController(player);
                 }
 
                 if (SGCraft.hasPermission(player, "sgcraft.gui.gdo")) {
-                    GuiNetworkHandler.openGuiAtClient(localGate, player, 2, SGCraft.hasPermission(player, "sgcraft.admin"), canEditLocal, canEditRemote);
+                    GuiNetworkHandler.openGuiAtClient(localGate, player, 2, SGCraft.hasPermission(player, "sgcraft.admin"), canAccessLocal, canAccessRemote);
                 } else {
                     player.sendMessage(new TextComponentString("Insufficient permissions.  Requires 'sgcraft.gui.gdo."));
                     return new ActionResult<>(EnumActionResult.FAIL, player.getHeldItem(handIn));

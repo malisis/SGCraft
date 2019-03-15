@@ -34,24 +34,46 @@ public class GdoNetworkHandler extends SGChannel {
             return;
         }
 
-        boolean canEditLocal = localGate.getWorld().isBlockModifiable(player, localGate.getPos());
-        boolean canEditRemote = false;
+        boolean playerAccessLocalControl = true;
+        boolean playerAccessRemoteControl = true;
 
-
-        if (SGCraft.hasPermission(player, "sgcraft.gui.gdo") && canEditLocal) {
+        if (SGCraft.hasPermission(player, "sgcraft.gui.gdo")) {
             if (localGate != null) {
-                if (setting == 1) localGate.openIris();
-                if (setting == 2) localGate.closeIris();
+
+                    // Note: the buttons are sent the permissions when the GUI open, however, this check is here to verify no one
+                    // is using a hacked client to bypass the GUI check.
+
+                    if (!localGate.allowAccessToIrisController(player)) {
+                        playerAccessLocalControl = false;
+                    }
+                    if (playerAccessLocalControl || SGCraft.hasPermission(player, "SGCraft.admin")) {
+                        if (setting == 1) {
+                            localGate.openIris();
+                        }
+                        if (setting == 1) {
+                            localGate.closeIris();
+                        }
+                    }
+
                 if (setting == 3) localGate.disconnect(player);
 
                 if (setting == 4 || setting == 5 || setting == 6) {
                     if (localGate.isConnected()) {
                         SGBaseTE remoteGate = localGate.getConnectedStargateTE();
-                        canEditRemote = remoteGate.getWorld().isBlockModifiable(player, remoteGate.getPos());
 
-                        if (canEditRemote) {
-                            if (setting == 4) remoteGate.openIris();
-                            if (setting == 5) remoteGate.closeIris();
+                       // Todo: this may need to be implemented in the future?
+                        // canEditRemote = remoteGate.getWorld().isBlockModifiable(player, remoteGate.getPos());
+
+                        if (!localGate.allowAccessToIrisController(player)) {
+                            playerAccessRemoteControl = false;
+                        }
+                        if (playerAccessRemoteControl || SGCraft.hasPermission(player, "SGCraft.admin")) {
+                            if (setting == 4) {
+                                localGate.openIris();
+                            }
+                            if (setting == 5) {
+                                localGate.closeIris();
+                            }
                         }
                     }
                 }

@@ -89,8 +89,8 @@ public class GuiNetworkHandler extends SGChannel {
         BlockPos pos = readCoords(data);
         int guiType = data.readInt();
         boolean isAdmin = data.readBoolean();
-        boolean canEditLocal = data.readBoolean();
-        boolean canEditRemote = data.readBoolean();
+        boolean canAccessLocal = data.readBoolean();
+        boolean canAccessRemote = data.readBoolean();
 
         if (guiType == 1) {
             new ConfiguratorScreen(player, player.world, isAdmin).display();
@@ -119,7 +119,7 @@ public class GuiNetworkHandler extends SGChannel {
                 screen.r_gateType = r_gateType;
                 screen.r_address = r_address;
             } else {
-                new GdoScreen(player, player.world, isAdmin, r_connected, r_hasIrisUpgrade, r_hasChevronUpgrade, r_isIrisClosed, r_gateType, r_address).display();
+                new GdoScreen(player, player.world, isAdmin, r_connected, r_hasIrisUpgrade, r_hasChevronUpgrade, r_isIrisClosed, r_gateType, r_address, canAccessLocal, canAccessRemote).display();
             }
         }
         if (guiType == 3) {

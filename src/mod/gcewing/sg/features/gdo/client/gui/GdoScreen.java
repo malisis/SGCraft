@@ -39,12 +39,13 @@ public class GdoScreen extends BasicScreen {
     private BlockPos location;
     private World world;
     private EntityPlayer player;
-    public boolean isRemoteConnected, r_hasIrisUpgrade, r_hasChevronUpgrade, r_isIrisClosed;
+    public boolean isRemoteConnected, r_hasIrisUpgrade, r_hasChevronUpgrade, r_isIrisClosed, canAccessLocal, canAccessRemote;
     public String r_address;
     public int r_gateType;
     public SGBaseTE localGate;
 
-    public GdoScreen(EntityPlayer player, World worldIn,  boolean isAdmin, boolean isRemoteConnected, boolean r_hasIrisUpgrade, boolean r_hasChevronUpgrade, boolean r_isIrisClosed, int r_gateType, String r_address) {
+    public GdoScreen(EntityPlayer player, World worldIn,  boolean isAdmin, boolean isRemoteConnected, boolean r_hasIrisUpgrade, boolean r_hasChevronUpgrade,
+        boolean r_isIrisClosed, int r_gateType, String r_address, boolean canAccessLocal, boolean canAccessRemote) {
         this.player = player;
         this.isAdmin = isAdmin;
         this.world = worldIn;
@@ -55,6 +56,8 @@ public class GdoScreen extends BasicScreen {
         this.r_isIrisClosed = r_isIrisClosed;
         this.r_gateType = r_gateType;
         this.r_address = r_address;
+        this.canAccessLocal = canAccessLocal;
+        this.canAccessRemote = canAccessRemote;
     }
 
     @SuppressWarnings("unchecked")
@@ -120,6 +123,7 @@ public class GdoScreen extends BasicScreen {
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.LEFT)
             .text("Open Iris")
+            .enabled(this.canAccessLocal)
             .onClick(() -> {
                 GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 1);
             })
@@ -140,6 +144,7 @@ public class GdoScreen extends BasicScreen {
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text("Close Iris")
+            .enabled(this.canAccessLocal)
             .onClick(() -> {
                 GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 2);
             })
@@ -178,6 +183,7 @@ public class GdoScreen extends BasicScreen {
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.LEFT)
             .text("Open Iris")
+            .enabled(this.canAccessRemote)
             .onClick(() -> {
                 GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 4);
             })
@@ -199,6 +205,7 @@ public class GdoScreen extends BasicScreen {
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text("Close Iris")
+            .enabled(this.canAccessRemote)
             .onClick(() -> {
                 GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 5);
             })
@@ -273,12 +280,14 @@ public class GdoScreen extends BasicScreen {
                     this.localIrisOpenButton.setEnabled(false);
                     this.localIrisCloseButton.setEnabled(false);
                 } else {
-                    if (localGate.irisIsClosed()) {
-                        this.localIrisOpenButton.setEnabled(true);
-                        this.localIrisCloseButton.setEnabled(false);
-                    } else {
-                        this.localIrisOpenButton.setEnabled(false);
-                        this.localIrisCloseButton.setEnabled(true);
+                    if (this.canAccessLocal) {
+                        if (localGate.irisIsClosed()) {
+                            this.localIrisOpenButton.setEnabled(true);
+                            this.localIrisCloseButton.setEnabled(false);
+                        } else {
+                            this.localIrisOpenButton.setEnabled(false);
+                            this.localIrisCloseButton.setEnabled(true);
+                        }
                     }
                 }
             }
@@ -333,18 +342,15 @@ public class GdoScreen extends BasicScreen {
                     this.remoteIrisOpenButton.setEnabled(false);
                     this.remoteIrisCloseButton.setEnabled(false);
                 } else {
-                    //if (remoteGate.irisState == IrisState.Closing || remoteGate.irisState == IrisState.Opening) {
-                    //    this.remoteIrisOpenButton.setEnabled(false);
-                    //    this.remoteIrisCloseButton.setEnabled(false);
-                    //} else {
-                    if (r_isIrisClosed) {
-                        this.remoteIrisOpenButton.setEnabled(true);
-                        this.remoteIrisCloseButton.setEnabled(false);
-                    } else {
-                        this.remoteIrisOpenButton.setEnabled(false);
-                        this.remoteIrisCloseButton.setEnabled(true);
+                    if (this.canAccessRemote) {
+                        if (r_isIrisClosed) {
+                            this.remoteIrisOpenButton.setEnabled(true);
+                            this.remoteIrisCloseButton.setEnabled(false);
+                        } else {
+                            this.remoteIrisOpenButton.setEnabled(false);
+                            this.remoteIrisCloseButton.setEnabled(true);
+                        }
                     }
-                    //}
                 }
                 this.remoteGateImage.setVisible(true);
                 this.localGateCloseButton.setEnabled(true);
