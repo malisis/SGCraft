@@ -234,6 +234,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public boolean transparency = true;
     public boolean defaultAllowIncoming = true;
     public boolean defaultAllowOutgoing = true;
+    public boolean defaultAllowGateAccess = true;
+    public boolean defaultAllowIrisAccess = true;
+    public boolean defaultAllowAdminAccess = true;
 
     // Access Control Lists
     private List<PlayerAccessData> playerAccessData;
@@ -261,9 +264,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         this.returnToPreviousIrisState = cfg.getBoolean("stargate", "returnToPreviousIrisState", this.returnToPreviousIrisState);
         this.requiresNoPower = cfg.getBoolean("stargate", "requiresNoPower", this.requiresNoPower);
         this.transparency = cfg.getBoolean("stargate", "transparency", this.transparency);
-        this.defaultAllowIncoming = cfg.getBoolean("stargate", "defaultAllowIncoming", this.defaultAllowIncoming);
-        this.defaultAllowOutgoing = cfg.getBoolean("stargate", "defaultAllowOutgoing", this.defaultAllowOutgoing);
-
+        this.defaultAllowIncoming = cfg.getBoolean("gate-access", "defaultAllowIncoming", this.defaultAllowIncoming);
+        this.defaultAllowOutgoing = cfg.getBoolean("gate-access", "defaultAllowOutgoing", this.defaultAllowOutgoing);
+        this.defaultAllowGateAccess = cfg.getBoolean("player-access", "defaultAllowGateAccess", this.defaultAllowGateAccess);
+        this.defaultAllowIrisAccess = cfg.getBoolean("player-access", "defaultAllowIrisAccess", this.defaultAllowIrisAccess);
+        this.defaultAllowAdminAccess = cfg.getBoolean("player-access", "defaultAllowAdminAccess", this.defaultAllowAdminAccess);
     }
 
     public static void configure(BaseConfiguration cfg) {
@@ -291,8 +296,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         cfg.getBoolean("stargate", "requiresNoPower", false);
         cfg.getBoolean("stargate", "transientDamage", true);
         cfg.getBoolean("stargate", "transparency", true);
-        cfg.getBoolean("stargate", "defaultAllowIncoming", true);
-        cfg.getBoolean("stargate", "defaultAllowOutgoing", true);
+        cfg.getBoolean("gate-access", "defaultAllowIncoming", true);
+        cfg.getBoolean("gate-access", "defaultAllowOutgoing", true);
+        cfg.getBoolean("player-access", "defaultAllowGateAccess", true);
+        cfg.getBoolean("player-access", "defaultAllowIrisAccess", true);
+        cfg.getBoolean("player-access", "defaultAllowAdminAccess", true);
 
         // Global static config values
         minutesOpenPerFuelItem = cfg.getInteger("stargate", "minutesOpenPerFuelItem", minutesOpenPerFuelItem);
@@ -563,8 +571,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             this.playerAccessData = PlayerAccessData.getPlayerAccessList(nbt);
             this.gateAccessData = GateAccessData.getGateAccessList(nbt);
         }
+
         this.defaultAllowIncoming = nbt.getBoolean("defaultAllowIncoming");
         this.defaultAllowOutgoing = nbt.getBoolean("defaultAllowOutgoing");
+        this.defaultAllowGateAccess = nbt.getBoolean("defaultAllowGateAccess");
+        this.defaultAllowIrisAccess = nbt.getBoolean("defaultAllowIrisAccess");
+        this.defaultAllowAdminAccess = nbt.getBoolean("defaultAllowAdminAccess");
     }
 
     protected String getStringOrNull(NBTTagCompound nbt, String name) {
@@ -649,6 +661,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         nbt.setBoolean("defaultAllowIncoming", defaultAllowIncoming);
         nbt.setBoolean("defaultAllowOutgoing", defaultAllowOutgoing);
+        nbt.setBoolean("defaultAllowGateAccess", defaultAllowGateAccess);
+        nbt.setBoolean("defaultAllowIrisAccess", defaultAllowIrisAccess);
+        nbt.setBoolean("defaultAllowAdminAccess", defaultAllowAdminAccess);
 
         return nbt;
     }
@@ -1171,21 +1186,73 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    public boolean allowAccessToIrisController(EntityPlayer player) {
-        UUID uuid = player.getUniqueID();
-
-        if (uuid != null && this.playerAccessData != null && this.playerAccessData.stream().filter(g -> g.getPlayerUUID().equals(uuid)).findFirst().isPresent()) {
-            PlayerAccessData playerAccessEntry = this.playerAccessData.stream().filter(g -> g.getPlayerUUID().equals(uuid)).findFirst().get();
-            return playerAccessEntry.hasIrisAccess();
+    public boolean allowAccessToIrisController(String playerName) {
+        boolean value = true;
+        if (!this.defaultAllowIrisAccess) {
+            value = false;
         }
-        return true;
+
+        if (this.playerAccessData != null && this.playerAccessData.stream().filter(g -> g.getPlayerName().equalsIgnoreCase(playerName)).findFirst().isPresent()) {
+            PlayerAccessData playerAccessEntry = this.playerAccessData.stream().filter(g -> g.getPlayerName().equalsIgnoreCase(playerName)).findFirst().get();
+            value = playerAccessEntry.hasIrisAccess();
+        }
+        return value;
+    }
+
+    public void setAllowAccessToIrisController(String playerName, boolean value) {
+        if (this.playerAccessData != null && this.playerAccessData.stream().filter(g -> g.getPlayerName().equalsIgnoreCase(playerName)).findFirst().isPresent()) {
+            PlayerAccessData gateAccessEntry = this.playerAccessData.stream().filter(g -> g.getPlayerName().equalsIgnoreCase(playerName)).findFirst().get();
+            gateAccessEntry.setIrisAccess(value);
+        }
+    }
+
+    public boolean allowGateAccess(String playerName) {
+        boolean value = true;
+        if (!this.defaultAllowGateAccess) {
+            value = false;
+        }
+
+        if (this.playerAccessData != null && this.playerAccessData.stream().filter(g -> g.getPlayerName().equalsIgnoreCase(playerName)).findFirst().isPresent()) {
+            PlayerAccessData playerAccessEntry = this.playerAccessData.stream().filter(g -> g.getPlayerName().equalsIgnoreCase(playerName)).findFirst().get();
+            value = playerAccessEntry.hasGateAccess();
+        }
+
+        return value;
+    }
+
+    public void setAllowGateAccessAccess(String playerName, boolean value) {
+        if (this.playerAccessData != null && this.playerAccessData.stream().filter(g -> g.getPlayerName().equalsIgnoreCase(playerName)).findFirst().isPresent()) {
+            PlayerAccessData gateAccessEntry = this.playerAccessData.stream().filter(g -> g.getPlayerName().equalsIgnoreCase(playerName)).findFirst().get();
+            gateAccessEntry.setGateAccess(value);
+        }
+    }
+
+    public boolean allowAdminAccess(String playerName) {
+        boolean value = true;
+        if (!this.defaultAllowAdminAccess) {
+            value = false;
+        }
+
+        if (this.playerAccessData != null && this.playerAccessData.stream().filter(g -> g.getPlayerName().equalsIgnoreCase(playerName)).findFirst().isPresent()) {
+            PlayerAccessData playerAccessEntry = this.playerAccessData.stream().filter(g -> g.getPlayerName().equalsIgnoreCase(playerName)).findFirst().get();
+            value = playerAccessEntry.isAdmin();
+        }
+
+        return value;
+    }
+
+    public void setAllowAccessAdmin(String playerName, boolean value) {
+        if (this.playerAccessData != null && this.playerAccessData.stream().filter(g -> g.getPlayerName().equalsIgnoreCase(playerName)).findFirst().isPresent()) {
+            PlayerAccessData gateAccessEntry = this.playerAccessData.stream().filter(g -> g.getPlayerName().equalsIgnoreCase(playerName)).findFirst().get();
+            gateAccessEntry.setAdmin(value);
+        }
     }
 
     public List<GateAccessData> getGateAccessData() {
         return this.gateAccessData;
     }
 
-    public List getPlayerAccessData() {
+    public List <PlayerAccessData>getPlayerAccessData() {
        return this.playerAccessData;
     }
 

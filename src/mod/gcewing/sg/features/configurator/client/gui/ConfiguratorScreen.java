@@ -255,7 +255,7 @@ public class ConfiguratorScreen extends BasicScreen {
             .position(0, this.gateAddressAccessListButton.getY() + 20)
             .text("Player Access List")
             .onClick(() -> {
-                // Player access list GUI
+                new PlayerAccessScreen(this, player, world, true).display();
             })
             .listener(this)
             .build("button.playeraccesslist");

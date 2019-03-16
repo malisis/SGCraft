@@ -1,5 +1,6 @@
 package gcewing.sg.features.configurator.client.gui;
 
+import gcewing.sg.features.configurator.network.ConfiguratorNetworkHandler;
 import gcewing.sg.features.pdd.network.PddNetworkHandler;
 import gcewing.sg.tileentity.SGBaseTE;
 import net.malisis.core.client.gui.Anchor;
@@ -89,7 +90,7 @@ public class GateAddressAccessEntryScreen extends BasicScreen {
                 .anchor(Anchor.BOTTOM | Anchor.RIGHT)
                 .text("Delete")
                 .onClick(() -> {
-                    PddNetworkHandler.sendGAAEntryUpdateToServer(localGate, this.oldAddress, this.addressTextField.getText().trim(), function);
+                    ConfiguratorNetworkHandler.sendGAAEntryUpdateToServer(localGate, this.oldAddress, this.addressTextField.getText().trim(), function);
                     this.close();
                 })
                 .listener(this)
@@ -103,8 +104,8 @@ public class GateAddressAccessEntryScreen extends BasicScreen {
                 .anchor(Anchor.BOTTOM | Anchor.RIGHT)
                 .text("Save")
                 .onClick(() -> {
-                    if ((this.addressTextField.getText().substring(4,5).equalsIgnoreCase("-")) && this.addressTextField.getText().substring(8,9).equalsIgnoreCase("-")) {
-                        PddNetworkHandler.sendGAAEntryUpdateToServer(localGate, this.oldAddress, this.addressTextField.getText().trim().toUpperCase(), function);
+                    if (this.addressTextField.getText().length() == 9 && this.addressTextField.getText().substring(4,5).equalsIgnoreCase("-") && this.addressTextField.getText().substring(8,9).equalsIgnoreCase("-")) {
+                        ConfiguratorNetworkHandler.sendGAAEntryUpdateToServer(localGate, this.oldAddress, this.addressTextField.getText().trim().toUpperCase(), function);
                         if (parent instanceof GateAddressAccessScreen) {
                             ((GateAddressAccessScreen) parent).delayedUpdate();
                         }
@@ -137,6 +138,7 @@ public class GateAddressAccessEntryScreen extends BasicScreen {
         if (unlockMouse && this.lastUpdate == 25) {
             Mouse.setGrabbed(false); // Force the mouse to be visible even though Mouse.isGrabbed() is false.  //#BugsUnited.
             unlockMouse = false; // Only unlock once per session.
+            this.addressTextField.setFocused(true);
         }
 
         if (++this.lastUpdate > 30) {
@@ -149,8 +151,16 @@ public class GateAddressAccessEntryScreen extends BasicScreen {
 
     @Override
     protected void keyTyped(char keyChar, int keyCode) {
-        if (keyCode == Keyboard.KEY_TAB) {
-            // Nothing
+        if (keyCode == Keyboard.KEY_RETURN) {
+            if (this.addressTextField.getText().length() == 9 && this.addressTextField.getText().substring(4,5).equalsIgnoreCase("-") && this.addressTextField.getText().substring(8,9).equalsIgnoreCase("-")) {
+                ConfiguratorNetworkHandler.sendGAAEntryUpdateToServer(localGate, this.oldAddress, this.addressTextField.getText().trim().toUpperCase(), function);
+                if (parent instanceof GateAddressAccessScreen) {
+                    ((GateAddressAccessScreen) parent).delayedUpdate();
+                }
+                this.close();
+            } else {
+                player.sendMessage(new TextComponentString("Invalid format"));
+            }
         }
         super.keyTyped(keyChar, keyCode);
         this.lastUpdate = 0; // Reset the timer when key is typed.

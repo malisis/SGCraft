@@ -43,7 +43,7 @@ public class GdoNetworkHandler extends SGChannel {
                     // Note: the buttons are sent the permissions when the GUI open, however, this check is here to verify no one
                     // is using a hacked client to bypass the GUI check.
 
-                    if (!localGate.allowAccessToIrisController(player)) {
+                    if (!localGate.allowAccessToIrisController(player.getName())) {
                         playerAccessLocalControl = false;
                     }
                     if (playerAccessLocalControl || SGCraft.hasPermission(player, "SGCraft.admin")) {
@@ -64,7 +64,7 @@ public class GdoNetworkHandler extends SGChannel {
                        // Todo: this may need to be implemented in the future?
                         // canEditRemote = remoteGate.getWorld().isBlockModifiable(player, remoteGate.getPos());
 
-                        if (!localGate.allowAccessToIrisController(player)) {
+                        if (!localGate.allowAccessToIrisController(player.getName())) {
                             playerAccessRemoteControl = false;
                         }
                         if (playerAccessRemoteControl || SGCraft.hasPermission(player, "SGCraft.admin")) {

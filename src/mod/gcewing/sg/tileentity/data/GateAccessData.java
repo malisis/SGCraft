@@ -67,7 +67,7 @@ public class GateAccessData {
             }
 
             if (command == -1) { // -1 means delete the entry, so skip re-adding it to the list.
-                gateAccessData.add(new GateAccessData(gateCompound.getString(ADDRESS), gateCompound.getBoolean(IACCESS), gateCompound.getBoolean(OACCESS)));
+                //gateAccessData.add(new GateAccessData(gateCompound.getString(ADDRESS), gateCompound.getBoolean(IACCESS), gateCompound.getBoolean(OACCESS)));
             }
         }
 

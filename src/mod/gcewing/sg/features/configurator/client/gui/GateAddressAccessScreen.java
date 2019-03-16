@@ -1,6 +1,7 @@
 package gcewing.sg.features.configurator.client.gui;
 
 import com.google.common.eventbus.Subscribe;
+import gcewing.sg.features.configurator.network.ConfiguratorNetworkHandler;
 import gcewing.sg.features.pdd.client.gui.PddEntryScreen;
 import gcewing.sg.features.pdd.network.PddNetworkHandler;
 import gcewing.sg.tileentity.SGBaseTE;
@@ -25,6 +26,7 @@ import net.malisis.core.util.FontColors;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import org.lwjgl.input.Keyboard;
@@ -32,7 +34,6 @@ import org.lwjgl.input.Mouse;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public class GateAddressAccessScreen extends BasicScreen {
     private int lastUpdate = 0;
@@ -93,9 +94,6 @@ public class GateAddressAccessScreen extends BasicScreen {
         this.gateAccessList.setItemComponentSpacing(1);
         this.gateAccessList.setPadding(2);
         this.gateAccessList.setName("List");
-        //this.gateAccessList.setSelectConsumer(g -> {
-        //    System.out.println("Hi");
-        //});
         this.gateAccessList.register(this);
         this.gateAccessList.setBorder(FontColors.WHITE, 1, 185);
         this.gateAccessList.setBorders(FontColors.WHITE, 185, 0, 1, 0, 0);
@@ -156,10 +154,16 @@ public class GateAddressAccessScreen extends BasicScreen {
 
         this.saveOptionsButton = new UIButtonBuilder(this)
                 .text("Save")
-                //.onClick(() -> PddNetworkHandler.sendGAAEntryUpdateToServer()
+                .onClick(() -> {
+                    if (this.gateAccessList.getSize() > 0 && this.gateAccessList.getSelectedItem() != null) {
+                        if (!this.gateAccessList.getSelectedItem().getAddress().isEmpty()) {
+                            ConfiguratorNetworkHandler.sendGateAddressAccessInputToServer(localGate, this.gateAccessList.getSelectedItem().getAddress().toUpperCase(),false, false,  this.allowIncomingCheckbox.isChecked(), this.allowOutgoingCheckbox.isChecked());
+                            player.sendMessage(new TextComponentString("Changes Saved for " + this.gateAccessList.getSelectedItem().getAddress().toUpperCase() + "."));
+                        }
+                    }
+                })
                 .anchor(Anchor.BOTTOM | Anchor.RIGHT)
                 .position(-5,0)
-                //.visible(this.canModify)
                 .build("button.save");
 
         this.addressOptionsContainer.add(this.perAddressOptionsLabel, optionsSeparator, this.gateIncomingLabel, this.allowIncomingCheckbox, this.denyIncomingCheckbox, gateOutgoingLabel, this.allowOutgoingCheckbox, this.denyOutgoingCheckbox, this.saveOptionsButton);
@@ -236,12 +240,15 @@ public class GateAddressAccessScreen extends BasicScreen {
         this.defaultDenyOutgoingCheckbox.register(this);
 
         this.saveDefaultOptionsButton = new UIButtonBuilder(this)
-                .text("Save")
-                //.onClick(() -> new PddEntryScreen(this, player, addressList.getSelectedItem().getName(), addressList.getSelectedItem().getAddress(), addressList.getSelectedItem().getIndex(), addressList.getSelectedItem().getUnid(), addressList.getSelectedItem().isLocked(), false).display())
-                .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-                .position(-45,0)
-                //.visible(this.canModify)
-                .build("button.savedefaults");
+            .text("Save")
+            .onClick(() -> {
+                ConfiguratorNetworkHandler.sendGateAddressAccessInputToServer(localGate, "", this.defaultAllowIncomingCheckbox.isChecked(), this.defaultAllowOutgoingCheckbox.isChecked(), this.allowIncomingCheckbox.isChecked(), this.allowOutgoingCheckbox.isChecked());
+                player.sendMessage(new TextComponentString("Changes Saved!"));
+                this.close();
+            })
+            .anchor(Anchor.BOTTOM | Anchor.RIGHT)
+            .position(-45,0)
+            .build("button.savedefaults");
 
         buttonClose = new UIButtonBuilder(this)
             .width(40)
@@ -355,7 +362,6 @@ public class GateAddressAccessScreen extends BasicScreen {
             }
         }
     }
-
 
     private class GateItemComponent extends BasicList.ItemComponent<GateAccessData> {
 

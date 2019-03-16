@@ -139,54 +139,6 @@ public class PddNetworkHandler extends SGChannel {
         }
     }
 
-    public static void sendGAAEntryUpdateToServer(SGBaseTE te, String oldAddress, String newAddress, int function) {
-        ChannelOutput data = pddChannel.openServer("GAAInputEntry");
-        writeCoords(data, te);
-        data.writeUTF(oldAddress);
-        data.writeUTF(newAddress);
-        data.writeInt(function);
-        data.close();
-    }
-
-    @ServerMessageHandler("GAAInputEntry")
-    public void handleGAAEntryUpdateFromClient(EntityPlayer player, ChannelInput data) {
-        BlockPos pos = readCoords(data);
-        String oldAddress = data.readUTF();
-        String newAddress = data.readUTF();
-        int function = data.readInt();
-
-        if (!SGCraft.hasPermission(player, "sgcraft.gui.configurator")) {
-            System.err.println("SGCraft - Hacked Client detected!");
-            return;
-        }
-        SGBaseTE localGate = SGBaseTE.at(player.world, pos);
-
-        if (localGate != null && localGate.getGateAccessData() != null) {
-            if (oldAddress.isEmpty() && function == 1) {
-                localGate.getGateAccessData().add(new GateAccessData(newAddress, true, true));
-            }
-
-            if (localGate.getGateAccessData() != null) {
-                Optional<GateAccessData> gateAccessEntry = localGate.getGateAccessData().stream().filter(g -> g.getAddress().equalsIgnoreCase(oldAddress)).findFirst();
-                if (gateAccessEntry.isPresent()) {
-                    if (!oldAddress.isEmpty() && !newAddress.isEmpty() && function == 2) {
-                        gateAccessEntry.get().setAddress(newAddress);
-                    }
-
-                    if (!oldAddress.isEmpty() && function == 3) {
-                        // Delete
-                        localGate.getGateAccessData().remove(gateAccessEntry.get());
-                    }
-                }
-            }
-
-            localGate.markChanged();
-        } else {
-            System.out.println("Exception in PDDNetworkHandler");
-            // Todo: throw exception
-        }
-    }
-
     public static void sendEnterSymbolToServer(SGBaseTE te, String address, int digit) {
         ChannelOutput data = pddChannel.openServer("EnterImmediateSymbol");
         writeCoords(data, te);

@@ -40,11 +40,11 @@ public class GdoItem extends Item {
             if (localGateTE instanceof SGBaseTE) {
                 SGBaseTE localGate = (SGBaseTE) localGateTE;
 
-                boolean canAccessLocal = localGate.allowAccessToIrisController(player);
+                boolean canAccessLocal = localGate.allowAccessToIrisController(player.getName());
                 boolean canAccessRemote = true;
                 if (localGate.isConnected() && localGate.state == SGState.Connected) {
                     SGBaseTE remoteGate = localGate.getConnectedStargateTE();
-                    canAccessRemote = remoteGate.allowAccessToIrisController(player);
+                    canAccessRemote = remoteGate.allowAccessToIrisController(player.getName());
                 }
 
                 if (SGCraft.hasPermission(player, "sgcraft.gui.gdo")) {
