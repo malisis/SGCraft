@@ -299,7 +299,7 @@ public class PddScreen extends BasicScreen {
                         this.gateStatusLabel.setVisible(true);
                         this.buttonDisconnect.setVisible(true);
                         this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
-                        this.gateStatusLabel.setText(" ... Diallinvvg ...");
+                        this.gateStatusLabel.setText(" ... Dialling ...");
                         this.buttonReset.setVisible(true);
                     }
 
@@ -372,6 +372,7 @@ public class PddScreen extends BasicScreen {
         this.buttonReset.setVisible(false);
         this.buttonDial.setVisible(true);
         localGate.dialledAddress = "";
+        localGate.numEngagedChevrons = 0;
         localGate.errorState = false; // Force this upon the local gate because the server/client is out of sync at this point.
         localGate.connectOrDisconnect("", player);
     }
@@ -497,7 +498,7 @@ public class PddScreen extends BasicScreen {
     }
 
     private int getXStartLocation(String address) {
-        if (address.length() == 7) {
+        if (address.length() == 7 || address.length() == 0) {
             return (this.addressTextureLabel.screenX() - 25) + (enteredAddress.length() * 12);
         } else {
             return  (this.addressTextureLabel.screenX() - 55) + (enteredAddress.length() * 12);

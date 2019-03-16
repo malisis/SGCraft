@@ -916,7 +916,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
         // Player Access Control System
-        if (this.allowGateAccess(player.getName())) {
+        if (!this.allowGateAccess(player.getName())) {
             if (!isPermissionsAdmin)
                 return diallingFailure(player, "accessFromDenied");
         }
@@ -956,7 +956,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
 
         // Player Access Control System
-        if (targetGate.allowGateAccess(player.getName())) {
+        if (!targetGate.allowGateAccess(player.getName())) {
             if (!isPermissionsAdmin)
                 return diallingFailure(player, "accessToDenied");
         }
@@ -1130,6 +1130,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         this.enteredAddress = "";
         this.dialledAddress = "";
         this.dialedDigit = 0;
+        this.numEngagedChevrons = 0;
         markChanged();
     }
 
