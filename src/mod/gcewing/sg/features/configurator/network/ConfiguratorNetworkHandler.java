@@ -79,7 +79,10 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         boolean returnToPreviousIrisState = data.readBoolean();
         boolean transientDamage = data.readBoolean();
         boolean transparency = data.readBoolean();
-        if (SGCraft.hasPermission(player, "sgcraft.configurator") && te.allowAdminAccess(playerName)) {
+
+        boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+
+        if (SGCraft.hasPermission(player, "sgcraft.configurator") && te.allowAdminAccess(playerName) || isPermissionsAdmin) {
             if (SGCraft.hasPermission(player, "sgcraft.configurator.secondsToStayOpen")) te.secondsToStayOpen = secondsToStayOpen;
             if (SGCraft.hasPermission(player, "sgcraft.configurator.ringRotationSpeed")) te.ringRotationSpeed = ringRotationSpeed;
             if (SGCraft.hasPermission(player, "sgcraft.configurator.maxEnergyBuffer")) te.maxEnergyBuffer = maxEnergyBuffer;
@@ -134,7 +137,9 @@ public class ConfiguratorNetworkHandler extends SGChannel {
             return;
         }
 
-        if (SGCraft.hasPermission(player, "sgcraft.configurator") && te.allowAdminAccess(playerName)) {
+        boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+
+        if (SGCraft.hasPermission(player, "sgcraft.configurator") && te.allowAdminAccess(playerName) || isPermissionsAdmin) {
             if (address.isEmpty()) { // indicates the user clicked the bottom save button
                 te.defaultAllowIncoming = defaultAllowIncoming;
                 te.defaultAllowOutgoing = defaultAllowOutgoing;
@@ -217,8 +222,9 @@ public class ConfiguratorNetworkHandler extends SGChannel {
             System.err.println("SGCraft - HandleGAA Exception - SGBaseTE disappeared");
             return;
         }
+        boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
-        if (SGCraft.hasPermission(player, "sgcraft.configurator") && localGate.allowAdminAccess(playerName)) {
+        if (SGCraft.hasPermission(player, "sgcraft.configurator") && localGate.allowAdminAccess(playerName) || isPermissionsAdmin) {
             if (localGate.getGateAccessData() != null) {
                 if (oldAddress.isEmpty() && function == 1) {
                     localGate.getGateAccessData().add(new GateAccessData(newAddress, true, true));
@@ -268,7 +274,9 @@ public class ConfiguratorNetworkHandler extends SGChannel {
             return;
         }
 
-        if (SGCraft.hasPermission(player, "sgcraft.configurator") && localGate.allowAdminAccess(playerName)) {
+        boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+
+        if (SGCraft.hasPermission(player, "sgcraft.configurator") && localGate.allowAdminAccess(playerName) || isPermissionsAdmin) {
             if (localGate.getPlayerAccessData() != null) {
                 if (oldName.isEmpty() && function == 1) {
                     localGate.getPlayerAccessData().add(new PlayerAccessData(newName, true, true, player.getName().equalsIgnoreCase(newName)));

@@ -47,7 +47,9 @@ public class ConfiguratorItem extends Item {
                   canEditRemote = remoteGate.getWorld().isBlockModifiable(player, remoteGate.getPos());
               }
 
-              if (SGCraft.hasPermission(player, "sgcraft.gui.configurator") && localGate.allowAdminAccess(player.getName())) {
+              boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+
+              if (SGCraft.hasPermission(player, "sgcraft.gui.configurator") && localGate.allowAdminAccess(player.getName()) || isPermissionsAdmin) {
                   GuiNetworkHandler.openGuiAtClient(localGate, player, 1, SGCraft.hasPermission(player, "sgcraft.admin"), canEditLocal, canEditRemote);
               } else {
                   System.out.println("I Fialed");
