@@ -13,4 +13,8 @@ public class PermissionsUtil {
         Player sPlayer = (Player) player;
         return sPlayer.hasPermission(permission);
     }
+
+    public static boolean hasPermissionSystem() {
+        return true;
+    }
 }

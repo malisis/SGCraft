@@ -526,4 +526,12 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 
         return true; // Fallback
     }
+
+    public static boolean hasPermissionSystem() {
+        if (isModLoaded("spongeapi")) {
+            return true;
+        }
+
+        return false; // Fallback
+    }
 }
