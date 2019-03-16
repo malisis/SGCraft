@@ -37,12 +37,13 @@ public class GdoNetworkHandler extends SGChannel {
         boolean playerAccessLocalControl = true;
         boolean playerAccessRemoteControl = true;
 
-        if (SGCraft.hasPermission(player, "sgcraft.gui.gdo")) {
+        boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+
+        if (SGCraft.hasPermission(player, "sgcraft.gui.gdo") || isPermissionsAdmin) {
             if (localGate != null) {
 
                     // Note: the buttons are sent the permissions when the GUI open, however, this check is here to verify no one
                     // is using a hacked client to bypass the GUI check.
-
                     if (!localGate.allowAccessToIrisController(player.getName())) {
                         playerAccessLocalControl = false;
                     }
@@ -50,7 +51,7 @@ public class GdoNetworkHandler extends SGChannel {
                         if (setting == 1) {
                             localGate.openIris();
                         }
-                        if (setting == 1) {
+                        if (setting == 2) {
                             localGate.closeIris();
                         }
                     }
