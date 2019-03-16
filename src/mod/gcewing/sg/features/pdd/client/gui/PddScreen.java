@@ -54,7 +54,7 @@ public class PddScreen extends BasicScreen {
     private BasicForm form;
     private BasicContainer<?> addressContainer;
     private UIButton addAddressButton, editAddressButton, deleteAddressButton, buttonReset, closeButton, buttonDial, buttonDisconnect;
-    private UILabel localGateAddressLabel, gateStatusLabel, availableAddressesLabel, addressTextureLabel;
+    private UILabel localGateAddressLabel, gateStatusLabel, availableAddressesLabel, addressTextureLabel, userFeedbackLabel;
     private UISeparator valuesSeparator;
     private BlockPos location;
     private World world;
@@ -223,7 +223,10 @@ public class PddScreen extends BasicScreen {
             .onClick(this::close)
             .build("button.close");
 
-        this.form.add(this.addressContainer, addAddressButton, editAddressButton, deleteAddressButton, buttonDial, buttonReset, buttonDisconnect, buttonClose);
+        userFeedbackLabel = new UILabel(this, TextFormatting.ITALIC + "Don't close PDD until wormhole connects...");
+        userFeedbackLabel.setPosition(-15, -3, Anchor.CENTER | Anchor.BOTTOM);
+
+        this.form.add(this.addressContainer, addAddressButton, editAddressButton, deleteAddressButton, buttonDial, buttonReset, buttonDisconnect, userFeedbackLabel, buttonClose);
         addToScreen(this.form);
         this.readAddresses(player);
     }
@@ -265,6 +268,9 @@ public class PddScreen extends BasicScreen {
                 this.localGateAddressLabel.setText("No Local Stargate Found");
             }
             if (localGate != null) {
+
+                this.userFeedbackLabel.setVisible(!this.buttonDial.isVisible() && !this.buttonReset.isVisible() && !this.buttonDisconnect.isVisible() && !(localGate.state == SGState.Disconnecting));
+
                 if ((this.dialling || this.last || localGate.state == SGState.SyncAwait || localGate.state == SGState.Transient)) {
                     this.buttonDial.setVisible(false);
                     this.addressList.setVisible(false);
