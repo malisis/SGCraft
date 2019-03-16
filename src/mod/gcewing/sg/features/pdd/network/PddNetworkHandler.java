@@ -2,22 +2,17 @@ package gcewing.sg.features.pdd.network;
 
 import gcewing.sg.BaseDataChannel;
 import gcewing.sg.SGCraft;
-import gcewing.sg.features.configurator.client.gui.GateAddressAccessEntryScreen;
 import gcewing.sg.features.pdd.AddressData;
 import gcewing.sg.features.pdd.client.gui.PddEntryScreen;
 import gcewing.sg.features.pdd.client.gui.PddScreen;
 import gcewing.sg.network.SGChannel;
 import gcewing.sg.tileentity.SGBaseTE;
-import gcewing.sg.tileentity.data.GateAccessData;
 import gcewing.sg.util.SGAddressing;
-import gcewing.sg.util.SGState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
-
-import java.util.Optional;
 
 public class PddNetworkHandler extends SGChannel {
 
@@ -100,6 +95,12 @@ public class PddNetworkHandler extends SGChannel {
         }
         if (setting == 3) {
             localGate.connectOrDisconnect("", player);
+            localGate.errorState = false; // Force this on the servers' TE.
+        }
+
+        if (setting == 4) {
+            localGate.clearIdleConnection();
+            System.out.println("Cleared Idle Connection");
             localGate.errorState = false; // Force this on the servers' TE.
         }
     }

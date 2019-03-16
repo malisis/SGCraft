@@ -1130,7 +1130,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         this.enteredAddress = "";
         this.dialledAddress = "";
         this.dialedDigit = 0;
-        this.numEngagedChevrons = 0;
         markChanged();
     }
 
@@ -1275,6 +1274,19 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (dte != null)
             dte.clearConnection();
         clearConnection();
+    }
+
+    public void clearIdleConnection() {
+        if (state == SGState.Idle) {
+            System.err.println("Clearing Idle State");
+            dialledAddress = "";
+            dialedDigit = 0;
+            enteredAddress = "";
+            connectedLocation = null;
+            numEngagedChevrons = 0;
+            isInitiator = false;
+            markChanged();
+        }
     }
 
     public void clearConnection() {

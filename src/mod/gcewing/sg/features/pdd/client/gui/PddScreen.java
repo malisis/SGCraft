@@ -91,8 +91,6 @@ public class PddScreen extends BasicScreen {
             localGate = (SGBaseTE) localGateTE;
         }
 
-        System.out.println("Construct: " + " State Error: " + localGate.errorState);
-
         // Master Panel
         this.form = new BasicForm(this, 300, 225, "Personal Dialer Device");
         this.form.setMovable(true);
@@ -175,7 +173,8 @@ public class PddScreen extends BasicScreen {
             .visible(false)
             .onClick(() -> {
                 if (this.addressList.getSize() > 0 && this.addressList.getSelectedItem() != null && !this.addressList.getSelectedItem().getAddress().isEmpty()) {
-                    localGate.resetStargate(); //Reset before starting to account for half dialed sequences
+                    this.resetGui(); //Reset before starting to account for half dialed sequences
+                    this.lastUpdate = 0;
                     if (localGate.chevronsLockOnDial) {
                         if (!isAdmin) {
                             startProgressiveDialSelectedAddress(); // Progressive Dial Sequence
@@ -251,11 +250,11 @@ public class PddScreen extends BasicScreen {
             }
         }
 
-        if (this.lastUpdate == 100) {
+        if (this.lastUpdate == 200) {
             this.checkDiallingStatus();
         }
 
-        if (++this.lastUpdate > 100) {
+        if (++this.lastUpdate > 200) {
             this.lastUpdate = 0;
         }
     }
@@ -368,8 +367,8 @@ public class PddScreen extends BasicScreen {
     }
 
     private void resetGui() {
-        System.out.println("Reset GUI");
-        PddNetworkHandler.sendPddInputToServer(localGate, 3, "", "");
+        // Note:  this is programmed specifically to wait for TE data to arrive to reset the clients gate.
+        PddNetworkHandler.sendPddInputToServer(localGate, 4, "", "");
         dialling = false;
         firstOpen = true;
         showError = false;
@@ -377,10 +376,6 @@ public class PddScreen extends BasicScreen {
         this.addressList.setVisible(true);
         this.buttonReset.setVisible(false);
         this.buttonDial.setVisible(true);
-        localGate.dialledAddress = "";
-        localGate.numEngagedChevrons = 0;
-        localGate.errorState = false; // Force this upon the local gate because the server/client is out of sync at this point.
-        localGate.connectOrDisconnect("", player);
     }
 
     @Override
