@@ -912,6 +912,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (homeAddress.equals("")) {
             return diallingFailure(player, "selfOutOfRange");
         }
+
+        // Access Control System
+        if (this.allowGateAccess(player.getName())) {
+            return diallingFailure(player, "accessFromDenied");
+        }
+
         if (this.allowOnlySpecifiedDestination) {
             if (!this.onlySpecifiedAddress.isEmpty()) {
                 if (!address.equalsIgnoreCase(this.onlySpecifiedAddress));
@@ -944,7 +950,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             return diallingFailure(player, "diallingItself");
         }
 
-        // Access Control System
+        // Player Access Control System
+        if (targetGate.allowGateAccess(player.getName())) {
+            return diallingFailure(player, "accessToDenied");
+        }
+
+        // Gate Address Control System
         boolean debugAccessControlSystem = true;
         boolean accessSystemDialDestination = true;
         if (debugAccessControlSystem)
