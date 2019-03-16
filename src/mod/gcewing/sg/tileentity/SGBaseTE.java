@@ -42,6 +42,11 @@ import gcewing.sg.util.FakeTeleporter;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.client.renderer.RenderGlobal;
+import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -65,6 +70,7 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -1807,19 +1813,28 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             }
             trackedEntities.clear();
             // Todo:  setup vectors for horizontal gates
-            Vector3 p0 = new Vector3(-1.5, 0.5, -1.5);
-            Vector3 p1 = new Vector3(1.5, 3.5, 1.5);
+            Vector3 p0 = null;
+            Vector3 p1 = null;
+
+            if (this.gateOrientation == 1) {
+                p0 = new Vector3(-1.5, 0.5, -1.5);
+                p1 = new Vector3(1.5, 3.5, 1.5);
+            }
+
+
+            if (this.gateOrientation == 2 && this.gateOrientation == 3) {
+                p0 = new Vector3(1.5, -1.5, -0.5);
+                p1 = new Vector3(-1.5, 1.5, -3.5);
+            }
+
             Trans3 t = localToGlobalTransformation();
             AxisAlignedBB box = t.box(p0, p1);
-            //System.out.printf("SGBaseTE.checkForEntitiesInPortal: %s\n", box);
             List<Entity> ents = world.getEntitiesWithinAABB(Entity.class, box);
             for (Entity entity : ents) {
                 if (entity instanceof EntityFishHook) {
                     continue;
                 }
                 if (!entity.isDead && entity.getRidingEntity() == null) {
-                    //if (!(entity instanceof EntityPlayer))
-                    //  System.out.printf("SGBaseTE.checkForEntitiesInPortal: Tracking %s\n", repr(entity));
                     trackedEntities.add(new TrackedEntity(entity));
                 }
             }
@@ -1839,7 +1854,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             //if (!(entity instanceof EntityPlayer))
             //  System.out.printf("SGBaseTE.entityInPortal: z0 = %.3f z1 = %.3f\n", p0.z, p1.z);
             double z0 = 0.0;
-            if (p0.z >= z0 && p1.z < z0 && p1.z > z0 - 5.0) {
+
+            if ((this.gateOrientation == 1 && p0.z >= z0 && p1.z < z0 && p1.z > z0 - 5.0) || (this.gateOrientation == 2 && p0.y >= z0 && p1.y < z0 && p1.y > z0 - 5.0)) {
                 //System.out.printf("SGBaseTE.entityInPortal: %s passed through event horizon of stargate at (%d,%d,%d) in %s\n",
                 //  repr(entity), xCoord, yCoord, zCoord, world);
                 entity.motionX = vx;
@@ -1854,7 +1870,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 SGBaseTE dte = getConnectedStargateTE();
                 if (dte != null) {
                     // Access Control System
-                    System.out.println("Attempting Teleporting: " + entity.getName());
                     boolean allowTeleport = true;
                     if (entity.getRidingEntity() != null) {
                         Entity rider = entity.getRidingEntity();
@@ -1950,6 +1965,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         Vector3 q = t2.p(-p.x, p.y, -p.z); // new global position
         Vector3 u = t2.v(-v.x, v.y, -v.z); // new global velocity
         Vector3 s = t2.v(r.mul(-1)); // new global facing
+
         if (debugTeleport) {
             System.out.printf("SGBaseTE.teleportEntity: Facing old %s new %s\n", r, s);
         }
@@ -2080,23 +2096,31 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return teleportEntityToWorld(entity, p, v, a, world, destBlocked);
     }
 
-    Entity teleportEntityToWorld(Entity oldEntity, Vector3 p, Vector3 v, double a, WorldServer newWorld, boolean destBlocked) {
+    Entity teleportEntityToWorld(Entity entity, Vector3 p, Vector3 v, double a, WorldServer newWorld, boolean destBlocked) {
         if (destBlocked) {
-            if (!(oldEntity instanceof EntityLivingBase))
+            if (!(entity instanceof EntityLivingBase))
                 return null;
         }
 
-        FakeTeleporter fakeTeleporter = new FakeTeleporter();
-        Entity newEntity = oldEntity.changeDimension(newWorld.provider.getDimension(), fakeTeleporter);
+        if (this.world == newWorld) {
+            entity.rotationYaw = (float) a;
+            entity.setPositionAndUpdate(p.x, p.y, p.z);
+            setVelocity(entity, v);
+            entity.world.updateEntityWithOptionalForce(entity, false);
+            entity.velocityChanged = true; // Have to mark entity velocity changed.
+            return entity;
+        } else {
+            //Todo: the following was modified because the below should only fire if changing permissions, else an "entity already exists" is thrown.
+            FakeTeleporter fakeTeleporter = new FakeTeleporter();
+            Entity newEntity = entity.changeDimension(newWorld.provider.getDimension(), fakeTeleporter);
+            if (newEntity.dimension == newWorld.provider.getDimension()) {
+                newEntity.setLocationAndAngles(p.x, p.y, p.z, (float) a, entity.rotationPitch);
+                setVelocity(newEntity, v); //Set velocity so that items exist at the same rate they did when they entered the event horizon.
+                newEntity.velocityChanged = true;
+            }
 
-        // Now check to see if the entity made it through the above server method, if it did, then update their location.
-        if (newEntity.dimension == newWorld.provider.getDimension()) {
-            newEntity.setLocationAndAngles(p.x, p.y, p.z, (float) a, oldEntity.rotationPitch);
-            setVelocity(newEntity,v); //Set velocity so that items exist at the same rate they did when they entered the event horizon.
-            newEntity.velocityChanged = true;
+            return newEntity;
         }
-
-        return newEntity;
     }
 
     protected static int yawSign(Entity entity) {

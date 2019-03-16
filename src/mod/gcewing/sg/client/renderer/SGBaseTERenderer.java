@@ -17,6 +17,7 @@ import gcewing.sg.Vector3;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirectional;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderGlobal;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -78,6 +79,7 @@ public class SGBaseTERenderer extends BaseTileEntityRenderer {
 
     @Override
     public void render(TileEntity te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
+
         SGBaseTE gate = (SGBaseTE)te;
         if (gate.isMerged) {
             glPushMatrix();
@@ -97,45 +99,44 @@ public class SGBaseTERenderer extends BaseTileEntityRenderer {
 
             if (gate.gateOrientation == 2) {
                 if (gate.facingDirectionOfBase == 0) { // North
-                    glTranslated(x + 0.5, y + 0.25, z + 2.5);
+                    glTranslated(x + 0.5, y + 0.25, z + -1.5);
                     glRotatef(180, 0, 180, 180); // Horizontal, Face Up
                 }
                 if (gate.facingDirectionOfBase == 1) { // West
-                    glTranslated(x + 2.5, y + 0.25, z + 0.5);
+                    glTranslated(x + -1.5, y + 0.25, z + 0.5);
                     glRotatef(180, 180, 180, 0); // Horizontal, Face Up
                 }
                 if (gate.facingDirectionOfBase == 2) { // South
-                    glTranslated(x + 0.5, y + 0.25, z + -1.5);
+                    glTranslated(x + 0.5, y + 0.25, z + 2.5);
                     glRotatef(180, 0, -180, 180); // Horizontal, Face Up
                 }
                 if (gate.facingDirectionOfBase == 3) { // East
-                    glTranslated(x + -1.5, y + 0.25, z + 0.5);
+                    glTranslated(x + 2.5, y + 0.25, z + 0.5);
                     glRotatef(180, 180, -180, 0); // Horizontal, Face Up
                 }
             }
 
             if (gate.gateOrientation == 3) {
                 if (gate.facingDirectionOfBase == 0) { // North
-                    glTranslated(x + 0.5, y + 0.25, z + 2.5);
+                    glTranslated(x + 0.5, y + 0.25, z + -1.5);
                     glRotatef(180, 0, -180, 180); // Horizontal, Face Down
                 }
                 if (gate.facingDirectionOfBase == 1) { // West
-                    glTranslated(x + 2.5, y + 0.25, z + 0.5);
+                    glTranslated(x + -1.5, y + 0.25, z + 0.5);
                     glRotatef(180, 180, -180, 0); // Horizontal, Face Down
 
                 }
                 if (gate.facingDirectionOfBase == 2) { // South
-                    glTranslated(x + 0.5, y + 0.25, z + -1.5);
+                    glTranslated(x + 0.5, y + 0.25, z + 2.5);
                     glRotatef(180, 0, 180, 180); // Horizontal, Face Down
                 }
                 if (gate.facingDirectionOfBase == 3) { // East
-                    glTranslated(x + -1.5, y + 0.25, z + 0.5);
+                    glTranslated(x + 2.5, y + 0.25, z + 0.5);
                     glRotatef(180, 180, 180, 0); // Horizontal, Face Down
                 }
             }
 
             renderStargate(gate, partialTicks);
-
             glDisable(GL_RESCALE_NORMAL);
             glPopMatrix();
         }

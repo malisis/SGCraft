@@ -250,11 +250,11 @@ public class PddScreen extends BasicScreen {
             }
         }
 
-        if (this.lastUpdate == 200) {
+        if (this.lastUpdate == 50) {
             this.checkDiallingStatus();
         }
 
-        if (++this.lastUpdate > 200) {
+        if (++this.lastUpdate > 50) {
             this.lastUpdate = 0;
         }
     }
