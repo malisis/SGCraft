@@ -1797,6 +1797,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 entityInPortal(trk.entity, trk.lastPos);
             }
             trackedEntities.clear();
+            // Todo:  setup vectors for horizontal gates
             Vector3 p0 = new Vector3(-1.5, 0.5, -1.5);
             Vector3 p1 = new Vector3(1.5, 3.5, 1.5);
             Trans3 t = localToGlobalTransformation();
@@ -1843,10 +1844,36 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
                 SGBaseTE dte = getConnectedStargateTE();
                 if (dte != null) {
+                    // Access Control System
+                    System.out.println("Attempting Teleporting: " + entity.getName());
+                    boolean allowTeleport = true;
+                    if (entity.getRidingEntity() != null) {
+                        Entity rider = entity.getRidingEntity();
+                        if (rider instanceof EntityPlayer) {
+                            if (!this.allowGateAccess(rider.getName()) || !dte.allowGateAccess(rider.getName())) {
+                                allowTeleport = false;
+                            }
+                        }
+                    } else {
+                        if (entity instanceof EntityPlayer) {
+                            if (!this.allowGateAccess(entity.getName()) || !dte.allowGateAccess(entity.getName())) {
+                                allowTeleport = false;
+                            }
+                        }
+                    }
+                    if (!allowTeleport) {
+                        if (entity instanceof EntityPlayer)
+                            entity.sendMessage(new TextComponentString("Transport Failed.  Gate Access Denied!"));
+                        if (entity.getRidingEntity()!= null && (entity.getRidingEntity() instanceof EntityPlayer))
+                            entity.sendMessage(new TextComponentString("Rider Transport failed.  Gate Access Denied!"));
+                        return;
+                    }
+
                     Trans3 dt = dte.localToGlobalTransformation();
                     while (entity.getRidingEntity() != null)
                         entity = entity.getRidingEntity();
                     teleportEntityAndRiders(entity, t, dt, connectedLocation.dimension, dte.irisIsClosed());
+
                 }
             }
         }

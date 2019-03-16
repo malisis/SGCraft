@@ -272,7 +272,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         if (SGCraft.hasPermission(player, "sgcraft.configurator") && localGate.allowAdminAccess(playerName)) {
             if (localGate.getPlayerAccessData() != null) {
                 if (oldName.isEmpty() && function == 1) {
-                    localGate.getPlayerAccessData().add(new PlayerAccessData(newName, true, true, false));
+                    localGate.getPlayerAccessData().add(new PlayerAccessData(newName, true, true, player.getName().equalsIgnoreCase(newName)));
                 }
 
                 if (localGate.getPlayerAccessData() != null) {

@@ -50,6 +50,7 @@ public class ConfiguratorItem extends Item {
               if (SGCraft.hasPermission(player, "sgcraft.gui.configurator") && localGate.allowAdminAccess(player.getName())) {
                   GuiNetworkHandler.openGuiAtClient(localGate, player, 1, SGCraft.hasPermission(player, "sgcraft.admin"), canEditLocal, canEditRemote);
               } else {
+                  System.out.println("I Fialed");
                   player.sendMessage(new TextComponentString("Insufficient permissions.  Requires 'sgcraft.gui.configurator'"));
                   return new ActionResult<>(EnumActionResult.FAIL, player.getHeldItem(handIn));
               }
