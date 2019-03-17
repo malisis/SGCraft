@@ -1,9 +1,7 @@
 package gcewing.sg.features.pdd;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
-import gcewing.sg.tileentity.data.GateAccessData;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -105,9 +103,7 @@ public final class AddressData {
     public static NBTTagCompound writeAddresses(final NBTTagCompound compound, final List<AddressData> addresses) {
         checkNotNull(compound);
         checkNotNull(addresses);
-        //checkState(addresses.size() > 0, "Writing no addresses makes no sense!");
 
-        //final NBTTagList list = compound.getTagList(ADDRESSES, Constants.NBT.TAG_COMPOUND);
         final NBTTagList list = new NBTTagList();
 
         for (final AddressData data : addresses) {
@@ -126,7 +122,6 @@ public final class AddressData {
         return compound;
     }
 
-    // Very Important this is needed when doing list equal comparisons
     @Override
     public boolean equals(Object o) {
         if (this == o) {

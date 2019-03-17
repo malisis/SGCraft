@@ -65,10 +65,6 @@ public class GateAccessData {
                 gateCompound.setBoolean(IACCESS, iaccess);
                 gateCompound.setBoolean(OACCESS, oaccess);
             }
-
-            if (command == -1) { // -1 means delete the entry, so skip re-adding it to the list.
-                //gateAccessData.add(new GateAccessData(gateCompound.getString(ADDRESS), gateCompound.getBoolean(IACCESS), gateCompound.getBoolean(OACCESS)));
-            }
         }
 
         if (command == 1) { // Indicates new request.
@@ -82,11 +78,11 @@ public class GateAccessData {
         checkNotNull(compound);
 
         if (!compound.hasKey(GateAccessData.GATEACCESSLIST)) {
-            // Todo remove this after testing.....
-            //System.out.println("getGateAccessList: TE missing GATEACCESSLIST, adding default for testing purposes");
-            //List<GateAccessData> genericAddressList = Lists.newArrayList();
-            //genericAddressList.add(new GateAccessData( "T9FH-3VW-VL", true, true));
-            //GateAccessData.writeAddresses(compound, genericAddressList);
+            /*
+            List<GateAccessData> genericAddressList = Lists.newArrayList();
+            genericAddressList.add(new GateAccessData( "T9FH-3VW-VL", true, true));
+            GateAccessData.writeAddresses(compound, genericAddressList);
+            */
         }
 
         final List<GateAccessData> gateAccessData = new ArrayList<>();
@@ -130,7 +126,6 @@ public class GateAccessData {
         return compound;
     }
 
-    // Very Important this is needed when doing list equal comparisons
     @Override
     public boolean equals(Object o) {
         if (this == o) {

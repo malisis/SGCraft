@@ -10,6 +10,7 @@ import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class PlayerAccessData {
     static final String PLAYERACCESSLIST = "playeraccesslist";
@@ -90,14 +91,10 @@ public class PlayerAccessData {
         checkNotNull(compound);
 
         if (!compound.hasKey(PlayerAccessData.PLAYERACCESSLIST)) {
-            // Todo remove this after testing.....
             List<PlayerAccessData> genericAddressList = Lists.newArrayList();
             /*
-            genericAddressList.add(new PlayerAccessData( "Dockter", true, true, true));
             genericAddressList.add(new PlayerAccessData( "Wifee", true, true, true));
-            genericAddressList.add(new PlayerAccessData( "ceredwin", true, true, false));
-            genericAddressList.add(new PlayerAccessData( "TB", true, true, false));*/
-
+            */
             PlayerAccessData.writeAddresses(compound, genericAddressList);
         }
 
@@ -139,5 +136,22 @@ public class PlayerAccessData {
         }
 
         return compound;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        PlayerAccessData that = (PlayerAccessData) o;
+        return Objects.equals(playerName, that.playerName);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(playerName);
     }
 }
