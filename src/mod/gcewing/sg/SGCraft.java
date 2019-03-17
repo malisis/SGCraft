@@ -111,6 +111,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static SGPowerBlock sgPowerUnit;
 
     public static Item naquadah, naquadahIngot, sgCoreCrystal, sgControllerCrystal, sgChevronUpgrade, sgIrisUpgrade, sgIrisBlade;
+    public static Item tollan_phase_shift_device;
 
     public static Block ic2PowerUnit;
     public static Item ic2Capacitor;
@@ -281,6 +282,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         if (isModLoaded("ic2")) {
             zpm = addItem(new ZPMItem(), "zpm");
         }
+
+        tollan_phase_shift_device = newItem("tollan_phase_shift_device");
 
         if (isModLoaded("malisiscore")) {
             new GuiNetworkHandler(Info.modID+"-GUI");

@@ -1985,6 +1985,14 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             }
         }
 
+        // Tollana Phase Shift Device == Bypass destBlocked (isIrisClosed)
+        if (entity instanceof EntityPlayer) {
+            EntityPlayer player = (EntityPlayer) entity;
+            if (player != null && !player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().getItem().equals(SGCraft.tollan_phase_shift_device)) {
+                destBlocked = false;
+            }
+        }
+
         if (!destBlocked) { // destBlocked == closed iris.
             // Play sound from point of origin gate.
             playTeleportSound(entity.getEntityWorld(), new Vector3(entity.getPositionVector()), entity);
