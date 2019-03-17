@@ -69,9 +69,6 @@ public class PddScreen extends BasicScreen {
     private SGBaseTE localGate = null;
     private boolean last = false;
     public boolean firstOpen = true;
-    public boolean error = false;
-    private boolean showError = false;
-
 
     private BasicList<AddressData> addressList;
 
@@ -336,7 +333,7 @@ public class PddScreen extends BasicScreen {
                     this.gateStatusLabel.setVisible(true);
                     this.buttonDisconnect.setVisible(true);
                     this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.RED_FO).shadow(true).scale(1.8F).build());
-                    this.gateStatusLabel.setText(" ... Error ...");
+                    this.gateStatusLabel.setText("... Error ...");
                     this.diallingAddress = localGate.dialledAddress; // Account for someone opening the GUI to a connected gate.
                     dialling = false;
                     this.buttonDial.setVisible(false);
@@ -371,7 +368,6 @@ public class PddScreen extends BasicScreen {
         PddNetworkHandler.sendPddInputToServer(localGate, 4, "", "");
         dialling = false;
         firstOpen = true;
-        showError = false;
         last = false;
         this.addressList.setVisible(true);
         this.buttonReset.setVisible(false);
@@ -433,7 +429,11 @@ public class PddScreen extends BasicScreen {
             if (this.addressList.getSelectedItem() != null && !this.addressList.getSelectedItem().getAddress().isEmpty()) {
                 this.gateStatusLabel.setText("... Dialling ...");
                 String destination = this.addressList.getSelectedItem().getAddress().toUpperCase().replaceAll("-", "");
-                this.enteredAddress = destination;
+                if (SGAddressing.inSameDimension(localGate.homeAddress,destination)) {
+                    this.enteredAddress = destination.substring(0,7);
+                } else {
+                    this.enteredAddress = destination.substring(0,9);
+                }
                 PddNetworkHandler.sendPddInputToServer(localGate, 1, localGate.homeAddress ,destination); // Dials specified address based on Gates configuration, rotation vs. immediate dial.
             }
         }

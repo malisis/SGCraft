@@ -1284,7 +1284,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     public void clearIdleConnection() {
         if (state == SGState.Idle) {
-            System.err.println("Clearing Idle State");
             dialledAddress = "";
             dialedDigit = 0;
             enteredAddress = "";
