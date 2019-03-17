@@ -1967,7 +1967,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         Vector3 r = t1.iv(yawVector(entity)); // local facing
         Vector3 q = t2.p(-p.x, p.y, -p.z); // new global position
         if (this.gateOrientation == 3) {
-            q = t2.p(-p.x, -p.y, -p.z); // new global position for orientation 3, prevents player from spawning in the ground
+            q = t2.p(-p.x, -p.y, -p.z); // new global position for
         }
         Vector3 u = t2.v(-v.x, v.y, -v.z); // new global velocity
         Vector3 s = t2.v(r.mul(-1)); // new global facing

@@ -18,7 +18,7 @@ public class SGBaseScreen extends SGScreen {
 
     static String screenTitle = "Stargate Address";
     static final int guiWidth = 256;
-    static final int guiHeight = 92; //92;
+    int guiHeight = 208; //92;
     static final int fuelGaugeWidth = 16;
     static final int fuelGaugeHeight = 34;
     static final int fuelGaugeX = 214;
@@ -34,14 +34,15 @@ public class SGBaseScreen extends SGScreen {
     
     public static SGBaseScreen create(EntityPlayer player, World world, BlockPos pos) {
         SGBaseTE te = SGBaseTE.at(world, pos);
-        if (te != null)
+        if (te != null) {
             return new SGBaseScreen(player, te);
-        else
+        } else {
             return null;
+        }
     }
 
     private SGBaseScreen(EntityPlayer player, SGBaseTE te) {
-        super(new SGBaseContainer(player, te), guiWidth, guiHeight);
+        super(new SGBaseContainer(player, te), guiWidth, 208);
         this.te = te;
         this.player = player;
         this.te.markBlockForUpdate();
@@ -63,7 +64,9 @@ public class SGBaseScreen extends SGScreen {
     protected void drawBackgroundLayer() {
         if (this.te.gateOrientation == 1 && this.te.allowAdminAccess(player.getName())) {
             bindTexture(SGCraft.mod.resourceLocation("textures/gui/sg_gui.png"), 256, 256);
+            guiHeight = 208;
         } else {
+            guiHeight = 92;
             bindTexture(SGCraft.mod.resourceLocation("textures/gui/sg_gui_noinventory.png"), 256, 125);
         }
         drawTexturedRect(0, 0, guiWidth, guiHeight, 0, 0);
