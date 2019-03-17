@@ -83,13 +83,10 @@ public class GateAccessData {
 
         if (!compound.hasKey(GateAccessData.GATEACCESSLIST)) {
             // Todo remove this after testing.....
-            System.out.println("getGateAccessList: TE missing GATEACCESSLIST, adding default for testing purposes");
-            List<GateAccessData> genericAddressList = Lists.newArrayList();
-            genericAddressList.add(new GateAccessData( "T9FH-3VW-VL", true, true));
-            genericAddressList.add(new GateAccessData( "X35A-008-YC", false, false));
-            genericAddressList.add(new GateAccessData( "A44A-0C8-AC", true, false));
-            genericAddressList.add(new GateAccessData( "BFEZ-878-AY", false, true));
-            GateAccessData.writeAddresses(compound, genericAddressList);
+            //System.out.println("getGateAccessList: TE missing GATEACCESSLIST, adding default for testing purposes");
+            //List<GateAccessData> genericAddressList = Lists.newArrayList();
+            //genericAddressList.add(new GateAccessData( "T9FH-3VW-VL", true, true));
+            //GateAccessData.writeAddresses(compound, genericAddressList);
         }
 
         final List<GateAccessData> gateAccessData = new ArrayList<>();

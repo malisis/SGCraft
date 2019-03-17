@@ -12,10 +12,12 @@ import static org.lwjgl.opengl.GL11.glTexCoord2d;
 import static org.lwjgl.opengl.GL11.glTexParameteri;
 import static org.lwjgl.opengl.GL11.glVertex3d;
 
+import com.google.common.eventbus.Subscribe;
 import gcewing.sg.SGCraft;
 import gcewing.sg.features.pdd.AddressData;
 import gcewing.sg.features.pdd.network.PddNetworkHandler;
 import gcewing.sg.tileentity.SGBaseTE;
+import gcewing.sg.tileentity.data.GateAccessData;
 import gcewing.sg.util.GateUtil;
 import gcewing.sg.util.SGAddressing;
 import gcewing.sg.util.SGState;
@@ -65,11 +67,10 @@ public class PddScreen extends BasicScreen {
     private String enteredAddress = "";
     private String diallingAddress = "";
     private GState gstate = new GState();
-    private String testAddress = "ZFDDUR8";
     private SGBaseTE localGate = null;
     private boolean last = false;
     public boolean firstOpen = true;
-
+    private List<AddressData> clonedList;
     private BasicList<AddressData> addressList;
 
     public PddScreen(EntityPlayer player, World worldIn, boolean isAdmin) {
@@ -130,6 +131,8 @@ public class PddScreen extends BasicScreen {
         this.addressList.setPadding(2);
         this.addressList.setBorder(FontColors.WHITE, 1, 185);
         this.addressList.setBorders(FontColors.WHITE, 185, 0, 1, 0, 0);
+        this.addressList.setName("List");
+        this.addressList.register(this);
 
         this.addressContainer.add(availableAddressesLabel, localGateAddressLabel, gateStatusLabel, addressTextureLabel, this.addressList);
 
@@ -169,20 +172,7 @@ public class PddScreen extends BasicScreen {
             .text("Dial Selected Address")
             .visible(false)
             .onClick(() -> {
-                if (this.addressList.getSize() > 0 && this.addressList.getSelectedItem() != null && !this.addressList.getSelectedItem().getAddress().isEmpty()) {
-                    this.resetGui(); //Reset before starting to account for half dialed sequences
-                    this.lastUpdate = 0;
-                    if (localGate.chevronsLockOnDial) {
-                        if (!isAdmin) {
-                            startProgressiveDialSelectedAddress(); // Progressive Dial Sequence
-                        } else {
-                            immediateDialSelectedAddress(); // Immediate Dial all and lock.
-                        }
-                    } else {
-                        immediateDialSelectedAddress(); // Immediate Dial but display ring rotation.
-                        this.close();
-                    }
-                }
+                dial();
             })
             .build("button.dial");
 
@@ -224,7 +214,20 @@ public class PddScreen extends BasicScreen {
 
         this.form.add(this.addressContainer, addAddressButton, editAddressButton, deleteAddressButton, buttonDial, buttonReset, buttonDisconnect, userFeedbackLabel, buttonClose);
         addToScreen(this.form);
-        this.readAddresses(player);
+        //this.readAddresses(player);
+    }
+
+    @Subscribe
+    public void onListChange(BasicList.SelectEvent<GateAccessData> event) {
+        if (this.addressList.getSize() == 0) {
+            this.deleteAddressButton.setEnabled(false);
+            this.editAddressButton.setEnabled(false);
+            this.buttonDial.setEnabled(false);
+        } else {
+            this.deleteAddressButton.setEnabled(true);
+            this.editAddressButton.setEnabled(true);
+            this.buttonDial.setEnabled(true);
+        }
     }
 
     @Override
@@ -236,22 +239,13 @@ public class PddScreen extends BasicScreen {
         }
 
         this.refresh();
+        this.detectChange();
 
-        if (this.lastUpdate == 50 || this.lastUpdate == 100) {
-            if (delayedUpdate) {
-                this.readAddresses(player);
-                if (this.addressList.getSize() > 0) {
-                    this.delayedUpdate = false; // Leave this in the loop in case it takes longer for some users, it will force it to keep auto-refreshing until it gets something.
-                }
-
-            }
-        }
-
-        if (this.lastUpdate == 50) {
+        if (this.lastUpdate == 125) {
             this.checkDiallingStatus();
         }
 
-        if (++this.lastUpdate > 50) {
+        if (++this.lastUpdate > 125) {
             this.lastUpdate = 0;
         }
     }
@@ -264,8 +258,6 @@ public class PddScreen extends BasicScreen {
                 this.localGateAddressLabel.setText("No Local Stargate Found");
             }
             if (localGate != null) {
-
-                this.userFeedbackLabel.setVisible(!this.buttonDial.isVisible() && !this.buttonReset.isVisible() && !this.buttonDisconnect.isVisible() && !(localGate.state == SGState.Disconnecting));
 
                 if ((this.dialling || this.last || localGate.state == SGState.SyncAwait || localGate.state == SGState.Transient)) {
                     this.buttonDial.setVisible(false);
@@ -298,7 +290,6 @@ public class PddScreen extends BasicScreen {
                         }
 
                         this.addressList.setVisible(false);
-                        this.gateStatusLabel.setVisible(true);
                         this.buttonDisconnect.setVisible(true);
                         this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
                         this.gateStatusLabel.setText(" ... Dialling ...");
@@ -307,7 +298,6 @@ public class PddScreen extends BasicScreen {
 
                     if (localGate.state == SGState.Disconnecting) {
                         this.addressList.setVisible(false);
-                        this.gateStatusLabel.setVisible(true);
                         this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.YELLOW_FO).shadow(true).scale(1.8F).build());
                         this.gateStatusLabel.setText(" ... Disconnecting ...");
 
@@ -321,7 +311,6 @@ public class PddScreen extends BasicScreen {
                         }
 
                         this.addressList.setVisible(false);
-                        this.gateStatusLabel.setVisible(true);
                         this.buttonDisconnect.setVisible(true);
                         this.gateStatusLabel.setText(" ... Connected ...");
                         this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
@@ -330,7 +319,6 @@ public class PddScreen extends BasicScreen {
 
                 if (localGate.errorState) {
                     this.addressList.setVisible(false);
-                    this.gateStatusLabel.setVisible(true);
                     this.buttonDisconnect.setVisible(true);
                     this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.RED_FO).shadow(true).scale(1.8F).build());
                     this.gateStatusLabel.setText("... Error ...");
@@ -340,7 +328,7 @@ public class PddScreen extends BasicScreen {
                     this.buttonReset.setVisible(true);
                 }
 
-                if (!this.addressList.isVisible() && (!(localGate.state == SGState.Disconnecting))) {
+                if (!this.addressList.isVisible() && (!(localGate.state == SGState.Disconnecting)) && !this.gateStatusLabel.getText().equalsIgnoreCase("... Error ...")) {
                     this.drawAddressSymbols(getXStartLocation(diallingAddress), this.gateStatusLabel.screenY() + 40, this.enteredAddress);
                 }
 
@@ -358,7 +346,25 @@ public class PddScreen extends BasicScreen {
                 this.availableAddressesLabel.setVisible(this.addressList.isVisible());
                 this.localGateAddressLabel.setVisible(this.addressList.isVisible());
                 this.valuesSeparator.setVisible(!this.addressList.isVisible());
+                this.userFeedbackLabel.setVisible(!this.buttonDial.isVisible() && !this.buttonReset.isVisible() && !this.buttonDisconnect.isVisible() && !(localGate.state == SGState.Disconnecting));
+                this.gateStatusLabel.setVisible(!this.addressList.isVisible());
+            }
+        }
+    }
 
+    private void dial() {
+        if (this.addressList.getSize() > 0 && this.addressList.getSelectedItem() != null && !this.addressList.getSelectedItem().getAddress().isEmpty()) {
+            this.resetGui(); //Reset before starting to account for half dialed sequences
+            this.lastUpdate = 0;
+            if (localGate.chevronsLockOnDial) {
+                if (!isAdmin) {
+                    startProgressiveDialSelectedAddress(); // Progressive Dial Sequence
+                } else {
+                    immediateDialSelectedAddress(); // Immediate Dial all and lock.
+                }
+            } else {
+                immediateDialSelectedAddress(); // Immediate Dial but display ring rotation.
+                this.close();
             }
         }
     }
@@ -404,20 +410,18 @@ public class PddScreen extends BasicScreen {
     final static int borderSize = 6;
     final static int cellSize = 24;
 
-    private void readAddresses(EntityPlayer player) {
+    private void detectChange() {
         final ItemStack stack = player.getHeldItemMainhand();
         NBTTagCompound compound = stack.getTagCompound();
 
         if (compound != null) {
-            this.addressList.clearItems();
-            final List<AddressData> addresses = AddressData.getAddresses(compound);
-            this.addressList.addItems(AddressData.getAddresses(compound));
+            List<AddressData> comparedList = AddressData.getAddresses(compound);
+            if (!comparedList.equals(clonedList)) {
+                this.addressList.clearItems();
+                this.clonedList = AddressData.getAddresses(compound);
+                this.addressList.addItems(AddressData.getAddresses(compound));
+            }
         }
-    }
-
-    public void delayedUpdate() { // public, called from pddNetworkHandler.
-        this.delayedUpdate = true;
-        this.lastUpdate = 0;
     }
 
     private void immediateDialSelectedAddress() {
@@ -564,7 +568,7 @@ public class PddScreen extends BasicScreen {
 
         public AddressItemComponent(final MalisisGui gui, final BasicList<AddressData> parent, final AddressData item) {
             super(gui, parent, item);
-            //this.setOnDoubleClickConsumer(i -> dialSelectedAddress());
+            this.setOnDoubleClickConsumer(i -> dial());
         }
 
         @Override

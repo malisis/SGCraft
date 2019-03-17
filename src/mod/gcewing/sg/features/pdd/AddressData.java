@@ -3,6 +3,7 @@ package gcewing.sg.features.pdd;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import gcewing.sg.tileentity.data.GateAccessData;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -10,6 +11,7 @@ import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public final class AddressData {
 
@@ -103,7 +105,7 @@ public final class AddressData {
     public static NBTTagCompound writeAddresses(final NBTTagCompound compound, final List<AddressData> addresses) {
         checkNotNull(compound);
         checkNotNull(addresses);
-        checkState(addresses.size() > 0, "Writing no addresses makes no sense!");
+        //checkState(addresses.size() > 0, "Writing no addresses makes no sense!");
 
         //final NBTTagList list = compound.getTagList(ADDRESSES, Constants.NBT.TAG_COMPOUND);
         final NBTTagList list = new NBTTagList();
@@ -122,5 +124,23 @@ public final class AddressData {
         compound.setTag(ADDRESSES, list);
 
         return compound;
+    }
+
+    // Very Important this is needed when doing list equal comparisons
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        AddressData that = (AddressData) o;
+        return Objects.equals(address + name + index + locked, that.address + that.name + that.index + that.locked);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(address + name + index + locked);
     }
 }

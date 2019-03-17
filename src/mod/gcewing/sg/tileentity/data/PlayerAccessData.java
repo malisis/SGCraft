@@ -3,7 +3,6 @@ package gcewing.sg.tileentity.data;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.Lists;
-import gcewing.sg.SGCraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -11,7 +10,6 @@ import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class PlayerAccessData {
     static final String PLAYERACCESSLIST = "playeraccesslist";
@@ -79,10 +77,6 @@ public class PlayerAccessData {
                 accessCompound.setBoolean(IRIS, newIris);
                 accessCompound.setBoolean(ADMIN, newIris);
             }
-
-            if (command == -1) { // -1 means delete the entry, so skip re-adding it to the list.
-                //playerAccessData.add(new PlayerAccessData(accessCompound.getString(PLAYER), accessCompound.getUniqueId(UUID), accessCompound.getBoolean(ACCESS), accessCompound.getBoolean(IRIS), accessCompound.getBoolean(ADMIN)));
-            }
         }
 
         if (command == 1) { // Indicates new request.
@@ -97,12 +91,12 @@ public class PlayerAccessData {
 
         if (!compound.hasKey(PlayerAccessData.PLAYERACCESSLIST)) {
             // Todo remove this after testing.....
-            System.out.println("getPlayerAccessList: TE missing PLAYERACCESSLIST, adding default for testing purposes");
             List<PlayerAccessData> genericAddressList = Lists.newArrayList();
+            /*
             genericAddressList.add(new PlayerAccessData( "Dockter", true, true, true));
             genericAddressList.add(new PlayerAccessData( "Wifee", true, true, true));
             genericAddressList.add(new PlayerAccessData( "ceredwin", true, true, false));
-            genericAddressList.add(new PlayerAccessData( "TB", true, true, false));
+            genericAddressList.add(new PlayerAccessData( "TB", true, true, false));*/
 
             PlayerAccessData.writeAddresses(compound, genericAddressList);
         }

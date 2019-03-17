@@ -49,8 +49,6 @@ public class PddNetworkHandler extends SGChannel {
         boolean update = data.readBoolean();
         if (Minecraft.getMinecraft().currentScreen instanceof PddScreen) {
             PddScreen screen = (PddScreen) Minecraft.getMinecraft().currentScreen;
-            if (status == 1) // Update Address List
-                screen.delayedUpdate();
             if (status == 2)
                 screen.stopDialing();
         }

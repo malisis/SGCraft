@@ -55,12 +55,7 @@ public class PddItem extends Item {
             if (!compound.hasKey(AddressData.ADDRESSES)) {
                 List<AddressData> genericAddressList = Lists.newArrayList();
                 // Create Generic List
-                genericAddressList.add(new AddressData("Orilla - Endor", "T9FH-3VW-VL", true, 1, 0));
-                genericAddressList.add(new AddressData("Orilla - Dockside", "X35A-008-YC", true, 1, 0));
-                genericAddressList.add(new AddressData("Asgard - Main Island", "V9V2-V9V-ZY", true, 1, 0));
-                genericAddressList.add(new AddressData("Asgard - Almura Castle", "9U9S-F4Q-2D", true, 1, 0));
-                genericAddressList.add(new AddressData("Dakara - Main Spawn Point", "PFWO-G8F-10", true, 1, 0));
-                genericAddressList.add(new AddressData("TEST", "ZFDDUR8", true, 1, 0));
+                //genericAddressList.add(new AddressData("Orilla - Endor", "T9FH-3VW-VL", true, 1, 0));
 
                 AddressData.writeAddresses(compound, genericAddressList);
                 stack.setTagCompound(compound);
