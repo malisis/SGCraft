@@ -388,7 +388,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             newRecipe("sgcontrollercrystal", sgControllerCrystal, 1, "roo", "odr", "oor", 'o', orangeDye, 'r', Items.REDSTONE, 'd', Items.DIAMOND);
         }
         if (config.getBoolean("recipes", "sgPowerUnit", true)) {
-            newRecipe("sgPowerUnit", sgPowerUnit, 1, "cgc", "gIg", "crc", 'c', mod.ic2Capacitor, 'g', "ingotGold", 'I', "blockIron", 'r', Items.REDSTONE);
+            // Todo: this recipe makes no sense.
+            newRecipe("sgPowerUnit", sgPowerUnit, 1, "cgc", "gIg", "crc", 'c', "blockGold", 'g', "ingotGold", 'I', "blockIron", 'r', Items.REDSTONE);
         }
 
         if (!isModLoaded("ic2")) {

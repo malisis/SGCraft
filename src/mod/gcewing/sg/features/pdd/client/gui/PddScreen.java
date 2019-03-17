@@ -70,6 +70,7 @@ public class PddScreen extends BasicScreen {
     public boolean firstOpen = true;
     private List<AddressData> clonedList;
     private BasicList<AddressData> addressList;
+    private long timer;
 
     public PddScreen(EntityPlayer player, World worldIn, boolean isAdmin) {
         this.player = player;
@@ -80,6 +81,8 @@ public class PddScreen extends BasicScreen {
 
     @Override
     public void construct() {
+        long timer = System.currentTimeMillis();
+
         this.guiscreenBackground = false;
         Keyboard.enableRepeatEvents(true);
         final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
@@ -231,6 +234,7 @@ public class PddScreen extends BasicScreen {
     @Override
     public void update(int mouseX, int mouseY, float partialTick) {
         super.update(mouseX, mouseY, partialTick);
+
         if (unlockMouse && this.lastUpdate == 25) {
             Mouse.setGrabbed(false); // Force the mouse to be visible even though Mouse.isGrabbed() is false.  //#BugsUnited.
             unlockMouse = false; // Only unlock once per session.
@@ -239,8 +243,9 @@ public class PddScreen extends BasicScreen {
         this.refresh();
         this.detectChange();
 
-        if (this.lastUpdate == 125) {
+        if (System.currentTimeMillis() > timer + 750) {
             this.checkDiallingStatus();
+            timer = System.currentTimeMillis();
         }
 
         if (++this.lastUpdate > 125) {
@@ -351,6 +356,7 @@ public class PddScreen extends BasicScreen {
     }
 
     private void dial() {
+        timer = System.currentTimeMillis();
         if (this.addressList.getSize() > 0 && this.addressList.getSelectedItem() != null && !this.addressList.getSelectedItem().getAddress().isEmpty()) {
             this.resetGui(); //Reset before starting to account for half dialed sequences
             this.lastUpdate = 0;
