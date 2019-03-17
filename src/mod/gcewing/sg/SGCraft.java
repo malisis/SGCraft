@@ -156,6 +156,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static boolean forceDHDCfgUpdate = false;
     public static boolean forceIC2CfgUpdate = false;
     public static boolean forceRFCfgUpdate = false;
+    public static boolean forceGateAccessSystemReset = false;
+    public static boolean forcePlayerAccessSystemReset = false;
 
     public static PermissionsUtil permissionsUtil;
 
@@ -520,6 +522,10 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         forceDHDCfgUpdate = config.getBoolean("dhd", "force-update", forceDHDCfgUpdate);
         forceIC2CfgUpdate = config.getBoolean("ic2", "force-update", forceIC2CfgUpdate);
         forceRFCfgUpdate = config.getBoolean("rf", "force-update", forceRFCfgUpdate);
+
+        // Access System Resets
+        forceGateAccessSystemReset = config.getBoolean("gate-access", "force-reset-on-load", forceGateAccessSystemReset);
+        forcePlayerAccessSystemReset = config.getBoolean("player-access", "force-reset-on-load", forcePlayerAccessSystemReset);
     }
 
     public static boolean hasPermission(EntityPlayer player, String permission) {

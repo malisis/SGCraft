@@ -170,7 +170,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     // Static options
     static int chunkLoadingRange = 1;
     static boolean logStargateEvents = false;
-    static float soundVolume = 1F;
+    public static float soundVolume = 1F;
     static boolean variableChevronPositions = true;
     public static double energyToOpen;
     static double energyUsePerTick;
@@ -578,11 +578,35 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             this.gateAccessData = GateAccessData.getGateAccessList(nbt);
         }
 
-        this.defaultAllowIncoming = nbt.getBoolean("defaultAllowIncoming");
-        this.defaultAllowOutgoing = nbt.getBoolean("defaultAllowOutgoing");
-        this.defaultAllowGateAccess = nbt.getBoolean("defaultAllowGateAccess");
-        this.defaultAllowIrisAccess = nbt.getBoolean("defaultAllowIrisAccess");
-        this.defaultAllowAdminAccess = nbt.getBoolean("defaultAllowAdminAccess");
+        if (nbt.hasKey("defaultAllowIncoming") && !SGCraft.forceGateAccessSystemReset) {
+            this.defaultAllowIncoming = nbt.getBoolean("defaultAllowIncoming");
+        } else {
+            this.defaultAllowIncoming = cfg.getBoolean("gate-access", "defaultAllowIncoming", this.defaultAllowIncoming);
+        }
+
+        if (nbt.hasKey("defaultAllowOutdoing") && !SGCraft.forceGateAccessSystemReset) {
+            this.defaultAllowOutgoing = nbt.getBoolean("defaultAllowOutgoing");
+        } else {
+            this.defaultAllowOutgoing = cfg.getBoolean("gate-access", "defaultAllowOutgoing", this.defaultAllowOutgoing);
+        }
+
+        if (nbt.hasKey("defaultAllowGateAccess") && !SGCraft.forcePlayerAccessSystemReset) {
+            this.defaultAllowGateAccess = nbt.getBoolean("defaultAllowGateAccess");
+        } else {
+            this.defaultAllowGateAccess = cfg.getBoolean("player-access", "defaultAllowGateAccess", this.defaultAllowGateAccess);
+        }
+
+        if (nbt.hasKey("defaultAllowIrisAccess") && !SGCraft.forcePlayerAccessSystemReset) {
+            this.defaultAllowIrisAccess = nbt.getBoolean("defaultAllowIrisAccess");
+        } else {
+            this.defaultAllowIrisAccess = cfg.getBoolean("player-access", "defaultAllowIrisAccess", this.defaultAllowIrisAccess);
+        }
+
+        if (nbt.hasKey("defaultAllowAdminAccess") && !SGCraft.forcePlayerAccessSystemReset) {
+            this.defaultAllowAdminAccess = nbt.getBoolean("defaultAllowAdminAccess");
+        } else {
+            this.defaultAllowAdminAccess = cfg.getBoolean("player-access", "defaultAllowAdminAccess", this.defaultAllowAdminAccess);
+        }
     }
 
     protected String getStringOrNull(NBTTagCompound nbt, String name) {
