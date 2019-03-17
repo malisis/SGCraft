@@ -18,7 +18,7 @@ public class SGBaseScreen extends SGScreen {
 
     static String screenTitle = "Stargate Address";
     static final int guiWidth = 256;
-    static final int guiHeight = 208; //92;
+    static final int guiHeight = 92; //92;
     static final int fuelGaugeWidth = 16;
     static final int fuelGaugeHeight = 34;
     static final int fuelGaugeX = 214;
@@ -30,6 +30,7 @@ public class SGBaseScreen extends SGScreen {
     private String address;
     private String formattedAddress;
     private boolean addressValid;
+    private EntityPlayer player;
     
     public static SGBaseScreen create(EntityPlayer player, World world, BlockPos pos) {
         SGBaseTE te = SGBaseTE.at(world, pos);
@@ -42,6 +43,7 @@ public class SGBaseScreen extends SGScreen {
     private SGBaseScreen(EntityPlayer player, SGBaseTE te) {
         super(new SGBaseContainer(player, te), guiWidth, guiHeight);
         this.te = te;
+        this.player = player;
         this.te.markBlockForUpdate();
         getAddress();
         if (this.addressValid) {
@@ -59,7 +61,11 @@ public class SGBaseScreen extends SGScreen {
 
     @Override
     protected void drawBackgroundLayer() {
-        bindTexture(SGCraft.mod.resourceLocation("textures/gui/sg_gui.png"), 256, 256);
+        if (this.te.gateOrientation == 1 && this.te.allowAdminAccess(player.getName())) {
+            bindTexture(SGCraft.mod.resourceLocation("textures/gui/sg_gui.png"), 256, 256);
+        } else {
+            bindTexture(SGCraft.mod.resourceLocation("textures/gui/sg_gui_noinventory.png"), 256, 125);
+        }
         drawTexturedRect(0, 0, guiWidth, guiHeight, 0, 0);
         int cx = this.xSize / 2;
         if (this.addressValid)
@@ -67,7 +73,7 @@ public class SGBaseScreen extends SGScreen {
         setTextColor(0x004c66);
         drawCenteredString(this.screenTitle, cx, 8);
         drawCenteredString(this.formattedAddress, cx, 72);
-        if (this.te.numCamouflageSlots > 0)
+        if (this.te.numCamouflageSlots > 0 && this.te.gateOrientation == 1 && this.te.allowAdminAccess(player.getName()))
             drawCenteredString("Base Camouflage", 92, 92);
     }
 
