@@ -1822,7 +1822,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             }
 
 
-            if (this.gateOrientation == 2 && this.gateOrientation == 3) {
+            if (this.gateOrientation == 2 || this.gateOrientation == 3) {
                 p0 = new Vector3(1.5, -1.5, -0.5);
                 p1 = new Vector3(-1.5, 1.5, -3.5);
             }

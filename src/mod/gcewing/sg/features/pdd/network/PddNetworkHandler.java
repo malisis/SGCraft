@@ -99,6 +99,7 @@ public class PddNetworkHandler extends SGChannel {
         }
 
         if (setting == 4) {
+            localGate.connectOrDisconnect("", player);
             localGate.clearIdleConnection();
             System.out.println("Cleared Idle Connection");
             localGate.errorState = false; // Force this on the servers' TE.
