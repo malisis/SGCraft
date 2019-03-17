@@ -67,10 +67,10 @@ public class GdoNetworkHandler extends SGChannel {
                         }
                         if (playerAccessRemoteControl || isPermissionsAdmin) {
                             if (setting == 4) {
-                                localGate.openIris();
+                                remoteGate.openIris();
                             }
                             if (setting == 5) {
-                                localGate.closeIris();
+                                remoteGate.closeIris();
                             }
                         }
                     }
