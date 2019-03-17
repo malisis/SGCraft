@@ -24,7 +24,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
     public static void sendConfiguratorInputToServer(SGBaseTE te, int secondsToStayOpen, double ringRotationSpeed, double maxEnergyBuffer, double energyPerFuelItem, int gateOpeningsPerFuelItem,
         double distanceFactorMultiplier, double interDimensionalMultiplier, boolean oneWayTravel, boolean hasIrisUpgrade, boolean hasChevronUpgrade, int gateType, boolean reverseWormholeKills,
         boolean allowIncomingConnections, boolean allowOutgoingConnections, boolean closeFromEitherEnd, boolean preserveInventory, boolean requiresNoPower, boolean chevronsLockOnDial,
-        boolean returnToPreviousIrisState, boolean transientDamage, boolean transparency) {
+        boolean returnToPreviousIrisState, boolean transientDamage, boolean transparency, int orientation) {
 
         ChannelOutput data = configuratorChannel.openServer("ConfiguratorInput");
         writeCoords(data, te);
@@ -49,6 +49,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         data.writeBoolean(returnToPreviousIrisState);
         data.writeBoolean(transientDamage);
         data.writeBoolean(transparency);
+        data.writeInt(orientation);
         data.close();
     }
 
@@ -79,6 +80,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         boolean returnToPreviousIrisState = data.readBoolean();
         boolean transientDamage = data.readBoolean();
         boolean transparency = data.readBoolean();
+        int orientation = data.readInt();
 
         boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
@@ -104,6 +106,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
             if (SGCraft.hasPermission(player, "sgcraft.configurator.returnToPreviousIrisState")) te.returnToPreviousIrisState = returnToPreviousIrisState;
             if (SGCraft.hasPermission(player, "sgcraft.configurator.transientDamage")) te.transientDamage = transientDamage;
             if (SGCraft.hasPermission(player, "sgcraft.configurator.transparency")) te.transparency = transparency;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.orientation")) te.gateOrientation = orientation;
             player.sendMessage(new TextComponentString("Changes Saved!"));
             te.markForUpdate();
         }

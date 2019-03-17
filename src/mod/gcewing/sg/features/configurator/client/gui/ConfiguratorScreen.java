@@ -14,6 +14,7 @@ import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.client.gui.component.interaction.UICheckBox;
 import net.malisis.core.client.gui.component.interaction.UITextField;
 import net.malisis.core.client.gui.component.interaction.button.builder.UIButtonBuilder;
+import net.malisis.core.client.gui.event.ComponentEvent;
 import net.malisis.core.client.gui.event.component.StateChangeEvent;
 import net.malisis.core.renderer.font.FontOptions;
 import net.malisis.core.util.FontColors;
@@ -35,7 +36,7 @@ public class ConfiguratorScreen extends BasicScreen {
     private UILabel gateAddressLabel;
     private UICheckBox oneWayTravelCheckbox, irisUpgradeCheckbox, chevronUpgradeCheckbox, gateTypeCheckbox, reverseWormholeKillsCheckbox, allowIncomingConnectionsCheckbox, allowOutgoingConnectionsCheckbox;
     private UICheckBox closeFromEitherEndCheckbox, preserveInventoryCheckbox, noPowerRequiredCheckbox, chevronsLockOnDialCheckbox, returnIrisToPreviousStateCheckbox;
-    private UICheckBox transientDamageCheckbox, transparencyCheckbox;
+    private UICheckBox transientDamageCheckbox, transparencyCheckbox, horizontalFaceUpCheckbox, horizontalFaceDownCheckbox;
     private UITextField secondsToStayOpen, gateRotationSpeed, energyBufferSize, energyPerNaquadah, gateOpeningsPerNaquadah, distanceMultiplier, dimensionalMultiplier;
     private UIButton gateAddressAccessListButton, playerAccessListButton;
     private BlockPos location;
@@ -387,10 +388,37 @@ public class ConfiguratorScreen extends BasicScreen {
         this.transparencyCheckbox.setName("checkbox.eventhorizontransparent");
         this.transparencyCheckbox.register(this);
 
+        final UISeparator checkbox2Separator = new UISeparator(this);
+        checkbox2Separator.setSize(this.checkboxOptionsArea.getWidth() - 15, 1);
+        checkbox2Separator.setPosition(0, this.transparencyCheckbox.getY() + padding +5, Anchor.TOP | Anchor.CENTER);
+
+        final UILabel horizontalGateLabel = new UILabel(this, "Horizontal Gate");
+        horizontalGateLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
+        horizontalGateLabel.setPosition(0, checkbox2Separator.getY() + 5, Anchor.CENTER | Anchor.TOP);
+
+        this.horizontalFaceUpCheckbox = new UICheckBox(this);
+        this.horizontalFaceUpCheckbox.setText(TextFormatting.WHITE + "Render Face Up");
+        this.horizontalFaceUpCheckbox.setPosition(-55, -15, Anchor.CENTER | Anchor.BOTTOM);
+        this.horizontalFaceUpCheckbox.setEnabled(true);
+        this.horizontalFaceUpCheckbox.setChecked(localGate.gateOrientation == 2);
+        this.horizontalFaceUpCheckbox.setName("checkbox.horizontalup");
+        this.horizontalFaceUpCheckbox.register(this);
+
+        this.horizontalFaceDownCheckbox = new UICheckBox(this);
+        this.horizontalFaceDownCheckbox.setText(TextFormatting.WHITE + "Render Face Down");
+        this.horizontalFaceDownCheckbox.setPosition(55, -15, Anchor.CENTER | Anchor.BOTTOM);
+        this.horizontalFaceDownCheckbox.setEnabled(true);
+        this.horizontalFaceDownCheckbox.setChecked(localGate.gateOrientation == 3);
+        this.horizontalFaceDownCheckbox.setName("checkbox.horizontaldown");
+        this.horizontalFaceDownCheckbox.register(this);
+
         this.checkboxOptionsArea.add(booleanValuesLabel, checkboxSeparator, this.oneWayTravelCheckbox, this.irisUpgradeCheckbox, this.chevronUpgradeCheckbox, this.gateTypeCheckbox);
         this.checkboxOptionsArea.add(this.reverseWormholeKillsCheckbox, this.allowIncomingConnectionsCheckbox, this.allowOutgoingConnectionsCheckbox, this.closeFromEitherEndCheckbox);
         this.checkboxOptionsArea.add(this.preserveInventoryCheckbox, this.noPowerRequiredCheckbox, this.chevronsLockOnDialCheckbox, this.returnIrisToPreviousStateCheckbox);
         this.checkboxOptionsArea.add( this.transientDamageCheckbox, this.transparencyCheckbox);
+        if (localGate.gateOrientation == 2 || localGate.gateOrientation == 3) {
+            this.checkboxOptionsArea.add(checkbox2Separator, horizontalGateLabel, this.horizontalFaceUpCheckbox, this.horizontalFaceDownCheckbox);
+        }
 
         // Load Defaults button
         final UIButton buttonDefaults = new UIButtonBuilder(this)
@@ -431,14 +459,22 @@ public class ConfiguratorScreen extends BasicScreen {
             .text("Save")
             .onClick(() -> {
                 int gateType = 1; // Default
+                int orientation = 1;
                 if (this.gateTypeCheckbox.isChecked()) {
                     gateType = 2; // Pegasus
+                }
+                if (localGate.gateOrientation == 2 || localGate.gateOrientation == 3) {
+                    if (this.horizontalFaceUpCheckbox.isChecked()) {
+                        orientation = 2;
+                    } else {
+                        orientation = 3;
+                    }
                 }
                 ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, Integer.valueOf(secondsToStayOpen.getText()), Double.valueOf(gateRotationSpeed.getText()), Double.valueOf(energyBufferSize.getText()),
                     Double.valueOf(energyPerNaquadah.getText()), Integer.valueOf(gateOpeningsPerNaquadah.getText()), Double.valueOf(distanceMultiplier.getText()), Double.valueOf(dimensionalMultiplier.getText()),
                     oneWayTravelCheckbox.isChecked(), irisUpgradeCheckbox.isChecked(), chevronUpgradeCheckbox.isChecked(), gateType, reverseWormholeKillsCheckbox.isChecked(),
                 allowIncomingConnectionsCheckbox.isChecked(), allowOutgoingConnectionsCheckbox.isChecked(), closeFromEitherEndCheckbox.isChecked(), preserveInventoryCheckbox.isChecked(),
-                noPowerRequiredCheckbox.isChecked(), chevronsLockOnDialCheckbox.isChecked(), returnIrisToPreviousStateCheckbox.isChecked(), transientDamageCheckbox.isChecked(), transparencyCheckbox.isChecked());
+                noPowerRequiredCheckbox.isChecked(), chevronsLockOnDialCheckbox.isChecked(), returnIrisToPreviousStateCheckbox.isChecked(), transientDamageCheckbox.isChecked(), transparencyCheckbox.isChecked(), orientation);
 
                 this.close();
             })
@@ -467,6 +503,20 @@ public class ConfiguratorScreen extends BasicScreen {
         this.form.add(titleLabel, this.numericOptionsArea, this.checkboxOptionsArea, buttonDefaults, buttonSave, addressLabel, this.gateAddressLabel, buttonClose);
         addToScreen(this.form);
         this.refresh();
+    }
+
+    @Subscribe
+    public void onValueChange(ComponentEvent.ValueChange event) {
+        if (event.getComponent().getName() != null) {
+            switch (event.getComponent().getName()) {
+                case "checkbox.horizontalup":
+                    this.horizontalFaceDownCheckbox.setChecked(this.horizontalFaceUpCheckbox.isChecked());
+                    break;
+                case "checkbox.horizontaldown":
+                    this.horizontalFaceUpCheckbox.setChecked(this.horizontalFaceDownCheckbox.isChecked());
+                    break;
+            }
+        }
     }
 
     @Subscribe
@@ -534,6 +584,14 @@ public class ConfiguratorScreen extends BasicScreen {
             this.returnIrisToPreviousStateCheckbox.setChecked(localGate.returnToPreviousIrisState);
             this.transientDamageCheckbox.setChecked(localGate.transientDamage);
             this.transparencyCheckbox.setChecked(localGate.transparency);
+
+            if (localGate.gateOrientation == 2) {
+                this.horizontalFaceUpCheckbox.setChecked(true);
+                this.horizontalFaceDownCheckbox.setChecked(false);
+            } else if (localGate.gateOrientation == 3) {
+                this.horizontalFaceUpCheckbox.setChecked(false);
+                this.horizontalFaceDownCheckbox.setChecked(true);
+            }
         }
     }
 

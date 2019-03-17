@@ -1830,10 +1830,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             AxisAlignedBB box = t.box(p0, p1);
             List<Entity> ents = world.getEntitiesWithinAABB(Entity.class, box);
             for (Entity entity : ents) {
-                if (entity instanceof EntityFishHook) {
+                if (entity instanceof EntityFishHook  || entity instanceof EntityStargateIris) {
                     continue;
                 }
                 if (!entity.isDead && entity.getRidingEntity() == null) {
+                    if (entity instanceof EntityPlayer) {
+                        //System.out.println("Entity:" + entity);
+                    }
                     trackedEntities.add(new TrackedEntity(entity));
                 }
             }
@@ -1852,9 +1855,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             Vector3 p0 = t.ip(2 * prevPos.x - entity.posX, 2 * prevPos.y - entity.posY, 2 * prevPos.z - entity.posZ);
             //if (!(entity instanceof EntityPlayer))
             //  System.out.printf("SGBaseTE.entityInPortal: z0 = %.3f z1 = %.3f\n", p0.z, p1.z);
-            double z0 = 0.0;
+            double z0 = 0.0; // Orientation 1 and 2
+            double zx = -2.0; // Orientation 3
 
-            if ((this.gateOrientation == 1 && p0.z >= z0 && p1.z < z0 && p1.z > z0 - 5.0) || (this.gateOrientation == 2 && p0.y >= z0 && p1.y < z0 && p1.y > z0 - 5.0)) {
+            if ((this.gateOrientation == 1 && p0.z >= z0 && p1.z < z0 && p1.z > z0 - 5.0) || (this.gateOrientation == 2 && p0.y >= z0 && p1.y < z0 && p1.y > z0 - 5.0) || (this.gateOrientation == 3 && p0.y <= zx && p1.y > zx && p1.y > zx + 0.0)) {
                 //System.out.printf("SGBaseTE.entityInPortal: %s passed through event horizon of stargate at (%d,%d,%d) in %s\n",
                 //  repr(entity), xCoord, yCoord, zCoord, world);
                 entity.motionX = vx;
@@ -1962,6 +1966,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         Vector3 v = t1.iv(entity.motionX, entity.motionY, entity.motionZ); // local velocity
         Vector3 r = t1.iv(yawVector(entity)); // local facing
         Vector3 q = t2.p(-p.x, p.y, -p.z); // new global position
+        if (this.gateOrientation == 3) {
+            q = t2.p(-p.x, -p.y, -p.z); // new global position for orientation 3, prevents player from spawning in the ground
+        }
         Vector3 u = t2.v(-v.x, v.y, -v.z); // new global velocity
         Vector3 s = t2.v(r.mul(-1)); // new global facing
 
