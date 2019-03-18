@@ -19,7 +19,6 @@ import javax.annotation.Nullable;
 public class SGPowerTE extends PowerTE implements IEnergyStorage {
 
     private EnergyStorage storage = new EnergyStorage(SGCraft.SGMaxEnergyBuffer);
-    private int update = 0;
 
     public SGPowerTE() {
         super(SGCraft.SGMaxEnergyBuffer, SGCraft.SGPerSGEnergyUnit);
@@ -77,10 +76,8 @@ public class SGPowerTE extends PowerTE implements IEnergyStorage {
     public int receiveEnergy(int maxReceive, boolean simulate) {
         int result = storage.receiveEnergy(maxReceive, simulate);
         energyBuffer = storage.getEnergyStored();
-        if (update++ > 10) { // We dont' need 20 packets per second to the client....
-            markChanged();
-            update = 0;
-        }
+        markChanged();
+
         return result;
     }
 
@@ -88,10 +85,8 @@ public class SGPowerTE extends PowerTE implements IEnergyStorage {
     public int extractEnergy(int maxExtract, boolean simulate) {
         int result = storage.extractEnergy(maxExtract, simulate);
         energyBuffer = storage.getEnergyStored();
-        if (update++ > 10) { // We dont' need 20 packets per second to the client....
-            markChanged();
-            update = 0;
-        }
+        markChanged();
+
         return result;
     }
 

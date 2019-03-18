@@ -10,9 +10,6 @@ import gcewing.sg.BaseTileEntity;
 import gcewing.sg.interfaces.ISGEnergySource;
 import net.minecraft.nbt.*;
 
-// import ic2.api.energy.event.*; [IC2]
-// import ic2.api.energy.tile.*;
-
 import static gcewing.sg.BaseUtils.*;
 
 public abstract class PowerTE extends BaseTileEntity implements ISGEnergySource {
@@ -22,7 +19,6 @@ public abstract class PowerTE extends BaseTileEntity implements ISGEnergySource 
     public double energyBuffer = 0;
     public double energyMax;
     public double energyPerSGEnergyUnit;
-    private int update = 0;
 
     public PowerTE(double energyMax, double energyPerSGEnergyUnit) {
         this.energyMax = energyMax;
@@ -67,10 +63,8 @@ public abstract class PowerTE extends BaseTileEntity implements ISGEnergySource 
         double available = energyBuffer / energyPerSGEnergyUnit;
         double supply = min(request, available);
         energyBuffer -= supply * energyPerSGEnergyUnit;
-        if (update++ > 10) { // We dont' need 20 packets per second to the client....
-            markChanged();
-            update = 0;
-        }
+        markChanged();
+
         if(debugOutput)
             System.out.printf("SGCraft: PowerTE: Supplying %s SGU of %s requested\n", supply, request);
         return supply;

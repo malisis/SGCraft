@@ -1574,7 +1574,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         boolean ccLoaded = isModLoaded("computercraft");
         boolean ocLoaded = isModLoaded("opencomputers");
         boolean ic2Loaded = isModLoaded("ic2");
-        boolean rsfLoaded = isModLoaded("redstoneflux");
         boolean useDHD = true;
         DHDTE te = getLinkedControllerTE();
 
@@ -1616,7 +1615,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     }
                 }
 
-                if (rsfLoaded && nte instanceof SGPowerTE) {
+                if (nte instanceof SGPowerTE) {
                     result.add((ISGEnergySource) nte);
                     if (debugEnergyUse) {
                         System.out.println("Found SGPowerTE at: " + nte.getPos());

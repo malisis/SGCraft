@@ -40,8 +40,10 @@ public class ConfiguratorItem extends Item {
           if (localGateTE instanceof SGBaseTE) {
               SGBaseTE localGate = (SGBaseTE) localGateTE;
 
-              boolean canEditLocal = localGate.getWorld().isBlockModifiable(player, localGate.getPos());
+              // Todo: the below two booleans do nothing, remove them.
+              boolean canEditLocal = false;
               boolean canEditRemote = false;
+
               if (localGate.isConnected() && localGate.state == SGState.Connected) {
                   SGBaseTE remoteGate = localGate.getConnectedStargateTE();
                   canEditRemote = remoteGate.getWorld().isBlockModifiable(player, remoteGate.getPos());
@@ -52,7 +54,6 @@ public class ConfiguratorItem extends Item {
               if (SGCraft.hasPermission(player, "sgcraft.gui.configurator") && localGate.allowAdminAccess(player.getName()) || isPermissionsAdmin) {
                   GuiNetworkHandler.openGuiAtClient(localGate, player, 1, SGCraft.hasPermission(player, "sgcraft.admin"), canEditLocal, canEditRemote);
               } else {
-                  System.out.println("I Fialed");
                   player.sendMessage(new TextComponentString("Insufficient permissions.  Requires 'sgcraft.gui.configurator'"));
                   return new ActionResult<>(EnumActionResult.FAIL, player.getHeldItem(handIn));
               }
