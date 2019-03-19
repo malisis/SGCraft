@@ -23,8 +23,8 @@ public class ConfiguratorNetworkHandler extends SGChannel {
 
     public static void sendConfiguratorInputToServer(SGBaseTE te, int secondsToStayOpen, double ringRotationSpeed, double maxEnergyBuffer, double energyPerFuelItem, int gateOpeningsPerFuelItem,
         double distanceFactorMultiplier, double interDimensionalMultiplier, boolean oneWayTravel, boolean hasIrisUpgrade, boolean hasChevronUpgrade, int gateType, boolean reverseWormholeKills,
-        boolean allowIncomingConnections, boolean allowOutgoingConnections, boolean closeFromEitherEnd, boolean preserveInventory, boolean requiresNoPower, boolean chevronsLockOnDial,
-        boolean returnToPreviousIrisState, boolean transientDamage, boolean transparency, int orientation) {
+        boolean closeFromEitherEnd, boolean preserveInventory, boolean requiresNoPower, boolean chevronsLockOnDial, boolean returnToPreviousIrisState, boolean transientDamage,
+        boolean transparency, int orientation, boolean useDHDFuelSource) {
 
         ChannelOutput data = configuratorChannel.openServer("ConfiguratorInput");
         writeCoords(data, te);
@@ -40,8 +40,6 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         data.writeBoolean(hasChevronUpgrade);
         data.writeInt(gateType);
         data.writeBoolean(reverseWormholeKills);
-        data.writeBoolean(allowIncomingConnections);
-        data.writeBoolean(allowOutgoingConnections);
         data.writeBoolean(closeFromEitherEnd);
         data.writeBoolean(preserveInventory);
         data.writeBoolean(requiresNoPower);
@@ -50,6 +48,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         data.writeBoolean(transientDamage);
         data.writeBoolean(transparency);
         data.writeInt(orientation);
+        data.writeBoolean(useDHDFuelSource);
         data.close();
     }
 
@@ -71,8 +70,6 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         boolean hasChevronUpgrade = data.readBoolean();
         int gateType = data.readInt();
         boolean reverseWormholeKills = data.readBoolean();
-        boolean allowIncomingConnections = data.readBoolean();
-        boolean allowOutgoingConnections = data.readBoolean();
         boolean closeFromEitherEnd = data.readBoolean();
         boolean preserveInventory = data.readBoolean();
         boolean requiresNoPower = data.readBoolean();
@@ -81,6 +78,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         boolean transientDamage = data.readBoolean();
         boolean transparency = data.readBoolean();
         int orientation = data.readInt();
+        boolean useDHDFuelSource = data.readBoolean();
 
         boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
@@ -97,8 +95,6 @@ public class ConfiguratorNetworkHandler extends SGChannel {
             if (SGCraft.hasPermission(player, "sgcraft.configurator.hasChevronUpgrade")) te.hasChevronUpgrade = hasChevronUpgrade;
             if (SGCraft.hasPermission(player, "sgcraft.configurator.gateType")) te.gateType = gateType;
             if (SGCraft.hasPermission(player, "sgcraft.configurator.reverseWormholeKills")) te.reverseWormholeKills = reverseWormholeKills;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.allowIncomingConnections")) te.allowIncomingConnections = allowIncomingConnections;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.allowOutgoingConnections")) te.allowOutgoingConnections = allowOutgoingConnections;
             if (SGCraft.hasPermission(player, "sgcraft.configurator.closeFromEitherEnd")) te.closeFromEitherEnd = closeFromEitherEnd;
             if (SGCraft.hasPermission(player, "sgcraft.configurator.preserveInventory")) te.preserveInventory = preserveInventory;
             if (SGCraft.hasPermission(player, "sgcraft.configurator.noPowerRequired")) te.requiresNoPower = requiresNoPower;
@@ -107,6 +103,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
             if (SGCraft.hasPermission(player, "sgcraft.configurator.transientDamage")) te.transientDamage = transientDamage;
             if (SGCraft.hasPermission(player, "sgcraft.configurator.transparency")) te.transparency = transparency;
             if (SGCraft.hasPermission(player, "sgcraft.configurator.orientation")) te.gateOrientation = orientation;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.useDHDFuelSource")) te.useDHDFuelSource = useDHDFuelSource;
             player.sendMessage(new TextComponentString("Changes Saved!"));
             te.markForUpdate();
         }

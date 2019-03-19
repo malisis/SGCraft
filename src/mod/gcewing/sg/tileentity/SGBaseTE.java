@@ -243,6 +243,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public boolean defaultAllowGateAccess = true;
     public boolean defaultAllowIrisAccess = true;
     public boolean defaultAllowAdminAccess = true;
+    public boolean useDHDFuelSource = true;
 
     // Access Control Lists
     private List<PlayerAccessData> playerAccessData;
@@ -275,6 +276,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         this.defaultAllowGateAccess = cfg.getBoolean("player-access", "defaultAllowGateAccess", this.defaultAllowGateAccess);
         this.defaultAllowIrisAccess = cfg.getBoolean("player-access", "defaultAllowIrisAccess", this.defaultAllowIrisAccess);
         this.defaultAllowAdminAccess = cfg.getBoolean("player-access", "defaultAllowAdminAccess", this.defaultAllowAdminAccess);
+        this.useDHDFuelSource = cfg.getBoolean("dhd", "useDHDFuelSource", this.useDHDFuelSource);
     }
 
     public static void configure(BaseConfiguration cfg) {
@@ -307,6 +309,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         cfg.getBoolean("player-access", "defaultAllowGateAccess", true);
         cfg.getBoolean("player-access", "defaultAllowIrisAccess", true);
         cfg.getBoolean("player-access", "defaultAllowAdminAccess", true);
+        cfg.getBoolean("dhd", "useDHDFuelSource", true);
 
         // Global static config values
         minutesOpenPerFuelItem = cfg.getInteger("stargate", "minutesOpenPerFuelItem", minutesOpenPerFuelItem);
@@ -565,6 +568,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             this.transparency = cfg.getBoolean("stargate", "transparency", this.transparency);
         }
 
+        if (nbt.hasKey("useDHDFuelSource") && !SGCraft.forceDHDCfgUpdate) {
+            this.useDHDFuelSource = nbt.getBoolean("useDHDFuelSource");
+        } else {
+            this.useDHDFuelSource = cfg.getBoolean("dhd", "useDHDFuelSource", this.useDHDFuelSource);
+        }
+
         this.facingDirectionOfBase = nbt.getInteger("facingDirectionOfBase");
         this.errorState = nbt.getBoolean("errorState");
 
@@ -637,32 +646,33 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setBoolean("redstoneInput", redstoneInput);
 
         // Configurator Options
-        nbt.setBoolean("hasIrisUpgrade", hasIrisUpgrade);
-        nbt.setBoolean("hasChevronUpgrade", hasChevronUpgrade);
-        nbt.setInteger("gateType", gateType);
-        nbt.setInteger("secondsToStayOpen", secondsToStayOpen);
-        nbt.setBoolean("oneWayTravel", oneWayTravel);
-        nbt.setDouble("ringRotationSpeed", ringRotationSpeed);
-        nbt.setDouble("maxEnergyBuffer", maxEnergyBuffer);
-        nbt.setDouble("energyPerFuelItem", energyPerFuelItem);
-        nbt.setInteger("gateOpeningsPerFuelItem", gateOpeningsPerFuelItem);
-        nbt.setDouble("distanceFactorMultiplier", distanceFactorMultiplier);
-        nbt.setDouble("interDimensionMultiplier", interDimensionMultiplier);
-        nbt.setBoolean("reverseWormholeKills", reverseWormholeKills);
-        nbt.setBoolean("closeFromEitherEnd", closeFromEitherEnd);
-        nbt.setBoolean("preserveInventory", preserveInventory);
-        nbt.setBoolean("allowIncomingConnections", allowIncomingConnections);
-        nbt.setBoolean("allowOutgoingConnections", allowOutgoingConnections);
-        nbt.setBoolean("chevronsLockOnDial", chevronsLockOnDial);
-        nbt.setBoolean("returnToPreviousIrisState", returnToPreviousIrisState);
-        nbt.setBoolean("allowOnlySpecifiedDestination", allowOnlySpecifiedDestination);
-        nbt.setString("onlySpecifiedAddress", onlySpecifiedAddress);
-        nbt.setInteger("gateOrientation", gateOrientation);
-        nbt.setInteger("facingDirectionOfBase", facingDirectionOfBase);
-        nbt.setBoolean("requiresNoPower", requiresNoPower);
-        nbt.setBoolean("transientDamage", transientDamage);
-        nbt.setBoolean("transparency", transparency);
-        nbt.setBoolean("errorState", errorState);
+        nbt.setBoolean("hasIrisUpgrade", this.hasIrisUpgrade);
+        nbt.setBoolean("hasChevronUpgrade", this.hasChevronUpgrade);
+        nbt.setInteger("gateType", this.gateType);
+        nbt.setInteger("secondsToStayOpen", this.secondsToStayOpen);
+        nbt.setBoolean("oneWayTravel", this.oneWayTravel);
+        nbt.setDouble("ringRotationSpeed", this.ringRotationSpeed);
+        nbt.setDouble("maxEnergyBuffer", this.maxEnergyBuffer);
+        nbt.setDouble("energyPerFuelItem", this.energyPerFuelItem);
+        nbt.setInteger("gateOpeningsPerFuelItem", this.gateOpeningsPerFuelItem);
+        nbt.setDouble("distanceFactorMultiplier", this.distanceFactorMultiplier);
+        nbt.setDouble("interDimensionMultiplier", this.interDimensionMultiplier);
+        nbt.setBoolean("reverseWormholeKills", this.reverseWormholeKills);
+        nbt.setBoolean("closeFromEitherEnd", this.closeFromEitherEnd);
+        nbt.setBoolean("preserveInventory", this.preserveInventory);
+        nbt.setBoolean("allowIncomingConnections", this.allowIncomingConnections);
+        nbt.setBoolean("allowOutgoingConnections", this.allowOutgoingConnections);
+        nbt.setBoolean("chevronsLockOnDial", this.chevronsLockOnDial);
+        nbt.setBoolean("returnToPreviousIrisState", this.returnToPreviousIrisState);
+        nbt.setBoolean("allowOnlySpecifiedDestination", this.allowOnlySpecifiedDestination);
+        nbt.setString("onlySpecifiedAddress", this.onlySpecifiedAddress);
+        nbt.setInteger("gateOrientation", this.gateOrientation);
+        nbt.setInteger("facingDirectionOfBase", this.facingDirectionOfBase);
+        nbt.setBoolean("requiresNoPower", this.requiresNoPower);
+        nbt.setBoolean("transientDamage", this.transientDamage);
+        nbt.setBoolean("transparency", this.transparency);
+        nbt.setBoolean("errorState", this.errorState);
+        nbt.setBoolean("useDHDFuelSource", this.useDHDFuelSource);
 
         if (connectedLocation != null) {
             nbt.setTag("connectedLocation", connectedLocation.toNBT());
@@ -689,16 +699,14 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 GateAccessData.writeAddresses(nbt, this.gateAccessData);
         }
 
-        nbt.setBoolean("defaultAllowIncoming", defaultAllowIncoming);
-        nbt.setBoolean("defaultAllowOutgoing", defaultAllowOutgoing);
-        nbt.setBoolean("defaultAllowGateAccess", defaultAllowGateAccess);
-        nbt.setBoolean("defaultAllowIrisAccess", defaultAllowIrisAccess);
-        nbt.setBoolean("defaultAllowAdminAccess", defaultAllowAdminAccess);
+        nbt.setBoolean("defaultAllowIncoming", this.defaultAllowIncoming);
+        nbt.setBoolean("defaultAllowOutgoing", this.defaultAllowOutgoing);
+        nbt.setBoolean("defaultAllowGateAccess", this.defaultAllowGateAccess);
+        nbt.setBoolean("defaultAllowIrisAccess", this.defaultAllowIrisAccess);
+        nbt.setBoolean("defaultAllowAdminAccess", this.defaultAllowAdminAccess);
 
         return nbt;
     }
-
-
 
     // *********************************************************************************************
     // Core Stargate Control Systems
@@ -943,22 +951,26 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             return diallingFailure(player, "selfOutOfRange");
         }
 
-        boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+        boolean isPermissionsAdmin = false;
 
-        // Player Access Control System
-        if (!this.allowGateAccess(player.getName())) {
-            if (!isPermissionsAdmin)
-                return diallingFailure(player, "accessFromDenied");
+        if (player != null) {
+            isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+
+            // Player Access Control System
+            if (!this.allowGateAccess(player.getName())) {
+                if (!isPermissionsAdmin) return diallingFailure(player, "accessFromDenied");
+            }
         }
 
+        // Todo: abandon this?
         if (this.allowOnlySpecifiedDestination) {
             if (!this.onlySpecifiedAddress.isEmpty()) {
                 if (!address.equalsIgnoreCase(this.onlySpecifiedAddress)) {
-                    if (!isPermissionsAdmin)
-                        return diallingFailure(player, "dialspecificaddress");
+                    if (!isPermissionsAdmin) return diallingFailure(player, "dialspecificaddress");
                 }
             }
         }
+
         SGBaseTE targetGate;
         try {
             targetGate = SGAddressing.findAddressedStargate(address, world);
@@ -986,13 +998,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
 
         // Player Access Control System
-        if (!targetGate.allowGateAccess(player.getName())) {
-            if (!isPermissionsAdmin)
-                return diallingFailure(player, "accessToDenied");
+
+        if (player != null && !targetGate.allowGateAccess(player.getName())) {
+            if (!isPermissionsAdmin) return diallingFailure(player, "accessToDenied");
         }
 
         // Gate Address Control System
-        boolean debugAccessControlSystem = true;
         boolean accessSystemDialDestination = true;
 
         if (this.defaultAllowOutgoing) {
@@ -1574,7 +1585,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         boolean ccLoaded = isModLoaded("computercraft");
         boolean ocLoaded = isModLoaded("opencomputers");
         boolean ic2Loaded = isModLoaded("ic2");
-        boolean useDHD = true;
         DHDTE te = getLinkedControllerTE();
 
         if (debugEnergyUse) {
@@ -1592,13 +1602,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             TileEntity nte = world.getTileEntity(nearPos);
             if (debugEnergyUse) {
                 //System.out.printf("SGBaseTE.findEnergySources: %s at %s\n", nte, nearPos);
-            }
-
-            // make a another energy source required instead of DHD if a computer interface is attached.
-            if ((ccLoaded && nte instanceof CCInterfaceTE) || (ocLoaded && nte instanceof OCInterfaceTE)) {
-                if (isModLoaded("ic2") || isModLoaded("redstoneflux")) {
-                    useDHD = false;
-                }
             }
 
             if (nte instanceof ISGEnergySource) { // Specifically exclude the ZPM Interface.
@@ -1632,7 +1635,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
 
         if (te != null) {
-            if (useDHD) {
+            if (this.useDHDFuelSource) {
                 if (!requireZPM) {
                     result.add(te);
                     if (debugEnergyUse) {
@@ -1645,7 +1648,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 }
             } else {
                 if (debugEnergyUse) {
-                    System.out.println("Found DHDTE at: " + te.getPos() + " but was not added because a computer interface is attached to the gate");
+                    System.out.println("Found DHDTE at: " + te.getPos() + " but was not added because it is disabled in the config.");
                 }
             }
         }

@@ -26,7 +26,6 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
-import scala.Int;
 
 public class ConfiguratorScreen extends BasicScreen {
     private int lastUpdate = 0;
@@ -34,9 +33,9 @@ public class ConfiguratorScreen extends BasicScreen {
     private boolean isAdmin;
     private BasicForm form, numericOptionsArea, checkboxOptionsArea;
     private UILabel gateAddressLabel;
-    private UICheckBox oneWayTravelCheckbox, irisUpgradeCheckbox, chevronUpgradeCheckbox, gateTypeCheckbox, reverseWormholeKillsCheckbox, allowIncomingConnectionsCheckbox, allowOutgoingConnectionsCheckbox;
+    private UICheckBox oneWayTravelCheckbox, irisUpgradeCheckbox, chevronUpgradeCheckbox, gateTypeCheckbox, reverseWormholeKillsCheckbox;
     private UICheckBox closeFromEitherEndCheckbox, preserveInventoryCheckbox, noPowerRequiredCheckbox, chevronsLockOnDialCheckbox, returnIrisToPreviousStateCheckbox;
-    private UICheckBox transientDamageCheckbox, transparencyCheckbox, horizontalFaceUpCheckbox, horizontalFaceDownCheckbox;
+    private UICheckBox transientDamageCheckbox, transparencyCheckbox, horizontalFaceUpCheckbox, horizontalFaceDownCheckbox, useDHDFuelSourceCheckbox;
     private UITextField secondsToStayOpen, gateRotationSpeed, energyBufferSize, energyPerNaquadah, gateOpeningsPerNaquadah, distanceMultiplier, dimensionalMultiplier;
     private UIButton gateAddressAccessListButton, playerAccessListButton;
     private BlockPos location;
@@ -239,7 +238,7 @@ public class ConfiguratorScreen extends BasicScreen {
 
         // ****************************************************************************************************************************
 
-        gateAddressAccessListButton = new UIButtonBuilder(this)
+        this.gateAddressAccessListButton = new UIButtonBuilder(this)
             .width(160)
             .anchor(Anchor.TOP | Anchor.CENTER)
             .position(0, this.dimensionalMultiplier.getY() + 60)
@@ -250,7 +249,7 @@ public class ConfiguratorScreen extends BasicScreen {
             .listener(this)
             .build("button.gateaddressaccesslist");
 
-        playerAccessListButton = new UIButtonBuilder(this)
+        this.playerAccessListButton = new UIButtonBuilder(this)
             .width(160)
             .anchor(Anchor.TOP | Anchor.CENTER)
             .position(0, this.gateAddressAccessListButton.getY() + 20)
@@ -265,11 +264,7 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.numericOptionsArea.add(numericValuesLabel, valuesSeparator, secondsToStayOpenLabel, gateRotationSpeedLabel, energyBufferMaxSizeLabel, energyPerItemLabel, energyPerOpeningLabel, distanceFactorMultiplierLabel, interDimensionalMultiplierLabel);
         this.numericOptionsArea.add(this.secondsToStayOpen, this.gateRotationSpeed, this.energyBufferSize, this.energyPerNaquadah, this.gateOpeningsPerNaquadah, this.distanceMultiplier, this.dimensionalMultiplier);
-        this.numericOptionsArea.add(gateAddressAccessListButton, playerAccessListButton);
-
-        // ****************************************************************************************************************************
-
-
+        this.numericOptionsArea.add(this.gateAddressAccessListButton, this.playerAccessListButton);
 
         // ****************************************************************************************************************************
 
@@ -325,23 +320,9 @@ public class ConfiguratorScreen extends BasicScreen {
         this.reverseWormholeKillsCheckbox.setName("checkbox.reversekills");
         this.reverseWormholeKillsCheckbox.register(this);
 
-        this.allowIncomingConnectionsCheckbox = new UICheckBox(this);
-        this.allowIncomingConnectionsCheckbox.setText(TextFormatting.WHITE + "Allow Incoming Connections");
-        this.allowIncomingConnectionsCheckbox.setPosition(checkboxIndentPadding, this.reverseWormholeKillsCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
-        this.allowIncomingConnectionsCheckbox.setEnabled(true);
-        this.allowIncomingConnectionsCheckbox.setName("checkbox.acceptincomingconnections");
-        this.allowIncomingConnectionsCheckbox.register(this);
-
-        this.allowOutgoingConnectionsCheckbox = new UICheckBox(this);
-        this.allowOutgoingConnectionsCheckbox.setText(TextFormatting.WHITE + "Allow Outgoing Connections");
-        this.allowOutgoingConnectionsCheckbox.setPosition(checkboxIndentPadding, this.allowIncomingConnectionsCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
-        this.allowOutgoingConnectionsCheckbox.setEnabled(true);
-        this.allowOutgoingConnectionsCheckbox.setName("checkbox.allowoutgoingconnections");
-        this.allowOutgoingConnectionsCheckbox.register(this);
-
         this.closeFromEitherEndCheckbox = new UICheckBox(this);
         this.closeFromEitherEndCheckbox.setText(TextFormatting.WHITE + "Close from Either End");
-        this.closeFromEitherEndCheckbox.setPosition(checkboxIndentPadding, this.allowOutgoingConnectionsCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
+        this.closeFromEitherEndCheckbox.setPosition(checkboxIndentPadding, this.reverseWormholeKillsCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
         this.closeFromEitherEndCheckbox.setName("checkbox.canbedialedto");
         this.closeFromEitherEndCheckbox.register(this);
 
@@ -374,7 +355,7 @@ public class ConfiguratorScreen extends BasicScreen {
         this.returnIrisToPreviousStateCheckbox.register(this);
 
         this.transientDamageCheckbox = new UICheckBox(this);
-        this.transientDamageCheckbox.setText(TextFormatting.WHITE + "Enable Transient Damage");
+        this.transientDamageCheckbox.setText(TextFormatting.WHITE + "Transient Damage (when wormhole opens)");
         this.transientDamageCheckbox.setTooltip("Damages player or entity when Stargate Opens");
         this.transientDamageCheckbox.setPosition(checkboxIndentPadding, this.returnIrisToPreviousStateCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
         this.transientDamageCheckbox.setEnabled(true);
@@ -382,23 +363,22 @@ public class ConfiguratorScreen extends BasicScreen {
         this.transientDamageCheckbox.register(this);
 
         this.transparencyCheckbox = new UICheckBox(this);
-        this.transparencyCheckbox.setText(TextFormatting.WHITE + "Enable Event Horizion Transparency");
+        this.transparencyCheckbox.setText(TextFormatting.WHITE + "Event Horizon Transparency");
         this.transparencyCheckbox.setPosition(checkboxIndentPadding, this.transientDamageCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
         this.transparencyCheckbox.setEnabled(true);
         this.transparencyCheckbox.setName("checkbox.eventhorizontransparent");
         this.transparencyCheckbox.register(this);
 
-        final UISeparator checkbox2Separator = new UISeparator(this);
-        checkbox2Separator.setSize(this.checkboxOptionsArea.getWidth() - 15, 1);
-        checkbox2Separator.setPosition(0, this.transparencyCheckbox.getY() + padding +5, Anchor.TOP | Anchor.CENTER);
-
-        final UILabel horizontalGateLabel = new UILabel(this, "Horizontal Gate");
-        horizontalGateLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
-        horizontalGateLabel.setPosition(0, checkbox2Separator.getY() + 5, Anchor.CENTER | Anchor.TOP);
+        this.useDHDFuelSourceCheckbox = new UICheckBox(this);
+        this.useDHDFuelSourceCheckbox.setText(TextFormatting.WHITE + "Use DHD as Fuel Source");
+        this.useDHDFuelSourceCheckbox.setPosition(checkboxIndentPadding, this.transparencyCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
+        this.useDHDFuelSourceCheckbox.setEnabled(true);
+        this.useDHDFuelSourceCheckbox.setName("checkbox.dhdfuelsource");
+        this.useDHDFuelSourceCheckbox.register(this);
 
         this.horizontalFaceUpCheckbox = new UICheckBox(this);
         this.horizontalFaceUpCheckbox.setText(TextFormatting.WHITE + "Render Face Up");
-        this.horizontalFaceUpCheckbox.setPosition(-55, -15, Anchor.CENTER | Anchor.BOTTOM);
+        this.horizontalFaceUpCheckbox.setPosition(-55, -2, Anchor.CENTER | Anchor.BOTTOM);
         this.horizontalFaceUpCheckbox.setEnabled(true);
         this.horizontalFaceUpCheckbox.setChecked(localGate.gateOrientation == 2);
         this.horizontalFaceUpCheckbox.setName("checkbox.horizontalup");
@@ -406,16 +386,24 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.horizontalFaceDownCheckbox = new UICheckBox(this);
         this.horizontalFaceDownCheckbox.setText(TextFormatting.WHITE + "Render Face Down");
-        this.horizontalFaceDownCheckbox.setPosition(55, -15, Anchor.CENTER | Anchor.BOTTOM);
+        this.horizontalFaceDownCheckbox.setPosition(55, -2, Anchor.CENTER | Anchor.BOTTOM);
         this.horizontalFaceDownCheckbox.setEnabled(true);
         this.horizontalFaceDownCheckbox.setChecked(localGate.gateOrientation == 3);
         this.horizontalFaceDownCheckbox.setName("checkbox.horizontaldown");
         this.horizontalFaceDownCheckbox.register(this);
 
+        final UILabel horizontalGateLabel = new UILabel(this, "Horizontal Gate");
+        horizontalGateLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
+        horizontalGateLabel.setPosition(0, this.horizontalFaceUpCheckbox.getY() - 12, Anchor.CENTER | Anchor.BOTTOM);
+
+        final UISeparator checkbox2Separator = new UISeparator(this);
+        checkbox2Separator.setSize(this.checkboxOptionsArea.getWidth() - 15, 1);
+        checkbox2Separator.setPosition(0, horizontalGateLabel.getY() - 12, Anchor.CENTER | Anchor.BOTTOM);
+
         this.checkboxOptionsArea.add(booleanValuesLabel, checkboxSeparator, this.oneWayTravelCheckbox, this.irisUpgradeCheckbox, this.chevronUpgradeCheckbox, this.gateTypeCheckbox);
-        this.checkboxOptionsArea.add(this.reverseWormholeKillsCheckbox, this.allowIncomingConnectionsCheckbox, this.allowOutgoingConnectionsCheckbox, this.closeFromEitherEndCheckbox);
-        this.checkboxOptionsArea.add(this.preserveInventoryCheckbox, this.noPowerRequiredCheckbox, this.chevronsLockOnDialCheckbox, this.returnIrisToPreviousStateCheckbox);
-        this.checkboxOptionsArea.add( this.transientDamageCheckbox, this.transparencyCheckbox);
+        this.checkboxOptionsArea.add(this.reverseWormholeKillsCheckbox, this.closeFromEitherEndCheckbox, this.preserveInventoryCheckbox, this.noPowerRequiredCheckbox);
+        this.checkboxOptionsArea.add(this.chevronsLockOnDialCheckbox, this.returnIrisToPreviousStateCheckbox, this.transientDamageCheckbox, this.transparencyCheckbox, this.useDHDFuelSourceCheckbox);
+
         if (localGate.gateOrientation == 2 || localGate.gateOrientation == 3) {
             this.checkboxOptionsArea.add(checkbox2Separator, horizontalGateLabel, this.horizontalFaceUpCheckbox, this.horizontalFaceDownCheckbox);
         }
@@ -427,26 +415,25 @@ public class ConfiguratorScreen extends BasicScreen {
             .text("Load Defaults")
             .onClick(() -> {
                 // Todo: make this match config....
-                secondsToStayOpen.setText(String.valueOf(SGBaseTE.cfg.getInteger("stargate", "secondsToStayOpen", 500)));
-                gateRotationSpeed.setText(String.valueOf(2.0)); // Isn't contained in base config file
-                energyBufferSize.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "maxEnergyBuffer", 2500.0)));
-                energyPerNaquadah.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "energyPerFuelItem", 25000.0)));
-                gateOpeningsPerNaquadah.setText(String.valueOf(SGBaseTE.cfg.getInteger("stargate", "gateOpeningsPerFuelItem", 10)));
-                distanceMultiplier.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "distanceFactorMultiplier", 1.0)));
-                dimensionalMultiplier.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "interDimensionMultiplier", 4.0)));
-                oneWayTravelCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "oneWayTravel", true));
-                irisUpgradeCheckbox.setChecked(false);
-                chevronUpgradeCheckbox.setChecked(false);
-                reverseWormholeKillsCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "reverseWormholeKills", false));
-                allowIncomingConnectionsCheckbox.setChecked(true);
-                allowOutgoingConnectionsCheckbox.setChecked(true);
-                closeFromEitherEndCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "closeFromEitherEnd", true));
-                preserveInventoryCheckbox.setChecked(SGBaseTE.cfg.getBoolean("iris", "preserveInventory", false));
-                noPowerRequiredCheckbox.setChecked(false);
-                chevronsLockOnDialCheckbox.setChecked(false);
-                returnIrisToPreviousStateCheckbox.setChecked(false);
-                transientDamageCheckbox.setChecked(true);
-                transparencyCheckbox.setChecked(true);
+                this.secondsToStayOpen.setText(String.valueOf(SGBaseTE.cfg.getInteger("stargate", "secondsToStayOpen", 500)));
+                this.gateRotationSpeed.setText(String.valueOf(2.0)); // Isn't contained in base config file
+                this.energyBufferSize.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "maxEnergyBuffer", 2500.0)));
+                this.energyPerNaquadah.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "energyPerFuelItem", 25000.0)));
+                this.gateOpeningsPerNaquadah.setText(String.valueOf(SGBaseTE.cfg.getInteger("stargate", "gateOpeningsPerFuelItem", 10)));
+                this.distanceMultiplier.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "distanceFactorMultiplier", 1.0)));
+                this.dimensionalMultiplier.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "interDimensionMultiplier", 4.0)));
+                this.oneWayTravelCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "oneWayTravel", true));
+                this.irisUpgradeCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "irisUpgrade", true));
+                this.chevronUpgradeCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "chevronUpgrade", true));
+                this.reverseWormholeKillsCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "reverseWormholeKills", false));
+                this.closeFromEitherEndCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "requiresNoPower", true));
+                this.preserveInventoryCheckbox.setChecked(SGBaseTE.cfg.getBoolean("iris", "preserveInventory", false));
+                this.noPowerRequiredCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "closeFromEitherEnd", false));
+                this.chevronsLockOnDialCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "chevronsLockOnDial", false));
+                this.returnIrisToPreviousStateCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "returnToPreviousIrisState", false));
+                this.transientDamageCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "transientDamage", true));
+                this.transparencyCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "transparency", true));
+                this.useDHDFuelSourceCheckbox.setChecked(SGBaseTE.cfg.getBoolean("dhd", "useDHDFuelSource", true));
             })
             .listener(this)
             .build("button.defaults");
@@ -470,11 +457,11 @@ public class ConfiguratorScreen extends BasicScreen {
                         orientation = 3;
                     }
                 }
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, Integer.valueOf(secondsToStayOpen.getText()), Double.valueOf(gateRotationSpeed.getText()), Double.valueOf(energyBufferSize.getText()),
-                    Double.valueOf(energyPerNaquadah.getText()), Integer.valueOf(gateOpeningsPerNaquadah.getText()), Double.valueOf(distanceMultiplier.getText()), Double.valueOf(dimensionalMultiplier.getText()),
-                    oneWayTravelCheckbox.isChecked(), irisUpgradeCheckbox.isChecked(), chevronUpgradeCheckbox.isChecked(), gateType, reverseWormholeKillsCheckbox.isChecked(),
-                allowIncomingConnectionsCheckbox.isChecked(), allowOutgoingConnectionsCheckbox.isChecked(), closeFromEitherEndCheckbox.isChecked(), preserveInventoryCheckbox.isChecked(),
-                noPowerRequiredCheckbox.isChecked(), chevronsLockOnDialCheckbox.isChecked(), returnIrisToPreviousStateCheckbox.isChecked(), transientDamageCheckbox.isChecked(), transparencyCheckbox.isChecked(), orientation);
+                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, Integer.valueOf(this.secondsToStayOpen.getText()), Double.valueOf(this.gateRotationSpeed.getText()), Double.valueOf(this.energyBufferSize.getText()),
+                    Double.valueOf(this.energyPerNaquadah.getText()), Integer.valueOf(this.gateOpeningsPerNaquadah.getText()), Double.valueOf(this.distanceMultiplier.getText()), Double.valueOf(this.dimensionalMultiplier.getText()),
+                    this.oneWayTravelCheckbox.isChecked(), this.irisUpgradeCheckbox.isChecked(), this.chevronUpgradeCheckbox.isChecked(), gateType, this.reverseWormholeKillsCheckbox.isChecked(), this.closeFromEitherEndCheckbox.isChecked(),
+                    this.preserveInventoryCheckbox.isChecked(), this.noPowerRequiredCheckbox.isChecked(), this.chevronsLockOnDialCheckbox.isChecked(), this.returnIrisToPreviousStateCheckbox.isChecked(), this.transientDamageCheckbox.isChecked(),
+                    this.transparencyCheckbox.isChecked(), orientation, this.useDHDFuelSourceCheckbox.isChecked());
 
                 this.close();
             })
@@ -525,26 +512,26 @@ public class ConfiguratorScreen extends BasicScreen {
         if (localGateTE instanceof SGBaseTE) {
             SGBaseTE localGate = (SGBaseTE) localGateTE;
 
-            if (secondsToStayOpen.getText().isEmpty()) {
-                secondsToStayOpen.setText(String.valueOf(localGate.secondsToStayOpen));
+            if (this.secondsToStayOpen.getText().isEmpty()) {
+                this.secondsToStayOpen.setText(String.valueOf(localGate.secondsToStayOpen));
             }
-            if (gateRotationSpeed.getText().isEmpty()) {
-                gateRotationSpeed.setText(String.valueOf(localGate.ringRotationSpeed));
+            if (this.gateRotationSpeed.getText().isEmpty()) {
+                this.gateRotationSpeed.setText(String.valueOf(localGate.ringRotationSpeed));
             }
-            if (energyBufferSize.getText().isEmpty()) {
-                energyBufferSize.setText(String.valueOf(localGate.maxEnergyBuffer));
+            if (this.energyBufferSize.getText().isEmpty()) {
+                this.energyBufferSize.setText(String.valueOf(localGate.maxEnergyBuffer));
             }
-            if (energyPerNaquadah.getText().isEmpty()) {
-                energyPerNaquadah.setText(String.valueOf(localGate.energyPerFuelItem));
+            if (this.energyPerNaquadah.getText().isEmpty()) {
+                this.energyPerNaquadah.setText(String.valueOf(localGate.energyPerFuelItem));
             }
-            if (gateOpeningsPerNaquadah.getText().isEmpty()) {
-                gateOpeningsPerNaquadah.setText(String.valueOf(localGate.gateOpeningsPerFuelItem));
+            if (this.gateOpeningsPerNaquadah.getText().isEmpty()) {
+                this.gateOpeningsPerNaquadah.setText(String.valueOf(localGate.gateOpeningsPerFuelItem));
             }
-            if (distanceMultiplier.getText().isEmpty()) {
-                distanceMultiplier.setText(String.valueOf(localGate.distanceFactorMultiplier));
+            if (this.distanceMultiplier.getText().isEmpty()) {
+                this.distanceMultiplier.setText(String.valueOf(localGate.distanceFactorMultiplier));
             }
-            if (dimensionalMultiplier.getText().isEmpty()) {
-                dimensionalMultiplier.setText(String.valueOf(localGate.interDimensionMultiplier));
+            if (this.dimensionalMultiplier.getText().isEmpty()) {
+                this.dimensionalMultiplier.setText(String.valueOf(localGate.interDimensionMultiplier));
             }
         }
     }
@@ -575,8 +562,6 @@ public class ConfiguratorScreen extends BasicScreen {
                 this.gateTypeCheckbox.setChecked(true);
             }
             this.reverseWormholeKillsCheckbox.setChecked(localGate.reverseWormholeKills);
-            this.allowIncomingConnectionsCheckbox.setChecked(localGate.allowIncomingConnections);
-            this.allowOutgoingConnectionsCheckbox.setChecked(localGate.allowOutgoingConnections);
             this.closeFromEitherEndCheckbox.setChecked(localGate.closeFromEitherEnd);
             this.preserveInventoryCheckbox.setChecked(localGate.preserveInventory);
             this.noPowerRequiredCheckbox.setChecked(localGate.requiresNoPower);
@@ -584,6 +569,7 @@ public class ConfiguratorScreen extends BasicScreen {
             this.returnIrisToPreviousStateCheckbox.setChecked(localGate.returnToPreviousIrisState);
             this.transientDamageCheckbox.setChecked(localGate.transientDamage);
             this.transparencyCheckbox.setChecked(localGate.transparency);
+            this.useDHDFuelSourceCheckbox.setChecked(localGate.useDHDFuelSource);
 
             if (localGate.gateOrientation == 2) {
                 this.horizontalFaceUpCheckbox.setChecked(true);
