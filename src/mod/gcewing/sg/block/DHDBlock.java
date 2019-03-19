@@ -25,6 +25,7 @@ import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
@@ -103,27 +104,20 @@ public class DHDBlock extends BaseBlock<DHDTE> {
     
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float cx, float cy, float cz) {
-        // Check to see if player is right-clicking DHD to read whether or not the destinations stargate iris is open or closed.
-        // Requires GDO in off-hand, player sneaking, connected gate with destination gate having the iris upgrade.
-
-        if (player != null && player.isSneaking() && !player.getHeldItemOffhand().isEmpty() && player.getHeldItemOffhand().getItem().equals(SGCraft.gdo)) {
-            DHDTE cte = getTileEntity(world, pos);
-            if (cte.isLinkedToStargate) {
-                if (cte.getLinkedStargateTE().isConnected()) {
-                    if (cte.getLinkedStargateTE().getConnectedStargateTE().hasIrisUpgrade) {
-                        if (cte.getLinkedStargateTE().getConnectedStargateTE().irisIsClosed()) {
-                            System.out.println("Connected DHD Iris is closed");
-                        } else {
-                            System.out.println("Connected DHD Iris is open");
-                        }
-                          return true;
-                    }
+        DHDTE localDHD = getTileEntity(world, pos);
+        if (localDHD != null && cy <= 0.5) {
+            if (localDHD.isLinkedToStargate) {
+                SGBaseTE localGate = localDHD.getLinkedStargateTE();
+                if (player != null && localGate.allowAdminAccess(player.getName())) {
+                    SGCraft.mod.openGui(player, SGGui.DHDFuel, world, pos);
+                    return true;
+                } else {
+                    return false;
                 }
             }
         }
 
-        SGGui id = cy > 0.5 ? SGGui.SGController : SGGui.DHDFuel;
-        SGCraft.mod.openGui(player, id, world, pos);
+        SGCraft.mod.openGui(player, SGGui.SGController, world, pos);
         return true;
     }
     
@@ -139,5 +133,10 @@ public class DHDBlock extends BaseBlock<DHDTE> {
     @Override
     public TileEntity createNewTileEntity(World world, int meta) {
         return new DHDTE(DHDTE.cfgMaxEnergyBuffer);
+    }
+
+    @Override
+    public boolean canDropFromExplosion(Explosion explosionIn) {
+        return SGCraft.canHarvestDHD;
     }
 }

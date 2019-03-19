@@ -6,7 +6,9 @@
 
 package gcewing.sg.features.ic2;
 
+import gcewing.sg.SGCraft;
 import gcewing.sg.block.PowerBlock;
+import net.minecraft.world.Explosion;
 
 public class IC2PowerBlock extends PowerBlock<IC2PowerTE> {
 
@@ -15,5 +17,9 @@ public class IC2PowerBlock extends PowerBlock<IC2PowerTE> {
         setModelAndTextures("block/power.smeg",
             "ic2PowerUnit-bottom", "ic2PowerUnit-top", "ic2PowerUnit-side");
     }
-    
+
+    @Override
+    public boolean canDropFromExplosion(Explosion explosionIn) {
+        return SGCraft.canHarvestSGBaseBlock;
+    }
 }

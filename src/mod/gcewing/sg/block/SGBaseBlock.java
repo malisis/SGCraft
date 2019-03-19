@@ -260,6 +260,11 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
         }
         return -1;
     }
+
+    @Override
+    public boolean canDropFromExplosion(Explosion explosionIn) {
+        return SGCraft.canHarvestSGBaseBlock;
+    }
     
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {

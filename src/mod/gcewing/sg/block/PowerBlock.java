@@ -78,4 +78,9 @@ public class PowerBlock<TE extends PowerTE> extends BaseBlock<TE> {
         if (te != null && nbt != null)
             te.readContentsFromNBT(nbt);
     }
+
+    @Override
+    public boolean canDropFromExplosion(Explosion explosionIn) {
+        return SGCraft.canHarvestSGBaseBlock;
+    }
 }

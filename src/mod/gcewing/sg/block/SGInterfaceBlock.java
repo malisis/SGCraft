@@ -30,5 +30,4 @@ public class SGInterfaceBlock<TE extends TileEntity> extends BaseBlock<TE> {
     public boolean isSideSolid(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
         return true;
     }
-
 }

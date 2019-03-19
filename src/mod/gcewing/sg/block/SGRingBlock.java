@@ -201,5 +201,9 @@ public class SGRingBlock extends SGBlock<SGRingTE> {
                 }
         }
     }
-    
+
+    @Override
+    public boolean canDropFromExplosion(Explosion explosionIn) {
+        return SGCraft.canHarvestSGRingBlock;
+    }
 }
