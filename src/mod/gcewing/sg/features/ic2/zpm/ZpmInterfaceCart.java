@@ -2,6 +2,7 @@ package gcewing.sg.features.ic2.zpm;
 
 import gcewing.sg.SGCraft;
 import gcewing.sg.client.gui.SGGui;
+import gcewing.sg.features.zpm.ZPMItem;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;

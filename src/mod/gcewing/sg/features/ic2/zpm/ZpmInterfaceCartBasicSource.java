@@ -5,11 +5,11 @@ import ic2.api.energy.tile.IEnergyAcceptor;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 
-public final class ZpmBasicSource extends BasicSource {
+public final class ZpmInterfaceCartBasicSource extends BasicSource {
 
     private final TileEntity parent;
 
-    public ZpmBasicSource(final TileEntity parent, final double capacity, final int tier) {
+    public ZpmInterfaceCartBasicSource(final TileEntity parent, final double capacity, final int tier) {
         super(parent, capacity, tier);
         this.parent = parent;
     }

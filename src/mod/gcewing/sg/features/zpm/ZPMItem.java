@@ -1,4 +1,4 @@
-package gcewing.sg.features.ic2.zpm;
+package gcewing.sg.features.zpm;
 
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.item.Item;

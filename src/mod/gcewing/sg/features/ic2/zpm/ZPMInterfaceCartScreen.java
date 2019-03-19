@@ -32,7 +32,7 @@ public class ZPMInterfaceCartScreen extends SGScreen {
     }
 
     public ZPMInterfaceCartScreen(EntityPlayer player, ZpmInterfaceCartTE te) {
-        super(new ZpmContainer(player, te), guiWidth, guiHeight);
+        super(new ZpmInterfaceCartContainer(player, te), guiWidth, guiHeight);
         this.te = te;
     }
     
@@ -45,9 +45,6 @@ public class ZPMInterfaceCartScreen extends SGScreen {
         setTextColor(0x004c66);
         drawCenteredString(screenTitle, cx, 8);
         drawString("ZPM", 120, 45);
-
-        //if (!this.te.getStackInSlot(0).isEmpty()) {
-            drawString("Available Power: " + dFormat.format(te.availableEnergy()), 60, 100);
-        //}
+        drawString("Available Power: " + dFormat.format(te.availableEnergy()), 60, 100);
     }
 }

@@ -9,13 +9,11 @@ package gcewing.sg.features.ic2.zpm;
 import gcewing.sg.BaseContainer;
 import gcewing.sg.tileentity.DHDTE;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.inventory.IInventory;
-import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class ZpmContainer extends BaseContainer {
+public class ZpmInterfaceCartContainer extends BaseContainer {
 
     static final int numFuelSlotColumns = 2;
     static final int zpmSlotsX = 120;
@@ -25,17 +23,18 @@ public class ZpmContainer extends BaseContainer {
 
     ZpmInterfaceCartTE te;
     
-    public static ZpmContainer create(EntityPlayer player, World world, BlockPos pos) {
+    public static ZpmInterfaceCartContainer create(EntityPlayer player, World world, BlockPos pos) {
         ZpmInterfaceCartTE te =ZpmInterfaceCartTE.at(world, pos);
         if (te != null)
-            return new ZpmContainer(player, te);
+            return new ZpmInterfaceCartContainer(player, te);
         else
             return null;
     }
     
-    public ZpmContainer(EntityPlayer player, ZpmInterfaceCartTE te) {
+    public ZpmInterfaceCartContainer(EntityPlayer player, ZpmInterfaceCartTE te) {
         super(ZPMInterfaceCartScreen.guiWidth, ZPMInterfaceCartScreen.guiHeight);
         this.te = te;
+
         addZpmSlots();
         addPlayerSlots(player, playerSlotsX, playerSlotsY);
     }
@@ -48,30 +47,17 @@ public class ZpmContainer extends BaseContainer {
             int col = i % numFuelSlotColumns;
             int x = zpmSlotsX + col * 18;
             int y = zpmSlotsY + row * 18;
-            addSlotToContainer(new ZpmSlot(te, b + i, x, y));
+            addSlotToContainer(new ZpmInterfaceCartSlot(te, b + i, x, y));
         }
     }
+
 
     @Override
     protected SlotRange transferSlotRange(int srcSlotIndex, ItemStack stack) {
         SlotRange range = new SlotRange();
         range.firstSlot = DHDTE.firstFuelSlot;
         range.numSlots = DHDTE.numFuelSlots;
+
         return range;
     }
 }
-
-//------------------------------------------------------------------------------------------------
-
-class ZpmSlot extends Slot {
-
-    public ZpmSlot(IInventory inv, int i, int x, int y) {
-        super(inv, i, x, y);
-    }
-    
-    public boolean isItemValid(ItemStack stack) {
-        return ZpmInterfaceCartTE.isValidFuelItem(stack);
-    }
-
-}
-

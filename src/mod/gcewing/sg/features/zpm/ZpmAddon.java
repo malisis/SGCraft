@@ -1,5 +1,6 @@
-package gcewing.sg.features.ic2.zpm;
+package gcewing.sg.features.zpm;
 
+import gcewing.sg.features.ic2.zpm.ZpmInterfaceCartTE;
 import gcewing.sg.interfaces.ISGEnergySource;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;

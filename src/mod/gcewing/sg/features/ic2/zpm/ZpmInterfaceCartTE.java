@@ -1,6 +1,7 @@
 package gcewing.sg.features.ic2.zpm;
 
 import gcewing.sg.BaseTileInventory;
+import gcewing.sg.features.zpm.ZPMItem;
 import gcewing.sg.interfaces.ISGEnergySource;
 import gcewing.sg.SGCraft;
 import ic2.api.energy.prefab.BasicSource;
@@ -33,7 +34,7 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
     private int update = 0;
 
     public ZpmInterfaceCartTE() {
-        this.source = new ZpmBasicSource(this, Integer.MAX_VALUE, 3);
+        this.source = new ZpmInterfaceCartBasicSource(this, Integer.MAX_VALUE, 3);
         //this.setInventorySlotContents(0, new ItemStack(SGCraft.zpm)); // Testing purposes only.
     }
 

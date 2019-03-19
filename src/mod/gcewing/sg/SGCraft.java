@@ -22,9 +22,9 @@ import gcewing.sg.features.configurator.ConfiguratorItem;
 import gcewing.sg.features.configurator.network.ConfiguratorNetworkHandler;
 import gcewing.sg.features.gdo.GdoItem;
 import gcewing.sg.features.gdo.network.GdoNetworkHandler;
-import gcewing.sg.features.ic2.zpm.ZPMItem;
-import gcewing.sg.features.ic2.zpm.ZPMMultiplierRegistry;
-import gcewing.sg.features.ic2.zpm.ZpmContainer;
+import gcewing.sg.features.zpm.ZPMItem;
+import gcewing.sg.features.zpm.ZPMMultiplierRegistry;
+import gcewing.sg.features.ic2.zpm.ZpmInterfaceCartContainer;
 import gcewing.sg.features.ic2.zpm.ZpmInterfaceCart;
 import gcewing.sg.features.ic2.zpm.ZpmInterfaceCartTE;
 import gcewing.sg.features.pdd.PddItem;
@@ -227,15 +227,14 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         saveAddressToClipboard = config.getBoolean("client", "saveAddressToClipboard", saveAddressToClipboard);
         displayGuiPowerDebug = config.getBoolean("client", "showPowerValuesOnGui", displayGuiPowerDebug);
 
-        if (isModLoaded("ic2")) {
-            // ZPM multiplier configuration loader
-            final ConfigurationNode rootNode;
-            try {
-                rootNode = ZPMMultiplierRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "zpm.yml"));
-                ZPMMultiplierRegistry.populateMultipliers(rootNode);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+
+        // ZPM multiplier configuration loader
+        final ConfigurationNode rootNode;
+        try {
+            rootNode = ZPMMultiplierRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "zpm.yml"));
+            ZPMMultiplierRegistry.populateMultipliers(rootNode);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
         // Tokra Villager World configuration loader
@@ -281,9 +280,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         if (isModLoaded("ic2")) {
             ic2Capacitor = newItem("ic2Capacitor");
         }
-        if (isModLoaded("ic2")) {
-            zpm = addItem(new ZPMItem(), "zpm");
-        }
+
+        zpm = addItem(new ZPMItem(), "zpm");
+
 
         tollan_phase_shift_device = newItem("tollan_phase_shift_device");
 
@@ -408,7 +407,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         addContainer(SGGui.SGBase, SGBaseContainer.class);
         addContainer(SGGui.DHDFuel, DHDFuelContainer.class);
         addContainer(SGGui.PowerUnit, PowerContainer.class);
-        addContainer(SGGui.ZPMInterfaceCart, ZpmContainer.class);
+        addContainer(SGGui.ZPMInterfaceCart, ZpmInterfaceCartContainer.class);
     }
 
     @Override
@@ -487,7 +486,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public void onModelRegistry(ModelRegistryEvent event) {
         // Register Complex Block Models
         // Note: Complex Item Models register within their creation class because their registration order isn't important.
-        if (isModLoaded("ic2") && SGCraft.zpm_interface_cart != null) {
+        if (SGCraft.zpm_interface_cart != null) {
             registerModel(Item.getItemFromBlock(SGCraft.zpm_interface_cart));
         }
     }

@@ -27,9 +27,8 @@ import gcewing.sg.Vector3;
 import gcewing.sg.block.SGBaseBlock;
 import gcewing.sg.client.renderer.SGBaseTERenderer;
 import gcewing.sg.entity.EntityStargateIris;
-import gcewing.sg.features.cc.CCInterfaceTE;
 import gcewing.sg.features.ic2.IC2PowerTE;
-import gcewing.sg.features.ic2.zpm.ZpmAddon;
+import gcewing.sg.features.zpm.ZpmAddon;
 import gcewing.sg.features.ic2.zpm.ZpmInterfaceCartTE;
 import gcewing.sg.features.oc.OCIntegration;
 import gcewing.sg.features.oc.OCInterfaceTE;
@@ -42,11 +41,6 @@ import gcewing.sg.util.FakeTeleporter;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.RenderGlobal;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
@@ -70,7 +64,6 @@ import net.minecraft.util.ITickable;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
@@ -1060,7 +1053,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             energyToOpen = 0;
         }
 
-        if (isModLoaded("ic2") && !this.requiresNoPower) {
+        if (!this.requiresNoPower) {
             // Zpm
             String originName = this.getWorld().getWorldInfo().getWorldName().toLowerCase();
             String destinationName = targetGate.getWorld().getWorldInfo().getWorldName().toLowerCase();
@@ -1139,13 +1132,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         double f = 1 + 14 * distanceFactorMultiplier * lr * lr;
         if (te1.getWorld() != te2.getWorld()) {
             f *= distanceFactorMultiplier;
-            if (isModLoaded("ic2")) {
-                String originName = te1.getWorld().getWorldInfo().getWorldName().toLowerCase();
-                String destinationName = te2.getWorld().getWorldInfo().getWorldName().toLowerCase();
+            String originName = te1.getWorld().getWorldInfo().getWorldName().toLowerCase();
+            String destinationName = te2.getWorld().getWorldInfo().getWorldName().toLowerCase();
 
-                if (ZpmAddon.routeRequiresZpm(te1.getWorld().getWorldInfo().getWorldName().toLowerCase(), te2.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
-                    f += ZpmAddon.routeZpmMultiplier(originName, destinationName);
-                }
+            if (ZpmAddon.routeRequiresZpm(te1.getWorld().getWorldInfo().getWorldName().toLowerCase(), te2.getWorld().getWorldInfo().getWorldName().toLowerCase())) {
+                f += ZpmAddon.routeZpmMultiplier(originName, destinationName);
             }
         }
         return f;

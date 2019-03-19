@@ -1,4 +1,4 @@
-package gcewing.sg.features.ic2.zpm;
+package gcewing.sg.features.zpm;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
