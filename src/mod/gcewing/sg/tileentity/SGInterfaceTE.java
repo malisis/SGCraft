@@ -81,7 +81,7 @@ public class SGInterfaceTE extends BaseTileEntity {
             if (dte == null)
                 throw new IllegalArgumentException("unknownAddress");
             double distanceFactor = dte.distanceFactorForCoordDifference(te, dte);
-            return SGBaseTE.energyToOpen * distanceFactor;
+            return te.energyToOpen * distanceFactor;
         } catch (AddressingError e) {
             //System.out.printf("SGBaseTE.ciEnergyToDial: caught %s\n", e);
             throw new IllegalArgumentException(e.getMessage());

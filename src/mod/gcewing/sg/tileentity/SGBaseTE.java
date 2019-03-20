@@ -1131,7 +1131,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 playSGSoundEffect(dialFailSound, 1F, 1F);
         }
         errorState = true;
-        disconnect(); // Resets both sides, should fix CI issue?
         return operationFailure(player, msg, args);
     }
 
@@ -1142,9 +1141,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     public void resetStargate() { // Specifically for usage with PDD.
-        this.enteredAddress = "";
-        this.dialledAddress = "";
-        this.dialedDigit = 0;
+        disconnect();
         markChanged();
     }
 

@@ -102,28 +102,32 @@ public class DHDBlock extends BaseBlock<DHDTE> {
                 gte.clearLinkToController();
         }
     }
-    
+
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float cx, float cy, float cz) {
         DHDTE localDHD = getTileEntity(world, pos);
-        if (localDHD != null && cy <= 0.5) {
+        if (localDHD != null) {
             if (localDHD.isLinkedToStargate) {
                 SGBaseTE localGate = localDHD.getLinkedStargateTE();
-                if (player != null && localGate.allowAdminAccess(player.getName())) {
-                    if (!world.isRemote) {
-                        SGCraft.mod.openGui(player, SGGui.DHDFuel, world, pos);
+                if (cy <= 0.5) {
+                    if (player != null && localGate.allowAdminAccess(player.getName())) {
+                        if (!world.isRemote) {
+                            SGCraft.mod.openGui(player, SGGui.DHDFuel, world, pos);
+                            return true;
+                        }
                     }
-                    return true;
                 } else {
-                    return false;
+                    if (world.isRemote) { // Only call on the client, server call here not needed because it doesn't have a container.
+                        SGCraft.mod.openGui(player, SGGui.SGController, world, pos);
+                        return true;
+                    } else {
+                        return true; // Server expects return true here if client was successful, which we can assume it was.
+                    }
                 }
             }
         }
 
-        if (!world.isRemote) {
-            SGCraft.mod.openGui(player, SGGui.SGController, world, pos);
-        }
-        return true;
+        return false;
     }
     
     public void checkForLink(World world, BlockPos pos) {
