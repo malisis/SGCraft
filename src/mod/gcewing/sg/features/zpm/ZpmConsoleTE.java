@@ -1,5 +1,6 @@
 package gcewing.sg.features.zpm;
 
+import static gcewing.sg.BaseUtils.max;
 import static gcewing.sg.BaseUtils.min;
 
 import gcewing.sg.BaseTileInventory;
@@ -21,11 +22,9 @@ import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.IBlockAccess;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.EnergyStorage;
 import net.minecraftforge.energy.IEnergyStorage;
-import net.minecraftforge.items.IItemHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -34,22 +33,22 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
 
     // Todo: specify console buffer
-    private EnergyStorage storage = new EnergyStorage(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, 0);
+    private EnergyStorage storage;
+    private double maxEnergyBufferSize = Integer.MAX_VALUE;
+    private double energyPerSGEnergyUnit = 0;
 
-    @CapabilityInject(IEnergyStorage.class)
-    static Capability<IItemHandler> ENERGY = null;
+    private static final int firstZpmSlot = 0;
+    public static final int numSlots = 1;
 
-    public static final int firstZpmSlot = 0;
-    public static final int numZpmSlots = 1;
-    public static final int numSlots = numZpmSlots; // future usage > 1
     public boolean loaded = false;
-    private int update = 0;
-
-    public double energyPerSGEnergyUnit = 0;  //  ??
-
+    private boolean debugOutput = false;
 
     public ZpmConsoleTE() {}
 
+    public ZpmConsoleTE(double zpmEnergyPerSGEnergyUnit) {
+        this.energyPerSGEnergyUnit = zpmEnergyPerSGEnergyUnit;
+        this.storage =  new EnergyStorage((int)maxEnergyBufferSize);
+    }
 
     /* TileEntity */
 
@@ -62,11 +61,9 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
             this.storage = new EnergyStorage(capacity, capacity, capacity, energy);
         }
 
-
-        // Check if Admin is trying to update all the DHD's with new values.
-        if (SGCraft.forceRFCfgUpdate) {
-            // energyMax = SGCraft.Ic2MaxEnergyBuffer;
-            // energyPerSGEnergyUnit = SGCraft.Ic2euPerSGEnergyUnit;
+        if (SGCraft.forceZPMCfgUpdate) {
+            energyPerSGEnergyUnit = SGCraft.ZPMEnergyPerSGEnergyUnit;
+            this.storage = new EnergyStorage((int)maxEnergyBufferSize);
         }
     }
 
@@ -98,10 +95,6 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     public void update() {
         if (this.world == null || this.world.isRemote) {
             return;
-        }
-
-        if (update++ > 20) {
-            update = 0;
         }
     }
 
@@ -336,15 +329,14 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
 
     @Override
     public boolean canReceive() {
-        return false;
-        //return storage.canReceive();
+        return false; // prevent ZPM from being charged.
     }
 
     @Override
     public double availableEnergy() {
-        double available = storage.getEnergyStored();
-        //if (debugOutput)
-        //    System.out.printf("SGCraft: PowerTE: %s SGU available\n", available);
+        double available = this.storage.getEnergyStored() / energyPerSGEnergyUnit;
+        if (debugOutput)
+            System.out.printf("SGCraft: ZPM Console: %s SGU available\n", available);
         return available;
     }
 
@@ -354,12 +346,13 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
 
 
     public double drawEnergyDouble(double request) {
-        double available = storage.getEnergyStored();
+        double available = this.storage.getEnergyStored() / energyPerSGEnergyUnit;
         double supply = min(request, available);
-
-        this.extractEnergy((int) supply, false);
+        this.storage.extractEnergy((int)(supply * energyPerSGEnergyUnit), false);
         markChanged();
 
+        if(debugOutput)
+            System.out.printf("SGCraft: ZPM Console: Supplying %s SGU of %s requested\n", supply, request);
         return supply;
     }
 }

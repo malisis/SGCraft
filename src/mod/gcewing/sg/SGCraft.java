@@ -95,8 +95,6 @@ import static net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerPr
 import java.io.IOException;
 import java.nio.file.Paths;
 
-import javax.annotation.Resource;
-
 @Mod(modid = Info.modID, name = Info.modName, version = Info.versionNumber,
     acceptableRemoteVersions = Info.versionBounds, dependencies = "after:opencomputers;after:ic2;after:computercraft")
 
@@ -148,8 +146,11 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static int Ic2PowerTETier = 3;
 
     // SG Power Block Options
-    public static int SGMaxEnergyBuffer = 4000000;
-    public static double SGPerSGEnergyUnit = 80.0;
+    public static int FPMaxEnergyBuffer = 4000000;
+    public static double FPPerSGEnergyUnit = 80.0;
+
+    // ZPM Console Block Options
+    public static double ZPMEnergyPerSGEnergyUnit = 10.0;
 
     //Client Options
     public static boolean useHDEventHorizionTexture = true;
@@ -160,7 +161,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static boolean forceSGBaseTEUpdate = false;
     public static boolean forceDHDCfgUpdate = false;
     public static boolean forceIC2CfgUpdate = false;
-    public static boolean forceRFCfgUpdate = false;
+    public static boolean forceFPCfgUpdate = false;
+    public static boolean forceZPMCfgUpdate = false;
     public static boolean forceGateAccessSystemReset = false;
     public static boolean forcePlayerAccessSystemReset = false;
 
@@ -291,7 +293,6 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         }
 
         zpm = addItem(new ZPMItem(), "zpm");
-
 
         tollan_phase_shift_device = newItem("tollan_phase_shift_device");
 
@@ -525,16 +526,20 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         Ic2MaxEnergyBuffer = config.getInteger("ic2", "energyBufferSize", Ic2MaxEnergyBuffer);
         Ic2euPerSGEnergyUnit = config.getDouble("ic2", "euPerSGEnergyUnit", Ic2euPerSGEnergyUnit);
         Ic2PowerTETier = config.getInteger("ic2", "PowerTETier", Ic2PowerTETier);
+        forceIC2CfgUpdate = config.getBoolean("ic2", "force-update", forceIC2CfgUpdate);
 
-        // Redstone Flux
-        SGMaxEnergyBuffer = config.getInteger("sgpower", "energyBufferSize", SGMaxEnergyBuffer);
-        SGPerSGEnergyUnit = config.getDouble("sgpower", "sgPerSGEnergyUnit", SGPerSGEnergyUnit);
+        // FP Power Block (Forge Power) i.e.: RF/FE
+        FPMaxEnergyBuffer = config.getInteger("fp-power", "energyBufferSize", FPMaxEnergyBuffer);
+        FPPerSGEnergyUnit = config.getDouble("fp-power", "fpPerSGEnergyUnit", FPPerSGEnergyUnit);
+        forceFPCfgUpdate = config.getBoolean("fp-power", "force-update", forceFPCfgUpdate);
+
+        // ZPM Console
+        ZPMEnergyPerSGEnergyUnit = config.getDouble("zpm-power", "zpmEnergyPerSGEnergyUnit", FPPerSGEnergyUnit);
+        forceZPMCfgUpdate = config.getBoolean("zpm-power", "force-update", forceZPMCfgUpdate);
 
         // World Update / Fixes
         forceSGBaseTEUpdate = config.getBoolean("stargate", "force-default-configs", forceSGBaseTEUpdate);
         forceDHDCfgUpdate = config.getBoolean("dhd", "force-update", forceDHDCfgUpdate);
-        forceIC2CfgUpdate = config.getBoolean("ic2", "force-update", forceIC2CfgUpdate);
-        forceRFCfgUpdate = config.getBoolean("rf", "force-update", forceRFCfgUpdate);
 
         // Access System Resets
         forceGateAccessSystemReset = config.getBoolean("gate-access", "force-reset-on-load", forceGateAccessSystemReset);

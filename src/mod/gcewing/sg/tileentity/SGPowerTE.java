@@ -18,10 +18,10 @@ import javax.annotation.Nullable;
 
 public class SGPowerTE extends PowerTE implements IEnergyStorage {
 
-    private EnergyStorage storage = new EnergyStorage(SGCraft.SGMaxEnergyBuffer);
+    private EnergyStorage storage = new EnergyStorage(SGCraft.FPMaxEnergyBuffer);
 
     public SGPowerTE() {
-        super(SGCraft.SGMaxEnergyBuffer, SGCraft.SGPerSGEnergyUnit);
+        super(SGCraft.FPMaxEnergyBuffer, SGCraft.FPPerSGEnergyUnit);
     }
 
     @Override
@@ -43,11 +43,10 @@ public class SGPowerTE extends PowerTE implements IEnergyStorage {
             storage = new EnergyStorage(capacity, capacity, capacity, energy);
         }
 
-        // Check if Admin is trying to update all the DHD's with new values.
-        if (SGCraft.forceRFCfgUpdate) {
-            // Todo: this is wrong....
-            energyMax = SGCraft.Ic2MaxEnergyBuffer;
-            energyPerSGEnergyUnit = SGCraft.Ic2euPerSGEnergyUnit;
+        if (SGCraft.forceFPCfgUpdate) {
+            energyMax = SGCraft.FPMaxEnergyBuffer;
+            energyPerSGEnergyUnit = SGCraft.FPPerSGEnergyUnit;
+            storage = new EnergyStorage((int)energyMax);
         }
     }
 

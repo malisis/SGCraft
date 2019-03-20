@@ -64,7 +64,7 @@ public class ZpmConsole extends BlockContainer {
     @Nullable
     @Override
     public TileEntity createNewTileEntity(final World world, final int meta) {
-        return new ZpmConsoleTE();
+        return new ZpmConsoleTE(SGCraft.ZPMEnergyPerSGEnergyUnit);
     }
 
     @Override

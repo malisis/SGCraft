@@ -42,8 +42,8 @@ public class ZpmConsoleContainer extends BaseContainer {
     }
     
     void addZpmSlots() {
-        int b = ZpmConsoleTE.firstZpmSlot;
-        int n = ZpmConsoleTE.numZpmSlots;
+        int b = 0; // First Slot
+        int n = ZpmConsoleTE.numSlots;
         for (int i = 0; i < n; i++) {
             int row = i / numFuelSlotColumns;
             int col = i % numFuelSlotColumns;
