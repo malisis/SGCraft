@@ -27,7 +27,8 @@ public class PowerContainer extends BaseContainer {
     }
     
     public PowerContainer(EntityPlayer player, PowerTE te) {
-        super(PowerScreen.guiWidth, PowerScreen.guiHeight);
+        // Todo: this is insanity....
+        super(148, 64);
         this.te = te;
     }
 

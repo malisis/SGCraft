@@ -2597,8 +2597,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-
-
     static int rdx[] = {1, 0, -1, 0};
     static int rdz[] = {0, -1, 0, 1};
 

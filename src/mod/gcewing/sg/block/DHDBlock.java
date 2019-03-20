@@ -110,7 +110,9 @@ public class DHDBlock extends BaseBlock<DHDTE> {
             if (localDHD.isLinkedToStargate) {
                 SGBaseTE localGate = localDHD.getLinkedStargateTE();
                 if (player != null && localGate.allowAdminAccess(player.getName())) {
-                    SGCraft.mod.openGui(player, SGGui.DHDFuel, world, pos);
+                    if (!world.isRemote) {
+                        SGCraft.mod.openGui(player, SGGui.DHDFuel, world, pos);
+                    }
                     return true;
                 } else {
                     return false;
@@ -118,7 +120,9 @@ public class DHDBlock extends BaseBlock<DHDTE> {
             }
         }
 
-        SGCraft.mod.openGui(player, SGGui.SGController, world, pos);
+        if (!world.isRemote) {
+            SGCraft.mod.openGui(player, SGGui.SGController, world, pos);
+        }
         return true;
     }
     

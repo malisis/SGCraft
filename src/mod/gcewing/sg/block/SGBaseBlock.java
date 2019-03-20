@@ -151,7 +151,7 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
                 System.out.printf("SGBaseBlock.onBlockActivated: %s: isMerged = %s\n", Side, te.isMerged);
             }
 
-            if (te.isMerged) {
+            if (te.isMerged && !world.isRemote)  {
                 SGCraft.mod.openGui(player, SGGui.SGBase, world, pos);
                 return true;
             }
