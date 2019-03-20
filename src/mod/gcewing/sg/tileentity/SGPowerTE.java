@@ -45,6 +45,7 @@ public class SGPowerTE extends PowerTE implements IEnergyStorage {
 
         // Check if Admin is trying to update all the DHD's with new values.
         if (SGCraft.forceRFCfgUpdate) {
+            // Todo: this is wrong....
             energyMax = SGCraft.Ic2MaxEnergyBuffer;
             energyPerSGEnergyUnit = SGCraft.Ic2euPerSGEnergyUnit;
         }

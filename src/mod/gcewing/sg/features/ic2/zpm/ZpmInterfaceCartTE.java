@@ -61,6 +61,7 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
             return;
         }
 
+        // Todo: this is wrong....
         if (update++ > 10) {
             world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
             world.scheduleBlockUpdate(pos, this.getBlockType(), 0, 0);

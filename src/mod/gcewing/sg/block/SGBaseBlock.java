@@ -19,6 +19,7 @@ import gcewing.sg.Vector3;
 import gcewing.sg.client.gui.SGGui;
 import net.minecraft.block.*;
 import net.minecraft.block.material.*;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.*;
 import net.minecraft.entity.player.*;
@@ -344,6 +345,11 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
     @Override
     public Trans3 itemTransformation() {
         return itemTrans;
+    }
+
+    @Override
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+        return BlockFaceShape.UNDEFINED;
     }
     
 }

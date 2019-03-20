@@ -9,6 +9,7 @@ package gcewing.sg.block;
 import gcewing.sg.BaseBlock;
 import gcewing.sg.BaseOrientation;
 import net.minecraft.block.material.*;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.tileentity.*;
 import net.minecraft.util.*;
@@ -29,5 +30,10 @@ public class SGInterfaceBlock<TE extends TileEntity> extends BaseBlock<TE> {
     @Override
     public boolean isSideSolid(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
         return true;
+    }
+
+    @Override
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+        return BlockFaceShape.UNDEFINED;
     }
 }

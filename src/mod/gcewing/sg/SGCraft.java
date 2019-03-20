@@ -32,6 +32,9 @@ import gcewing.sg.features.pdd.network.PddNetworkHandler;
 import gcewing.sg.features.tokra.SGTradeHandler;
 import gcewing.sg.features.tokra.TokraVillagerWorldRegistry;
 import gcewing.sg.features.oc.OCIntegration;
+import gcewing.sg.features.zpm.ZpmConsole;
+import gcewing.sg.features.zpm.ZpmConsoleContainer;
+import gcewing.sg.features.zpm.ZpmConsoleTE;
 import gcewing.sg.generator.FeatureGeneration;
 import gcewing.sg.generator.FeatureUnderDesertPyramid;
 import gcewing.sg.interfaces.IIntegration;
@@ -92,6 +95,8 @@ import static net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerPr
 import java.io.IOException;
 import java.nio.file.Paths;
 
+import javax.annotation.Resource;
+
 @Mod(modid = Info.modID, name = Info.modName, version = Info.versionNumber,
     acceptableRemoteVersions = Info.versionBounds, dependencies = "after:opencomputers;after:ic2;after:computercraft")
 
@@ -123,7 +128,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static IIntegration ccIntegration; //[CC]
     public static OCIntegration ocIntegration; //[OC]
 
-    public static Block zpm_interface_cart;
+    public static Block zpm_interface_cart, zpm_console;
     public static Item zpm, gdo, pdd, configurator;
 
     public static CreativeTabs creativeTabs;
@@ -180,8 +185,11 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         ocIntegration = (OCIntegration)integrateWithMod("opencomputers", "gcewing.sg.features.oc.OCIntegration"); //[OC]
 
         if (isModLoaded("ic2")) {
-            GameRegistry.registerTileEntity(ZpmInterfaceCartTE.class, new ResourceLocation(this.modID));
+            GameRegistry.registerTileEntity(ZpmInterfaceCartTE.class, new ResourceLocation(this.modID + ":" + "tile_zpminterfacecart"));
         }
+
+        GameRegistry.registerTileEntity(ZpmConsoleTE.class, new ResourceLocation(this.modID + ":" + "tile_zpmconsole"));
+
         super.preInit(e);
     }
 
@@ -264,6 +272,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         if (isModLoaded("ic2")) {
             zpm_interface_cart = newBlock("zpm_interface_cart", ZpmInterfaceCart.class);
         }
+        zpm_console = newBlock("zpm_console", ZpmConsole.class);
 
         this.setOptions();
     }
@@ -408,6 +417,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         addContainer(SGGui.DHDFuel, DHDFuelContainer.class);
         addContainer(SGGui.PowerUnit, PowerContainer.class);
         addContainer(SGGui.ZPMInterfaceCart, ZpmInterfaceCartContainer.class);
+        addContainer(SGGui.ZPMConsole, ZpmConsoleContainer.class);
     }
 
     @Override
@@ -488,6 +498,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         // Note: Complex Item Models register within their creation class because their registration order isn't important.
         if (SGCraft.zpm_interface_cart != null) {
             registerModel(Item.getItemFromBlock(SGCraft.zpm_interface_cart));
+        }
+        if (SGCraft.zpm_console != null) {
+            registerModel(Item.getItemFromBlock(SGCraft.zpm_console));
         }
     }
 

@@ -15,6 +15,7 @@ import gcewing.sg.SGCraft;
 import gcewing.sg.Vector3;
 import gcewing.sg.client.gui.SGGui;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.EntityLivingBase;
@@ -138,5 +139,10 @@ public class DHDBlock extends BaseBlock<DHDTE> {
     @Override
     public boolean canDropFromExplosion(Explosion explosionIn) {
         return SGCraft.canHarvestDHD;
+    }
+
+    @Override
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+        return BlockFaceShape.UNDEFINED;
     }
 }

@@ -4,35 +4,36 @@
 //
 //------------------------------------------------------------------------------------------------
 
-package gcewing.sg.features.ic2.zpm;
+package gcewing.sg.features.zpm;
 
 import gcewing.sg.SGCraft;
 import gcewing.sg.client.gui.SGScreen;
+import gcewing.sg.features.ic2.zpm.ZpmInterfaceCartTE;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import java.text.DecimalFormat;
 
-public class ZPMInterfaceCartScreen extends SGScreen {
+public class ZPMConsoleScreen extends SGScreen {
 
-    static String screenTitle = "ZPM Interface Cart";
+    static String screenTitle = "ZPM Console";
     static final int guiWidth = 256;
     static final int guiHeight = 208;
     final static DecimalFormat dFormat = new DecimalFormat("###,###,###,##0");
 
-    ZpmInterfaceCartTE te;
+    ZpmConsoleTE te;
 
-    public static ZPMInterfaceCartScreen create(EntityPlayer player, World world, BlockPos pos) {
-        ZpmInterfaceCartTE te = ZpmInterfaceCartTE.at(world, pos);
+    public static ZPMConsoleScreen create(EntityPlayer player, World world, BlockPos pos) {
+        ZpmConsoleTE te = ZpmConsoleTE.at(world, pos);
         if (te != null)
-            return new ZPMInterfaceCartScreen(player, te);
+            return new ZPMConsoleScreen(player, te);
         else
             return null;
     }
 
-    public ZPMInterfaceCartScreen(EntityPlayer player, ZpmInterfaceCartTE te) {
-        super(new ZpmInterfaceCartContainer(player, te), guiWidth, guiHeight);
+    public ZPMConsoleScreen(EntityPlayer player, ZpmConsoleTE te) {
+        super(new ZpmConsoleContainer(player, te), guiWidth, guiHeight);
         this.te = te;
     }
     
@@ -45,6 +46,6 @@ public class ZPMInterfaceCartScreen extends SGScreen {
         setTextColor(0x004c66);
         drawCenteredString(screenTitle, cx, 8);
         drawString("ZPM", 120, 45);
-        drawString("Available Power: " + dFormat.format(te.availableEnergy()), 60, 100);
+        drawString("Available Power: " + dFormat.format(te.getEnergyStored()), 60, 100);
     }
 }

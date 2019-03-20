@@ -15,6 +15,7 @@ import gcewing.sg.tileentity.SGRingTE;
 import net.minecraft.block.*;
 import net.minecraft.block.material.*;
 import net.minecraft.block.properties.*;
+import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.*;
 import net.minecraft.entity.player.*;
@@ -205,5 +206,10 @@ public class SGRingBlock extends SGBlock<SGRingTE> {
     @Override
     public boolean canDropFromExplosion(Explosion explosionIn) {
         return SGCraft.canHarvestSGRingBlock;
+    }
+
+    @Override
+    public BlockFaceShape getBlockFaceShape(IBlockAccess worldIn, IBlockState state, BlockPos pos, EnumFacing face) {
+        return BlockFaceShape.UNDEFINED;
     }
 }

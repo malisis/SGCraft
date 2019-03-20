@@ -16,6 +16,7 @@ import gcewing.sg.BaseBlockUtils;
 import gcewing.sg.BaseConfiguration;
 import gcewing.sg.BaseTileInventory;
 import gcewing.sg.BaseUtils;
+import gcewing.sg.features.zpm.ZpmConsoleTE;
 import gcewing.sg.tileentity.data.GateAccessData;
 import gcewing.sg.tileentity.data.PlayerAccessData;
 import gcewing.sg.util.SGAddressing;
@@ -225,8 +226,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public boolean allowOutgoingConnections = true;
     public boolean chevronsLockOnDial = false;
     public boolean returnToPreviousIrisState = false;
-    public boolean allowOnlySpecifiedDestination = false;
-    public String onlySpecifiedAddress = "";
     public int facingDirectionOfBase = 0;
     public boolean requiresNoPower = false;
     public boolean transientDamage = true;
@@ -525,18 +524,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             this.returnToPreviousIrisState = cfg.getBoolean("stargate", "returnToPreviousIrisState", this.returnToPreviousIrisState);
         }
 
-        if (nbt.hasKey("allowOnlySpecifiedDestination") && !SGCraft.forceSGBaseTEUpdate) {
-            this.allowOnlySpecifiedDestination = nbt.getBoolean("allowOnlySpecifiedDestination");
-        } else {
-            this.allowOnlySpecifiedDestination = false;
-        }
-
-        if (nbt.hasKey("onlySpecifiedAddress") && !SGCraft.forceSGBaseTEUpdate) {
-            this.onlySpecifiedAddress = nbt.getString("onlySpecifiedAddress");
-        } else {
-            this.onlySpecifiedAddress = "";
-        }
-
         if (nbt.hasKey("gateOrientation")) {
             this.gateOrientation = nbt.getInteger("gateOrientation");
         } else {
@@ -657,8 +644,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setBoolean("allowOutgoingConnections", this.allowOutgoingConnections);
         nbt.setBoolean("chevronsLockOnDial", this.chevronsLockOnDial);
         nbt.setBoolean("returnToPreviousIrisState", this.returnToPreviousIrisState);
-        nbt.setBoolean("allowOnlySpecifiedDestination", this.allowOnlySpecifiedDestination);
-        nbt.setString("onlySpecifiedAddress", this.onlySpecifiedAddress);
         nbt.setInteger("gateOrientation", this.gateOrientation);
         nbt.setInteger("facingDirectionOfBase", this.facingDirectionOfBase);
         nbt.setBoolean("requiresNoPower", this.requiresNoPower);
@@ -935,7 +920,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return isInitiator || closeFromEitherEnd;
     }
 
+    // *************************************
+    // Connect Here!!!
+    // *************************************
+
     public String connect(String address, EntityPlayer player) {
+        // Note:  if player is null when introduced to this method, then it usually indicates a CI attempting to dial.
+
         if (state != SGState.Idle) {
             return diallingFailure(player, "selfBusy");
         }
@@ -952,15 +943,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             // Player Access Control System
             if (!this.allowGateAccess(player.getName())) {
                 if (!isPermissionsAdmin) return diallingFailure(player, "accessFromDenied");
-            }
-        }
-
-        // Todo: abandon this?
-        if (this.allowOnlySpecifiedDestination) {
-            if (!this.onlySpecifiedAddress.isEmpty()) {
-                if (!address.equalsIgnoreCase(this.onlySpecifiedAddress)) {
-                    if (!isPermissionsAdmin) return diallingFailure(player, "dialspecificaddress");
-                }
             }
         }
 
@@ -1049,6 +1031,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         //Reset this value:
         if (!this.requiresNoPower) {
             energyToOpen = energyPerFuelItem / gateOpeningsPerFuelItem;
+            System.out.println("EnergyToOpen: " + energyToOpen);
         } else {
             energyToOpen = 0;
         }
@@ -1385,6 +1368,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             startDiallingNextSymbol();
         }
         postEvent(initiator ? "sgDialOut" : "sgDialIn", address);
+
         if (immediate) {
             numEngagedChevrons = dialledAddress.length();
             if (!initiator) {
@@ -1583,7 +1567,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
 
         List<ISGEnergySource> result = new ArrayList<>();
-        int radius = 2;
+        int radius = 4;
 
         for (final BlockPos.MutableBlockPos nearPos : BlockPos.getAllInBoxMutable(
                 pos.add(-radius, -radius, -radius),
@@ -1596,6 +1580,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             }
 
             if (nte instanceof ISGEnergySource) { // Specifically exclude the ZPM Interface.
+
                 if (ic2Loaded && nte instanceof IC2PowerTE) {
                     result.add((ISGEnergySource) nte);
                     if (debugEnergyUse) {
@@ -1607,6 +1592,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     if (debugEnergyUse) {
                         System.out.println("Found ZpmInterfaceCartTE at: " + nte.getPos() + " but not added as source");
                     }
+                }
+
+                if (nte instanceof ZpmConsoleTE) {
+                    System.out.println("Added the ZpmConsoleTE to a Source");
+                    result.add((ISGEnergySource) nte);
                 }
 
                 if (nte instanceof SGPowerTE) {
