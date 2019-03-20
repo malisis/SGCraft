@@ -1589,14 +1589,15 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 }
 
                 if(ic2Loaded && nte instanceof ZpmInterfaceCartTE) {
-                    if (debugEnergyUse) {
-                        System.out.println("Found ZpmInterfaceCartTE at: " + nte.getPos() + " but not added as source");
-                    }
+                    result.add((ISGEnergySource) nte);
+                    if (debugEnergyUse)
+                        System.out.println("Found ZpmInterfaceCartTE at: " + nte.getPos());
                 }
 
                 if (nte instanceof ZpmConsoleTE) {
-                    System.out.println("Added the ZpmConsoleTE to a Source");
                     result.add((ISGEnergySource) nte);
+                    if (debugEnergyUse)
+                        System.out.println("Added the ZpmConsoleTE to a Source");
                 }
 
                 if (nte instanceof SGPowerTE) {

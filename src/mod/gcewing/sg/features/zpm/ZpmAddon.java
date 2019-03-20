@@ -58,8 +58,19 @@ public class ZpmAddon {
                         }
                         return 0;
                     }
-                    zpmPower = ((ISGEnergySource) nte).availableEnergy();
-                    break;
+                    zpmPower += ((ISGEnergySource) nte).availableEnergy();
+                }
+                if (nte instanceof ZpmConsoleTE) {
+                    if (debugAddon) {
+                        System.out.printf("SGBaseTE.zpmConsoleNear: %s at %s\n", nte, nearPos);
+                    }
+                    if (((ZpmConsoleTE) nte).isEmpty()) {
+                        if (debugAddon) {
+                            System.out.println("ZPM cart is empty");
+                        }
+                        return 0;
+                    }
+                    zpmPower += ((ISGEnergySource) nte).availableEnergy();
                 }
             }
         }
