@@ -1131,7 +1131,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 playSGSoundEffect(dialFailSound, 1F, 1F);
         }
         errorState = true;
-        resetStargate();
+        disconnect(); // Resets both sides, should fix CI issue?
         return operationFailure(player, msg, args);
     }
 
