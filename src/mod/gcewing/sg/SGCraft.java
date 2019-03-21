@@ -307,7 +307,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             pdd = addItem(new PddItem(), "pdd");
             new PddNetworkHandler(Info.modID+"-pdd");
 
-            // ZPM multiplier configuration loader
+            // PDD default address loader
             final ConfigurationNode rootNode;
             try {
                 rootNode = AddressNameRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "pdd.yml"));
