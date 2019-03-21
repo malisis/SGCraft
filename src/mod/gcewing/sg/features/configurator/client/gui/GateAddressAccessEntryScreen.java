@@ -104,7 +104,7 @@ public class GateAddressAccessEntryScreen extends BasicScreen {
                 .anchor(Anchor.BOTTOM | Anchor.RIGHT)
                 .text("Save")
                 .onClick(() -> {
-                    if (this.addressTextField.getText().length() == 9 && this.addressTextField.getText().substring(4,5).equalsIgnoreCase("-") && this.addressTextField.getText().substring(8,9).equalsIgnoreCase("-")) {
+                    if (this.addressTextField.getText().length() == 11 && this.addressTextField.getText().substring(4,5).equalsIgnoreCase("-") && this.addressTextField.getText().substring(8,9).equalsIgnoreCase("-")) {
                         ConfiguratorNetworkHandler.sendGAAEntryUpdateToServer(localGate, this.oldAddress, this.addressTextField.getText().trim().toUpperCase(), function);
                         if (parent instanceof GateAddressAccessScreen) {
                             ((GateAddressAccessScreen) parent).delayedUpdate();

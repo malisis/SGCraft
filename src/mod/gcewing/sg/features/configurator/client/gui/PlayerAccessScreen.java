@@ -374,6 +374,7 @@ public class PlayerAccessScreen extends BasicScreen {
         if (this.lastUpdate == 20) {
             this.editPlayerButton.setEnabled(this.playerAccessList.getSize() > 0);
             this.deletePlayerButton.setEnabled(this.playerAccessList.getSize() > 0);
+            this.optionsContainer.setEnabled(this.playerAccessList.getSize() > 0);
             if (!localGate.getPlayerAccessData().equals(this.clonedList)) {
                 this.loadData();
             }
