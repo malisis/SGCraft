@@ -11,6 +11,7 @@ import net.malisis.core.client.gui.component.interaction.button.builder.UIButton
 import net.malisis.core.renderer.font.FontOptions;
 import net.malisis.core.util.FontColors;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.text.TextComponentString;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -110,8 +111,9 @@ public class PddEntryScreen extends BasicScreen {
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text("Delete")
             .onClick(() -> {
-                PddNetworkHandler.sendPddEntryUpdateToServer( this.nameTextField.getText().trim(), this.addressTextField.getText().trim(), -1, this.unid, this.isLocked);
+                PddNetworkHandler.sendPddEntryUpdateToServer(this.nameTextField.getText().trim(), this.addressTextField.getText().trim(), -1, this.unid, this.isLocked);
                 this.close();
+
             })
             .listener(this)
             .build("button.delete");
@@ -124,8 +126,12 @@ public class PddEntryScreen extends BasicScreen {
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text("Save")
             .onClick(() -> {
-                PddNetworkHandler.sendPddEntryUpdateToServer( this.nameTextField.getText().trim(), this.addressTextField.getText().trim(), Integer.valueOf(this.indexTextField.getText()), this.unid, this.isLocked);
-                this.close();
+                if (this.addressTextField.getText().length() == 11 && this.addressTextField.getText().substring(4,5).equalsIgnoreCase("-") && this.addressTextField.getText().substring(8,9).equalsIgnoreCase("-")) {
+                    PddNetworkHandler.sendPddEntryUpdateToServer(this.nameTextField.getText().trim(), this.addressTextField.getText().trim(), Integer.valueOf(this.indexTextField.getText()), this.unid, this.isLocked);
+                    this.close();
+                } else {
+                    player.sendMessage(new TextComponentString("Invalid format"));
+                }
             })
             .listener(this)
             .build("button.save");

@@ -53,10 +53,7 @@ public class PddItem extends Item {
             }
 
             if (!compound.hasKey(AddressData.ADDRESSES)) {
-                List<AddressData> genericAddressList = Lists.newArrayList();
-                // Create Generic List
-                //genericAddressList.add(new AddressData("Orilla - Endor", "T9FH-3VW-VL", true, 1, 0));
-
+                List<AddressData> genericAddressList = AddressNameRegistry.getDefaultPDDEntries();
                 AddressData.writeAddresses(compound, genericAddressList);
                 stack.setTagCompound(compound);
                 player.inventoryContainer.detectAndSendChanges();

@@ -6,6 +6,7 @@
 
 package gcewing.sg;
 
+import com.flowpowered.noise.module.combiner.Add;
 import gcewing.sg.block.DHDBlock;
 import gcewing.sg.block.NaquadahBlock;
 import gcewing.sg.block.NaquadahOreBlock;
@@ -22,6 +23,7 @@ import gcewing.sg.features.configurator.ConfiguratorItem;
 import gcewing.sg.features.configurator.network.ConfiguratorNetworkHandler;
 import gcewing.sg.features.gdo.GdoItem;
 import gcewing.sg.features.gdo.network.GdoNetworkHandler;
+import gcewing.sg.features.pdd.AddressNameRegistry;
 import gcewing.sg.features.zpm.ZPMItem;
 import gcewing.sg.features.zpm.ZPMMultiplierRegistry;
 import gcewing.sg.features.ic2.zpm.ZpmInterfaceCartContainer;
@@ -304,6 +306,15 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 
             pdd = addItem(new PddItem(), "pdd");
             new PddNetworkHandler(Info.modID+"-pdd");
+
+            // ZPM multiplier configuration loader
+            final ConfigurationNode rootNode;
+            try {
+                rootNode = AddressNameRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "pdd.yml"));
+                AddressNameRegistry.populateNames(rootNode);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
 
             configurator = addItem(new ConfiguratorItem(), "configurator");
             new ConfiguratorNetworkHandler(Info.modID+"-configurator");
