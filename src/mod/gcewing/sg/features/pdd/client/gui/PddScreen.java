@@ -85,7 +85,7 @@ public class PddScreen extends BasicScreen {
 
         this.guiscreenBackground = false;
         Keyboard.enableRepeatEvents(true);
-        final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+        final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
         if (localGateTE instanceof SGBaseTE) {
             localGate = (SGBaseTE) localGateTE;
         }
@@ -193,7 +193,7 @@ public class PddScreen extends BasicScreen {
             .text("Disconnect")
             .visible(false)
             .onClick(() -> {
-                final TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+                final TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, false);
                 if (localGate != null) {
                     if (!(localGate instanceof SGBaseTE)) {
                         return;
@@ -429,7 +429,7 @@ public class PddScreen extends BasicScreen {
     }
 
     private void immediateDialSelectedAddress() {
-        final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+        final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
         if (localGateTE instanceof SGBaseTE) {
             localGate = (SGBaseTE) localGateTE;
         }
@@ -448,7 +448,7 @@ public class PddScreen extends BasicScreen {
     }
 
     private void startProgressiveDialSelectedAddress() {
-        final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+        final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
         if (localGateTE instanceof SGBaseTE) {
             localGate = (SGBaseTE) localGateTE;
         }
@@ -484,7 +484,7 @@ public class PddScreen extends BasicScreen {
                 }
 
                 this.addressList.setVisible(false);
-                final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+                final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
                 if (localGateTE instanceof SGBaseTE) {
                     SGBaseTE localGate = (SGBaseTE) localGateTE;
                     this.last = false;

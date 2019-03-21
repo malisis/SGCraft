@@ -55,7 +55,7 @@ public class ConfiguratorScreen extends BasicScreen {
         this.guiscreenBackground = false;
         Keyboard.enableRepeatEvents(true);
 
-        TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+        TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
 
         if (!(localGateTE instanceof SGBaseTE)) {
             // Desync between server and client.  Client doesn't have TE data yet.
@@ -508,7 +508,7 @@ public class ConfiguratorScreen extends BasicScreen {
 
     @Subscribe
     public void onFocusStateChange(StateChangeEvent.FocusStateChange<UITextField> event) {
-        TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+        TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
         if (localGateTE instanceof SGBaseTE) {
             SGBaseTE localGate = (SGBaseTE) localGateTE;
 
@@ -537,7 +537,7 @@ public class ConfiguratorScreen extends BasicScreen {
     }
 
     private void refresh() {
-        TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, true);
+        TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
         if (localGateTE instanceof SGBaseTE) {
             SGBaseTE localGate = (SGBaseTE) localGateTE;
 
