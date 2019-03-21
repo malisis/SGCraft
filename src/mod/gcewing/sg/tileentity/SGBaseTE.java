@@ -891,7 +891,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (address.length() > 0) {
             DHDTE te = getLinkedControllerTE();
             if (te != null) {
-                if (connect(address, player) != null) {
+                if (connect(address, player, false) != null) {
                     numEngagedChevrons = 0;
                     markChanged();
                 }
@@ -924,8 +924,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     // Connect Here!!!
     // *************************************
 
-    public String connect(String address, EntityPlayer player) {
+    public String connect(String address, EntityPlayer player, boolean ccInterface) {
         // Note:  if player is null when introduced to this method, then it usually indicates a CI attempting to dial.
+        // Note:  ccInterface == true so it stops the immediate chevron lock if a ccInterface is the one doing the dialing.
 
         if (state != SGState.Idle) {
             return diallingFailure(player, "selfBusy");
@@ -1093,9 +1094,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             targetGate.wasIrisClosed = targetGate.irisIsClosed();
         }
 
-        startDiallingStargate(address, targetGate, true, this.chevronsLockOnDial);
+        startDiallingStargate(address, targetGate, true, (this.chevronsLockOnDial && !ccInterface));
         targetGate.enterState(SGState.attemptToDial, 0); // Force remote gate immediate change state to help chunk stay loaded
-        targetGate.startDiallingStargate(homeAddress, this, false, this.chevronsLockOnDial);
+        targetGate.startDiallingStargate(homeAddress, this, false, (this.chevronsLockOnDial && !ccInterface));
 
         return null;
     }
@@ -1348,7 +1349,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             this.numEngagedChevrons = enteredAddress.length() - 1;
 
             if (last) {
-                if (connect(address, player) != null) {
+                if (connect(address, player, false) != null) {
                 }
             } else {
                 this.markChanged(); // need current state of server TE sent to client so thing stay in sync.
