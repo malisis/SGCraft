@@ -927,8 +927,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public String disconnect(EntityPlayer player) {
         boolean canDisconnect = disconnectionAllowed();
         SGBaseTE dte = getConnectedStargateTE();
-        boolean validConnection = dte != null && !dte.isInvalid() && dte.getConnectedStargateTE() == this;
-        if (canDisconnect || !validConnection) {
+        //boolean validConnection = dte != null && !dte.isInvalid() && dte.getConnectedStargateTE() == this;
+        //if (canDisconnect || !validConnection) {
+        if (canDisconnect) {
             if (state != SGState.Disconnecting)
                 disconnect();
             return null;
