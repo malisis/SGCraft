@@ -928,7 +928,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         boolean canDisconnect = disconnectionAllowed();
         SGBaseTE dte = getConnectedStargateTE();
         boolean validConnection = dte != null && !dte.isInvalid() && dte.getConnectedStargateTE() == this;
-
         if (canDisconnect || !validConnection) {
             if (state != SGState.Disconnecting)
                 disconnect();
@@ -939,7 +938,14 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     public boolean disconnectionAllowed() {
-        return isInitiator || closeFromEitherEnd;
+        if (this.isInitiator) {
+            return true;
+        } else {
+            if (closeFromEitherEnd) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // *************************************
@@ -1329,7 +1335,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             dialedDigit = 0;
             enteredAddress = "";
             connectedLocation = null;
-            isInitiator = false;
+
             markChanged();
             if (state == SGState.Connected) {
                 enterState(SGState.Disconnecting, disconnectTime);
@@ -1344,6 +1350,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 }
                 enterState(SGState.Idle, 0);
             }
+
+            isInitiator = false; // Note: moved this to poso the enterState still contained the isInitiator value on postEvent.
+            markChanged();
         }
     }
 
@@ -1398,7 +1407,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         } else {
             numEngagedChevrons = 0;
         }
-
     }
 
     private void startDiallingSymbol(char c) {
