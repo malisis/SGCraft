@@ -9,6 +9,7 @@ package gcewing.sg.tileentity;
 import gcewing.sg.BaseTileEntity;
 import gcewing.sg.util.SGAddressing;
 import gcewing.sg.util.SGAddressing.AddressingError;
+import gcewing.sg.util.SGState;
 
 public class SGInterfaceTE extends BaseTileEntity {
 
@@ -57,7 +58,16 @@ public class SGInterfaceTE extends BaseTileEntity {
     }
     
     String directionDescription(SGBaseTE te) {
-        return te.isConnected() ? te.isInitiator ? "Outgoing" : "Incoming" : "";
+        //Todo: this was changed from te.isConnected() since that doesn't help during dialing process.
+        if (te.state != SGState.Idle) {
+            if (te.isInitiator) {
+                return "Outgoing";
+            } else {
+                return "Incoming";
+            }
+        } else {
+            return "No Connected";
+        }
     }
     
     public CIStargateState ciStargateState() {
