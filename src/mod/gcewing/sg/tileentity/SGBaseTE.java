@@ -2653,8 +2653,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         switch (state) {
             case Idle: return "Idle";
             case Dialling:
+            case attemptToDial:
             case InterDialling: return "Dialling";
             case SyncAwait:
+            case EstablishingConnection:
             case Transient: return "Opening";
             case Connected: return "Connected";
             case Disconnecting: return "Closing";
