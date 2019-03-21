@@ -236,6 +236,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public boolean defaultAllowIrisAccess = true;
     public boolean defaultAllowAdminAccess = true;
     public boolean useDHDFuelSource = true;
+    public boolean allowRedstoneOutput = true;
+    public boolean allowRedstoneInput = true;
 
     // Access Control Lists
     private List<PlayerAccessData> playerAccessData;
@@ -269,6 +271,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         this.defaultAllowIrisAccess = cfg.getBoolean("player-access", "defaultAllowIrisAccess", this.defaultAllowIrisAccess);
         this.defaultAllowAdminAccess = cfg.getBoolean("player-access", "defaultAllowAdminAccess", this.defaultAllowAdminAccess);
         this.useDHDFuelSource = cfg.getBoolean("dhd", "useDHDFuelSource", this.useDHDFuelSource);
+        this.allowRedstoneOutput = cfg.getBoolean("stargate", "allowRedstoneOutput", this.allowRedstoneOutput);
+        this.allowRedstoneInput = cfg.getBoolean("iris", "allowRedstoneInput", this.allowRedstoneInput);
     }
 
     public static void configure(BaseConfiguration cfg) {
@@ -302,6 +306,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         cfg.getBoolean("player-access", "defaultAllowIrisAccess", true);
         cfg.getBoolean("player-access", "defaultAllowAdminAccess", true);
         cfg.getBoolean("dhd", "useDHDFuelSource", true);
+        cfg.getBoolean("stargate", "allowRedstoneOutput", true);
+        cfg.getBoolean("iris", "allowRedstoneInput", true);
 
         // Global static config values
         minutesOpenPerFuelItem = cfg.getInteger("stargate", "minutesOpenPerFuelItem", minutesOpenPerFuelItem);
@@ -596,6 +602,18 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         } else {
             this.defaultAllowAdminAccess = cfg.getBoolean("player-access", "defaultAllowAdminAccess", this.defaultAllowAdminAccess);
         }
+
+        if (nbt.hasKey("allowRedstoneOutput") && !SGCraft.forceSGBaseTEUpdate) {
+            this.allowRedstoneOutput = nbt.getBoolean("allowRedstoneOutput");
+        } else {
+            this.allowRedstoneOutput = cfg.getBoolean("stargate", "allowRedstoneOutput", this.allowRedstoneOutput);
+        }
+
+        if (nbt.hasKey("allowRedstoneInput") && !SGCraft.forceSGBaseTEUpdate) {
+            this.allowRedstoneInput = nbt.getBoolean("allowRedstoneInput");
+        } else {
+            this.allowRedstoneInput = cfg.getBoolean("iris", "allowRedstoneInput", this.allowRedstoneInput);
+        }
     }
 
     protected String getStringOrNull(NBTTagCompound nbt, String name) {
@@ -682,6 +700,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setBoolean("defaultAllowGateAccess", this.defaultAllowGateAccess);
         nbt.setBoolean("defaultAllowIrisAccess", this.defaultAllowIrisAccess);
         nbt.setBoolean("defaultAllowAdminAccess", this.defaultAllowAdminAccess);
+        nbt.setBoolean("allowRedstoneOutput", this.allowRedstoneOutput);
+        nbt.setBoolean("allowRedstoneInput", this.allowRedstoneInput);
 
         return nbt;
     }
@@ -798,10 +818,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             if (redstoneInput != newInput) {
                 redstoneInput = newInput;
                 markDirty();
-                if (redstoneInput) {
-                    closeIris();
-                } else {
-                    openIris();
+                if (this.allowRedstoneInput) {
+                    if (redstoneInput) {
+                        closeIris();
+                    } else {
+                        openIris();
+                    }
                 }
             }
         }

@@ -35,7 +35,7 @@ public class ConfiguratorScreen extends BasicScreen {
     private UILabel gateAddressLabel;
     private UICheckBox oneWayTravelCheckbox, irisUpgradeCheckbox, chevronUpgradeCheckbox, gateTypeCheckbox, reverseWormholeKillsCheckbox;
     private UICheckBox closeFromEitherEndCheckbox, preserveInventoryCheckbox, noPowerRequiredCheckbox, chevronsLockOnDialCheckbox, returnIrisToPreviousStateCheckbox;
-    private UICheckBox transientDamageCheckbox, transparencyCheckbox, horizontalFaceUpCheckbox, horizontalFaceDownCheckbox, useDHDFuelSourceCheckbox;
+    private UICheckBox transientDamageCheckbox, transparencyCheckbox, horizontalFaceUpCheckbox, horizontalFaceDownCheckbox, useDHDFuelSourceCheckbox, allowRedstoneOutputCheckbox, allowRedstoneInputCheckbox;
     private UITextField secondsToStayOpen, gateRotationSpeed, energyBufferSize, energyPerNaquadah, gateOpeningsPerNaquadah, distanceMultiplier, dimensionalMultiplier;
     private UIButton gateAddressAccessListButton, playerAccessListButton;
     private BlockPos location;
@@ -260,11 +260,19 @@ public class ConfiguratorScreen extends BasicScreen {
             .listener(this)
             .build("button.playeraccesslist");
 
+        final UILabel accessControlSystemsLabel = new UILabel(this, "Access Control Systems");
+        accessControlSystemsLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
+        accessControlSystemsLabel.setPosition(0, this.gateAddressAccessListButton.getY() - 20, Anchor.CENTER | Anchor.TOP);
+
+        final UISeparator accSeparator = new UISeparator(this);
+        accSeparator.setSize(this.numericOptionsArea.getWidth() - 15, 1);
+        accSeparator.setPosition(0, accessControlSystemsLabel.getY() + 10, Anchor.TOP | Anchor.CENTER);
+
         // ****************************************************************************************************************************
 
         this.numericOptionsArea.add(numericValuesLabel, valuesSeparator, secondsToStayOpenLabel, gateRotationSpeedLabel, energyBufferMaxSizeLabel, energyPerItemLabel, energyPerOpeningLabel, distanceFactorMultiplierLabel, interDimensionalMultiplierLabel);
         this.numericOptionsArea.add(this.secondsToStayOpen, this.gateRotationSpeed, this.energyBufferSize, this.energyPerNaquadah, this.gateOpeningsPerNaquadah, this.distanceMultiplier, this.dimensionalMultiplier);
-        this.numericOptionsArea.add(this.gateAddressAccessListButton, this.playerAccessListButton);
+        this.numericOptionsArea.add(this.gateAddressAccessListButton, this.playerAccessListButton, accessControlSystemsLabel, accSeparator);
 
         // ****************************************************************************************************************************
 
@@ -279,7 +287,7 @@ public class ConfiguratorScreen extends BasicScreen {
         this.checkboxOptionsArea.setTopPadding(3);
         this.checkboxOptionsArea.setLeftPadding(3);
 
-        int checkboxIndentPadding = 25;
+        int checkboxIndentPadding = 10;
         padding = 12;
 
         final UILabel booleanValuesLabel = new UILabel(this, "Boolean Values");
@@ -292,7 +300,7 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.oneWayTravelCheckbox = new UICheckBox(this);
         this.oneWayTravelCheckbox.setText(TextFormatting.WHITE + "One Way Travel Only");
-        this.oneWayTravelCheckbox.setPosition(checkboxIndentPadding, 15, Anchor.LEFT | Anchor.TOP);
+        this.oneWayTravelCheckbox.setPosition(checkboxIndentPadding, 20, Anchor.LEFT | Anchor.TOP);
         this.oneWayTravelCheckbox.setName("checkbox.onewaytravel");
         this.oneWayTravelCheckbox.register(this);
 
@@ -376,6 +384,20 @@ public class ConfiguratorScreen extends BasicScreen {
         this.useDHDFuelSourceCheckbox.setName("checkbox.dhdfuelsource");
         this.useDHDFuelSourceCheckbox.register(this);
 
+        this.allowRedstoneOutputCheckbox = new UICheckBox(this);
+        this.allowRedstoneOutputCheckbox.setText(TextFormatting.WHITE + "Allow Redstone Output");
+        this.allowRedstoneOutputCheckbox.setPosition(checkboxIndentPadding, this.useDHDFuelSourceCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
+        this.allowRedstoneOutputCheckbox.setEnabled(true);
+        this.allowRedstoneOutputCheckbox.setName("checkbox.redstoneoutput");
+        this.allowRedstoneOutputCheckbox.register(this);
+
+        this.allowRedstoneInputCheckbox = new UICheckBox(this);
+        this.allowRedstoneInputCheckbox.setText(TextFormatting.WHITE + "Allow Redstone Input (for Iris Control)");
+        this.allowRedstoneInputCheckbox.setPosition(checkboxIndentPadding, this.allowRedstoneOutputCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
+        this.allowRedstoneInputCheckbox.setEnabled(true);
+        this.allowRedstoneInputCheckbox.setName("checkbox.redstoneinput");
+        this.allowRedstoneInputCheckbox.register(this);
+
         this.horizontalFaceUpCheckbox = new UICheckBox(this);
         this.horizontalFaceUpCheckbox.setText(TextFormatting.WHITE + "Render Face Up");
         this.horizontalFaceUpCheckbox.setPosition(-55, -2, Anchor.CENTER | Anchor.BOTTOM);
@@ -403,6 +425,7 @@ public class ConfiguratorScreen extends BasicScreen {
         this.checkboxOptionsArea.add(booleanValuesLabel, checkboxSeparator, this.oneWayTravelCheckbox, this.irisUpgradeCheckbox, this.chevronUpgradeCheckbox, this.gateTypeCheckbox);
         this.checkboxOptionsArea.add(this.reverseWormholeKillsCheckbox, this.closeFromEitherEndCheckbox, this.preserveInventoryCheckbox, this.noPowerRequiredCheckbox);
         this.checkboxOptionsArea.add(this.chevronsLockOnDialCheckbox, this.returnIrisToPreviousStateCheckbox, this.transientDamageCheckbox, this.transparencyCheckbox, this.useDHDFuelSourceCheckbox);
+        this.checkboxOptionsArea.add(this.allowRedstoneOutputCheckbox, this.allowRedstoneInputCheckbox);
 
         if (localGate.gateOrientation == 2 || localGate.gateOrientation == 3) {
             this.checkboxOptionsArea.add(checkbox2Separator, horizontalGateLabel, this.horizontalFaceUpCheckbox, this.horizontalFaceDownCheckbox);
@@ -434,6 +457,8 @@ public class ConfiguratorScreen extends BasicScreen {
                 this.transientDamageCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "transientDamage", true));
                 this.transparencyCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "transparency", true));
                 this.useDHDFuelSourceCheckbox.setChecked(SGBaseTE.cfg.getBoolean("dhd", "useDHDFuelSource", true));
+                this.allowRedstoneOutputCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "allowRedstoneOutput", true));
+                this.allowRedstoneInputCheckbox.setChecked(SGBaseTE.cfg.getBoolean("iris", "allowRedstoneInput", true));
             })
             .listener(this)
             .build("button.defaults");
@@ -461,7 +486,7 @@ public class ConfiguratorScreen extends BasicScreen {
                     Double.valueOf(this.energyPerNaquadah.getText()), Integer.valueOf(this.gateOpeningsPerNaquadah.getText()), Double.valueOf(this.distanceMultiplier.getText()), Double.valueOf(this.dimensionalMultiplier.getText()),
                     this.oneWayTravelCheckbox.isChecked(), this.irisUpgradeCheckbox.isChecked(), this.chevronUpgradeCheckbox.isChecked(), gateType, this.reverseWormholeKillsCheckbox.isChecked(), this.closeFromEitherEndCheckbox.isChecked(),
                     this.preserveInventoryCheckbox.isChecked(), this.noPowerRequiredCheckbox.isChecked(), this.chevronsLockOnDialCheckbox.isChecked(), this.returnIrisToPreviousStateCheckbox.isChecked(), this.transientDamageCheckbox.isChecked(),
-                    this.transparencyCheckbox.isChecked(), orientation, this.useDHDFuelSourceCheckbox.isChecked());
+                    this.transparencyCheckbox.isChecked(), orientation, this.useDHDFuelSourceCheckbox.isChecked(), this.allowRedstoneOutputCheckbox.isChecked(), this.allowRedstoneInputCheckbox.isChecked());
 
                 this.close();
             })
@@ -570,6 +595,8 @@ public class ConfiguratorScreen extends BasicScreen {
             this.transientDamageCheckbox.setChecked(localGate.transientDamage);
             this.transparencyCheckbox.setChecked(localGate.transparency);
             this.useDHDFuelSourceCheckbox.setChecked(localGate.useDHDFuelSource);
+            this.allowRedstoneOutputCheckbox.setChecked(localGate.allowRedstoneOutput);
+            this.allowRedstoneInputCheckbox.setChecked(localGate.allowRedstoneInput);
 
             if (localGate.gateOrientation == 2) {
                 this.horizontalFaceUpCheckbox.setChecked(true);

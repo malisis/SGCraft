@@ -337,7 +337,11 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
     @Override
     public int getWeakPower(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
         SGBaseTE te = getTileEntity(world, pos);
-        return (te != null && te.state != SGState.Idle) ? 15 : 0;
+        if (te.allowRedstoneOutput) {
+            return (te != null && te.state != SGState.Idle) ? 15 : 0;
+        } else {
+            return 0;
+        }
     }
     
     protected static Trans3 itemTrans = Trans3.sideTurn(0, 2);
