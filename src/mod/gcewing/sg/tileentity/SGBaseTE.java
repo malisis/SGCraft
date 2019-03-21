@@ -927,6 +927,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public String disconnect(EntityPlayer player) {
         boolean canDisconnect = disconnectionAllowed();
         SGBaseTE dte = getConnectedStargateTE();
+        // Todo: remove this if result is intended after test.
         //boolean validConnection = dte != null && !dte.isInvalid() && dte.getConnectedStargateTE() == this;
         //if (canDisconnect || !validConnection) {
         if (canDisconnect) {
@@ -1003,7 +1004,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
 
         // Player Access Control System
-
         if (player != null && !targetGate.allowGateAccess(player.getName())) {
             if (!isPermissionsAdmin) return diallingFailure(player, "accessToDenied");
         }
@@ -1679,18 +1679,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return energy;
     }
 
-    double energyTotalAvailableFrom(List<ISGEnergySource> sources) {
-        double energy = 0;
-        for (ISGEnergySource source : sources) {
-            double e = source.totalAvailableEnergy();
-            if (debugEnergyUse) {
-                System.out.printf("SGBaseTe.energyAvailableFrom: %s can supply %s\n", source, e);
-            }
-            energy += e;
-        }
-        return energy;
-    }
-
     private double drawEnergyFrom(List<ISGEnergySource> sources, double amount) {
         double total = 0;
         for (ISGEnergySource source : sources) {
@@ -1857,7 +1845,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 p1 = new Vector3(1.5, 3.5, 1.5);
             }
 
-
             if (this.gateOrientation == 2 || this.gateOrientation == 3) {
                 p0 = new Vector3(1.5, -1.5, -0.5);
                 p1 = new Vector3(-1.5, 1.5, -3.5);
@@ -1955,8 +1942,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             rider = teleportEntityAndRiders(rider, t1, t2, dimension, destBlocked);
             riders.set(i, rider);
         }
+
         unleashEntity(entity);
         entity = teleportEntity(entity, t1, t2, dimension, destBlocked);
+
         if (entity != null && !entity.isDead) {
             for (Entity rider : riders) {
                 if (rider != null && !rider.isDead) {
@@ -2004,7 +1993,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         Vector3 r = t1.iv(yawVector(entity)); // local facing
         Vector3 q = t2.p(-p.x, p.y, -p.z); // new global position
         if (this.gateOrientation == 3) {
-            q = t2.p(-p.x, -p.y, -p.z); // new global position for
+            q = t2.p(-p.x, -p.y, -p.z); // f
         }
         Vector3 u = t2.v(-v.x, v.y, -v.z); // new global velocity
         Vector3 s = t2.v(r.mul(-1)); // new global facing
