@@ -188,7 +188,13 @@ public class PlayerAccessScreen extends BasicScreen {
         this.addPlayerButton = new UIButtonBuilder(this)
             .text(TextFormatting.GREEN + "+")
             .onClick(() -> {
-                new PlayerAccessEntryScreen(this, player, localGate,this.playerAccessList.getSelectedItem().getPlayerName(), this.playerAccessList.getSelectedItem().getPlayerName(), 1).display();
+                System.out.println("Player: " + player);
+                System.out.println("List: " + this.playerAccessList);
+                if (this.playerAccessList.getSize() == 0) {
+                    new PlayerAccessEntryScreen(this, player, localGate, "", "", 1).display();
+                } else {
+                    new PlayerAccessEntryScreen(this, player, localGate, this.playerAccessList.getSelectedItem().getPlayerName(), this.playerAccessList.getSelectedItem().getPlayerName(), 1).display();
+                }
             })
             .anchor(Anchor.TOP | Anchor.LEFT)
             .position(this.playerContainer.getWidth() + 17, 40)
