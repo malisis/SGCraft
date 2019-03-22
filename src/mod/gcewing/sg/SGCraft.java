@@ -413,8 +413,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         }
 
         if (isModLoaded("malisiscore")) {
-            newRecipe("pdd", pdd, 1, "rcr", "rCr", "xbn", 'n', naquadah, 'x', sgControllerCrystal, 'r', Items.REDSTONE, 'b', Items.WRITABLE_BOOK, 'C', Items.CLOCK, 'c', Items.COMPASS);
-            newRecipe("gdo", gdo, 1, "rCr", "xLx", "nbn", 'n', naquadah, 'x', sgControllerCrystal, 'r', Items.REDSTONE, 'b', Items.WRITABLE_BOOK, 'C', Items.CLOCK, 'L', Blocks.LEVER);
+            newRecipe("pdd", pdd, 1, "rcr", "nCn", "xbz", 'n', naquadah, 'z', sgCoreCrystal, 'x', sgControllerCrystal, 'r', Items.REDSTONE, 'b', Items.WRITABLE_BOOK, 'C', Items.CLOCK, 'c', Items.COMPASS);
+            newRecipe("gdo", gdo, 1, "rCr", "xLz", "nbn", 'n', naquadah, 'z', sgCoreCrystal, 'x', sgControllerCrystal, 'r', Items.REDSTONE, 'b', Items.WRITABLE_BOOK, 'C', Items.CLOCK, 'L', Blocks.LEVER);
         }
 
         if (!isModLoaded("ic2")) {
