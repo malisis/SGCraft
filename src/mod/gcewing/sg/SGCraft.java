@@ -98,7 +98,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 
 @Mod(modid = Info.modID, name = Info.modName, version = Info.versionNumber,
-    acceptableRemoteVersions = Info.versionBounds, dependencies = "after:opencomputers;after:ic2;after:computercraft")
+    acceptableRemoteVersions = Info.versionBounds, dependencies = "after:opencomputers;after:ic2;after:computercraft;after:malisiscore")
 
 public class SGCraft extends BaseMod<SGCraftClient> {
 
@@ -410,6 +410,11 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         if (config.getBoolean("recipes", "sgPowerUnit", true)) {
             // Todo: this recipe makes no sense.
             newRecipe("sgPowerUnit", sgPowerUnit, 1, "cgc", "gIg", "crc", 'c', "blockGold", 'g', "ingotGold", 'I', "blockIron", 'r', Items.REDSTONE);
+        }
+
+        if (isModLoaded("malisiscore")) {
+            newRecipe("pdd", pdd, 1, "rcr", "rCr", "xbn", 'n', naquadah, 'x', sgControllerCrystal, 'r', Items.REDSTONE, 'b', Items.WRITABLE_BOOK, 'C', Items.CLOCK, 'c', Items.COMPASS);
+            newRecipe("gdo", gdo, 1, "rCr", "xLx", "nbn", 'n', naquadah, 'x', sgControllerCrystal, 'r', Items.REDSTONE, 'b', Items.WRITABLE_BOOK, 'C', Items.CLOCK, 'L', Blocks.LEVER);
         }
 
         if (!isModLoaded("ic2")) {
