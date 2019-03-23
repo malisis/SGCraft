@@ -8,8 +8,11 @@ package gcewing.sg.features.zpm;
 
 import gcewing.sg.BaseContainer;
 import gcewing.sg.tileentity.DHDTE;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -49,7 +52,7 @@ public class ZpmConsoleContainer extends BaseContainer {
             int col = i % numFuelSlotColumns;
             int x = zpmSlotsX + col * 18;
             int y = zpmSlotsY + row * 18;
-            System.out.println("Adding Slot: " + i);
+
             addSlotToContainer(new ZpmConsoleSlot(te, b + i, x, y));
         }
     }

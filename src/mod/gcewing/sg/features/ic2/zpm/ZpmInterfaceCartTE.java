@@ -210,21 +210,23 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
     @Override
     public void setInventorySlotContents(final int index, final ItemStack item) {
         this.items.set(0, item);
-        NBTTagCompound tag = item.getTagCompound();
+        if (isValidFuelItem(item)) {
+            NBTTagCompound tag = item.getTagCompound();
 
-        if (tag == null) {
-            tag = new NBTTagCompound();
-            item.setTagCompound(tag);
-        }
+            if (tag == null) {
+                tag = new NBTTagCompound();
+                item.setTagCompound(tag);
+            }
 
-        tag.setBoolean(ZPMItem.LOADED, true);
+            tag.setBoolean(ZPMItem.LOADED, true);
 
-        if (!tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
-            tag.setDouble(ZPMItem.ENERGY, Integer.MAX_VALUE);
-            this.source.setCapacity(Integer.MAX_VALUE);
-            this.source.setEnergyStored(tag.getDouble(ZPMItem.ENERGY));
-        } else {
-            this.source.setEnergyStored(tag.getDouble(ZPMItem.ENERGY));
+            if (!tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
+                tag.setDouble(ZPMItem.ENERGY, Integer.MAX_VALUE);
+                this.source.setCapacity(Integer.MAX_VALUE);
+                this.source.setEnergyStored(tag.getDouble(ZPMItem.ENERGY));
+            } else {
+                this.source.setEnergyStored(tag.getDouble(ZPMItem.ENERGY));
+            }
         }
     }
 

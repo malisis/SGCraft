@@ -188,7 +188,11 @@ public class DHDScreen extends SGScreen {
     private void dial() {
         SGBaseTE te = getStargateTE();
         if (te != null) {
-            buttonSound(SGBaseTE.dhdDialSound);
+            if (te.gateType == 1) {
+                buttonSound(SGBaseTE.m_dhdDialSound);
+            } else {
+                buttonSound(SGBaseTE.p_dhdDialSound);
+            }
             sendConnectOrDisconnect(te, te.state == SGState.Idle ? getEnteredAddress() : "");
 
         }
@@ -215,7 +219,11 @@ public class DHDScreen extends SGScreen {
     
     private void chevron(char c) {
         if (stargateIsIdle()) {
-            buttonSound(SGBaseTE.dhdPressSound);
+            if (this.cte.getLinkedStargateTE().gateType == 1) {
+                buttonSound(SGBaseTE.m_dhdPressSound);
+            } else {
+                buttonSound(SGBaseTE.p_dhdPressSound);
+            }
             String a = getEnteredAddress();
             int n = a.length();
             if (n < this.addressLength) {

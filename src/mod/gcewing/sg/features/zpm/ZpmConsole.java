@@ -1,11 +1,14 @@
 package gcewing.sg.features.zpm;
 
+import static gcewing.sg.client.gui.SGGui.ZPMConsole;
+
 import gcewing.sg.SGCraft;
 import gcewing.sg.client.gui.SGGui;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
@@ -27,10 +30,12 @@ import java.util.ArrayList;
 import javax.annotation.Nullable;
 
 public class ZpmConsole extends BlockContainer {
+
+    public static final PropertyBool ZPM_LOADED = PropertyBool.create("zpm");
+
     public ZpmConsole() {
         super(Material.ROCK);
         setHardness(1.5f);
-
     }
 
     @Override
@@ -80,7 +85,7 @@ public class ZpmConsole extends BlockContainer {
     @Deprecated
     @Override
     public IBlockState getStateForPlacement(final World world, final BlockPos pos, final EnumFacing facing, final float hitX, final float hitY, final float hitZ, final int meta, final EntityLivingBase placer) {
-        return this.getDefaultState().withProperty(BlockHorizontal.FACING, placer.getHorizontalFacing().getOpposite());
+        return this.getDefaultState().withProperty(BlockHorizontal.FACING, placer.getHorizontalFacing().getOpposite()).withProperty(ZPM_LOADED, false);
     }
 
     @Deprecated
@@ -91,7 +96,12 @@ public class ZpmConsole extends BlockContainer {
 
     @Override
     public int getMetaFromState(final IBlockState state) {
-        return state.getValue(BlockHorizontal.FACING).getHorizontalIndex();
+        boolean zpmLoaded = state.getValue(ZpmConsole.ZPM_LOADED);
+        if (zpmLoaded) {
+            return state.getValue(BlockHorizontal.FACING).getHorizontalIndex() + 4;
+        } else {
+            return state.getValue(BlockHorizontal.FACING).getHorizontalIndex();
+        }
     }
 
     @Override
@@ -101,7 +111,7 @@ public class ZpmConsole extends BlockContainer {
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, BlockHorizontal.FACING);
+        return new BlockStateContainer(this, BlockHorizontal.FACING, ZPM_LOADED);
     }
 
     @Override
@@ -115,7 +125,7 @@ public class ZpmConsole extends BlockContainer {
         world.scheduleBlockUpdate(pos, state.getBlock(),0,0);
         ZpmConsoleTE.at(world, pos).markDirty();
         if (!world.isRemote) {
-            SGCraft.mod.openGui(player, SGGui.ZPMConsole, world, pos);
+            SGCraft.mod.openGui(player, ZPMConsole, world, pos);
         }
         return true;
     }
@@ -133,5 +143,10 @@ public class ZpmConsole extends BlockContainer {
     @Override
     public boolean canDropFromExplosion(Explosion explosionIn) {
         return SGCraft.canHarvestSGBaseBlock;
+    }
+
+    @Override
+    public boolean shouldCheckWeakPower(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
+        return true;
     }
 }

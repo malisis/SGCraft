@@ -527,6 +527,14 @@ public class ConfiguratorScreen extends BasicScreen {
                 case "checkbox.horizontaldown":
                     this.horizontalFaceUpCheckbox.setChecked(this.horizontalFaceDownCheckbox.isChecked());
                     break;
+                case "checkbox.gateType":
+                    if (!this.gateTypeCheckbox.isChecked()) {
+                        this.gateRotationSpeed.setText("6.0");
+                        break;
+                    } else {
+                        this.gateRotationSpeed.setText("3.0");
+                        break;
+                    }
             }
         }
     }

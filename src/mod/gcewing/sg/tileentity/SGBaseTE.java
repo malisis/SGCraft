@@ -94,36 +94,50 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     final static DecimalFormat dFormat = new DecimalFormat("###,###,###,##0");
 
     public static SoundEvent
-            dialFailSound,
-            connectSound,
+            m_dialFailSound,
+            p_dialFailSound,
+            m_connectSound,
+            p_connectSound,
             disconnectSound,
             irisOpenSound,
             irisCloseSound,
             irisHitSound,
-            dhdPressSound,
-            dhdDialSound,
-            chevronOutgoingSound,
-            chevronIncomingSound,
+            m_dhdPressSound,
+            p_dhdPressSound,
+            m_dhdDialSound,
+            p_dhdDialSound,
+            m_chevronOutgoingSound,
+            m_chevronIncomingSound,
+            p_chevronOutgoingSound,
+            p_chevronIncomingSound,
             lockOutgoingSound,
             lockIncomingSound,
-            gateRollSound,
+            m_gateRollSound,
+            p_gateRollSound,
             eventHorizonSound,
             teleportSound;
 
     public static void registerSounds(SGCraft mod) {
-        dialFailSound = mod.newSound("dial_fail");
-        connectSound = mod.newSound("gate_open");
+        m_dialFailSound = mod.newSound("m_dial_fail");
+        p_dialFailSound = mod.newSound("p_dial_fail");
+        m_connectSound = mod.newSound("m_gate_open");
+        p_connectSound = mod.newSound("p_gate_open");
         disconnectSound = mod.newSound("gate_close");
         irisOpenSound = mod.newSound("iris_open");
         irisCloseSound = mod.newSound("iris_close");
         irisHitSound = mod.newSound("iris_hit");
-        dhdPressSound = mod.newSound("dhd_press");
-        dhdDialSound = mod.newSound("dhd_dial");
-        chevronOutgoingSound = mod.newSound("chevron_outgoing");
-        chevronIncomingSound = mod.newSound("chevron_incoming");
+        m_dhdPressSound = mod.newSound("m_dhd_press");
+        p_dhdPressSound = mod.newSound("p_dhd_press");
+        m_dhdDialSound = mod.newSound("m_dhd_dial");
+        p_dhdDialSound = mod.newSound("p_dhd_dial");
+        m_chevronOutgoingSound = mod.newSound("m_chevron_outgoing");
+        m_chevronIncomingSound = mod.newSound("m_chevron_incoming");
+        p_chevronOutgoingSound = mod.newSound("p_chevron_outgoing");
+        p_chevronIncomingSound = mod.newSound("p_chevron_incoming");
         lockOutgoingSound = mod.newSound("lock_outgoing");
         lockIncomingSound = mod.newSound("lock_incoming");
-        gateRollSound = mod.newSound("gate_roll");
+        m_gateRollSound = mod.newSound("m_gate_roll");
+        p_gateRollSound = mod.newSound("p_gate_roll");
         eventHorizonSound = mod.newSound("event_horizon");
         teleportSound = mod.newSound("teleport");
     }
@@ -1157,8 +1171,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     public String diallingFailure(EntityPlayer player, String msg, Object... args) {
         if (player != null) {
-            if (state == SGState.Idle)
-                playSGSoundEffect(dialFailSound, 1F, 1F);
+            if (state == SGState.Idle) {
+                if (gateType == 1) {
+                    playSGSoundEffect(m_dialFailSound, 1F, 1F);
+                } else {
+                    playSGSoundEffect(p_dialFailSound, 1F, 1F);
+                }
+            }
         }
         errorState = true;
         return operationFailure(player, msg, args);
@@ -1345,9 +1364,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             } else {
                 numEngagedChevrons = 0;
                 if (state != SGState.Idle && state != SGState.Disconnecting) {
-                    playSGSoundEffect(dialFailSound, 1F, 1F);
+                    if (gateType == 1) {
+                        playSGSoundEffect(m_dialFailSound, 1F, 1F);
+                    } else {
+                        playSGSoundEffect(p_dialFailSound, 1F, 1F);
+                    }
                 } else {
-                    playSGSoundEffect(chevronOutgoingSound, 1F, 1F);
+                    playSGSoundEffect(m_chevronOutgoingSound, 1F, 1F);
                 }
                 enterState(SGState.Idle, 0);
             }
@@ -1402,7 +1425,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (immediate) {
             numEngagedChevrons = dialledAddress.length();
             if (!initiator) {
-                playSGSoundEffect(chevronIncomingSound, 1F, 1F);
+                playSGSoundEffect(m_chevronIncomingSound, 1F, 1F);
             }
             enterState(SGState.SyncAwait, syncAwaitTime);
         } else {
@@ -1449,14 +1472,22 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             }
             if (!world.isRemote) {
                 //playSGSoundEffect(outgoing ? lockOutgoingSound : lockIncomingSound, 1F, 1F);
-                playSGSoundEffect(outgoing ? chevronOutgoingSound : chevronIncomingSound, 1F, 1F);
+                if (this.gateType == 1) {
+                    playSGSoundEffect(outgoing ? m_chevronOutgoingSound : m_chevronIncomingSound, 1F, 1F);
+                } else {
+                    playSGSoundEffect(outgoing ? p_chevronOutgoingSound : p_chevronIncomingSound, 1F, 1F);
+                }
             }
         } else {
             if (changeState) {
                 enterState(SGState.InterDialling, interDiallingTime);
             }
             if (!world.isRemote) {
-                playSGSoundEffect(outgoing ? chevronOutgoingSound : chevronIncomingSound, 1F, 1F);
+                if (this.gateType == 1) {
+                    playSGSoundEffect(outgoing ? m_chevronOutgoingSound : m_chevronIncomingSound, 1F, 1F);
+                } else {
+                    playSGSoundEffect(outgoing ? p_chevronOutgoingSound : p_chevronIncomingSound, 1F, 1F);
+                }
             }
         }
     }
@@ -2249,7 +2280,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (this.isInvalid() || !this.world.isBlockLoaded(this.pos) || this.world.getTileEntity(this.pos) != this) {
             return false;
         }
-        if (sound == gateRollSound) {
+        if (sound == m_gateRollSound || sound == p_gateRollSound) {
             return state == SGState.Dialling;
         } else if (sound == irisOpenSound) {
             return irisState == IrisState.Opening;
@@ -2324,7 +2355,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
                     case EstablishingConnection:
                         if (timeout == 25) {
-                            playSGSoundEffect(connectSound, 1F, 1F); // Play sound before gate actually opens.
+                            if (gateType == 1) {
+                                playSGSoundEffect(m_connectSound, 1F, 1F); // Play sound before gate actually opens.
+                            } else {
+                                playSGSoundEffect(p_connectSound, 1F, 1F); // Play sound before gate actually opens.
+                            }
                         }
                         break;
                 }
@@ -2412,13 +2447,17 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     case Dialling:
                         if (isInitiator) {
                             if (timeout > 0) {
-                                SGCraft.playSound(this, gateRollSound);
+                                if (this.gateType == 1) {
+                                    SGCraft.playSound(this, m_gateRollSound);
+                                } else {
+                                    SGCraft.playSound(this, p_gateRollSound);
+                                }
                             }
                         }
                         break;
-                    //case Connected:
-                    //    SGCraft.playSound(this, eventHorizonSound);
-                    //    break;
+                    case Connected:
+                        SGCraft.playSound(this, eventHorizonSound);
+                        break;
                 }
             }
             if (irisState != oldIrisState) {
