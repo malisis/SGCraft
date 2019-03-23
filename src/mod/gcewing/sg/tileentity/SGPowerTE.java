@@ -18,7 +18,9 @@ import javax.annotation.Nullable;
 
 public class SGPowerTE extends PowerTE implements IEnergyStorage {
 
-    private EnergyStorage storage = new EnergyStorage(SGCraft.FPMaxEnergyBuffer);
+    private int maxInput = 10000;
+    private int maxOutput = 10000;
+    private EnergyStorage storage = new EnergyStorage(SGCraft.FPMaxEnergyBuffer, maxInput, maxOutput);
 
     public SGPowerTE() {
         super(SGCraft.FPMaxEnergyBuffer, SGCraft.FPPerSGEnergyUnit);
@@ -40,13 +42,13 @@ public class SGPowerTE extends PowerTE implements IEnergyStorage {
         if (nbttagcompound.hasKey("capacity")) {
             int capacity = nbttagcompound.getInteger("capacity");
             int energy = nbttagcompound.getInteger("energy");
-            storage = new EnergyStorage(capacity, capacity, capacity, energy);
+            storage = new EnergyStorage(capacity, this.maxInput, this.maxOutput, energy);
         }
 
         if (SGCraft.forceFPCfgUpdate) {
             energyMax = SGCraft.FPMaxEnergyBuffer;
             energyPerSGEnergyUnit = SGCraft.FPPerSGEnergyUnit;
-            storage = new EnergyStorage((int)energyMax);
+            storage = new EnergyStorage((int)energyMax, this.maxInput, maxOutput );
         }
     }
 

@@ -44,9 +44,11 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     private double maxEnergyBufferSize = Integer.MAX_VALUE;
     private double energyPerSGEnergyUnit = 0;
 
+    private int maxInput = 10000;
+    private int maxOutput = 10000;
+
     private static final int firstZpmSlot = 0;
     public static final int numSlots = 1;
-    private int updated = 0;
 
     public boolean loaded = false;
     private boolean debugOutput = false;
@@ -56,7 +58,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
 
     public ZpmConsoleTE(double zpmEnergyPerSGEnergyUnit) {
         this.energyPerSGEnergyUnit = zpmEnergyPerSGEnergyUnit;
-        this.storage =  new EnergyStorage((int)maxEnergyBufferSize);
+        this.storage =  new EnergyStorage((int)maxEnergyBufferSize, maxInput, maxOutput);
     }
 
     /* TileEntity */
@@ -67,7 +69,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
         if (nbttagcompound.hasKey("capacity")) {
             int capacity = nbttagcompound.getInteger("capacity");
             int energy = nbttagcompound.getInteger("energy");
-            this.storage = new EnergyStorage(capacity, capacity, capacity, energy);
+            this.storage = new EnergyStorage(capacity, maxInput, maxOutput, energy);
         }
 
         if (SGCraft.forceZPMCfgUpdate) {
@@ -298,16 +300,14 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
 
 
     @Override
-    public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing)
-    {
+    public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
         return capability == CapabilityEnergy.ENERGY;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     @Nullable
-    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing)
-    {
+    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
         if (capability == CapabilityEnergy.ENERGY) {
             return (T) this.storage;
         }
@@ -323,12 +323,12 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
                 if (tile != null) {
                     if (tile.hasCapability(CapabilityEnergy.ENERGY, side)) {
                         if (tile.getCapability(CapabilityEnergy.ENERGY, side).getEnergyStored() < tile.getCapability(CapabilityEnergy.ENERGY, side).getMaxEnergyStored()) {
-                            tile.getCapability(CapabilityEnergy.ENERGY, side).receiveEnergy(this.extractEnergy(50000, false), false);
+                            int max = tile.getCapability(CapabilityEnergy.ENERGY, side).receiveEnergy(this.extractEnergy(50000, true), true);
+                            tile.getCapability(CapabilityEnergy.ENERGY, side).receiveEnergy(this.extractEnergy(max, false), false);
                         }
                     }
                 }
             }
-
         }
     }
 
@@ -384,7 +384,6 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
         return storage.getEnergyStored();
     }
 
-
     public double drawEnergyDouble(double request) {
         double available = this.storage.getEnergyStored() / energyPerSGEnergyUnit;
         double supply = min(request, available);
@@ -402,5 +401,10 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
         } else {
             return false;
         }
+    }
+
+    @Override // This prevents the zpm from being input/extract from the console.
+    public int[] getSlotsForFace(EnumFacing side) {
+        return new int[0];
     }
 }

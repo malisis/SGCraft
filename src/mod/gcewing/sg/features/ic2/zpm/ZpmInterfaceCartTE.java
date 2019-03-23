@@ -299,4 +299,9 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
         TileEntity te = world.getTileEntity(pos);
         return te instanceof ZpmInterfaceCartTE ? (ZpmInterfaceCartTE) te : null;
     }
+
+    @Override // This prevents the zpm from being input/extract from the interface cart.
+    public int[] getSlotsForFace(EnumFacing side) {
+        return new int[0];
+    }
 }
