@@ -5,6 +5,7 @@ import static gcewing.sg.BaseUtils.max;
 import static gcewing.sg.BaseUtils.min;
 import static gcewing.sg.features.zpm.ZpmConsole.ZPM_LOADED;
 
+import gcewing.sg.BaseContainer;
 import gcewing.sg.BaseTileInventory;
 import gcewing.sg.SGCraft;
 import gcewing.sg.interfaces.ISGEnergySource;
@@ -13,6 +14,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.NetworkManager;
@@ -44,9 +46,11 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
 
     private static final int firstZpmSlot = 0;
     public static final int numSlots = 1;
+    private int updated = 0;
 
     public boolean loaded = false;
     private boolean debugOutput = false;
+    private int maxExtract = 5000;
 
     public ZpmConsoleTE() {}
 
@@ -97,13 +101,6 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     }
 
     @Override
-    public void update() {
-        if (this.world == null || this.world.isRemote) {
-            return;
-        }
-    }
-
-    @Override
     @Nonnull
     public SPacketUpdateTileEntity getUpdatePacket() {
         return new SPacketUpdateTileEntity(this.pos, 1, this.getUpdateTag());
@@ -151,8 +148,23 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
 
     @Override
     public ItemStack removeStackFromSlot(final int index) {
+        final ItemStack item = ItemStackHelper.getAndSplit(this.items, 0, 1);
+        NBTTagCompound tag = item.getTagCompound();
 
-        removeZPM();
+        if(tag == null) {
+            tag = new NBTTagCompound();
+            item.setTagCompound(tag);
+        }
+
+        if(tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
+            tag.setDouble(ZPMItem.ENERGY, this.storage.getEnergyStored());
+            tag.setBoolean(ZPMItem.LOADED, false);
+            this.storage.extractEnergy(this.storage.getEnergyStored(), false); // Empty the storage when the ZPM is removed.
+        }
+        this.loaded = false;
+
+        IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
+        world.setBlockState(pos, other, 3);
 
         return ItemStackHelper.getAndRemove(this.items, 0);
     }
@@ -160,8 +172,26 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     @Override
     public ItemStack decrStackSize(final int index, final int quantity) {
         final ItemStack item = ItemStackHelper.getAndRemove(this.items, 0);
+        if(!item.isEmpty()) {
+            this.markDirty();
+        }
 
-        removeZPM();
+        NBTTagCompound tag = item.getTagCompound();
+
+        if(tag == null) {
+            tag = new NBTTagCompound();
+            item.setTagCompound(tag);
+        }
+
+        if(tag != null && tag.hasKey(ZPMItem.ENERGY, 99)) {
+            tag.setDouble(ZPMItem.ENERGY, this.storage.getEnergyStored());
+            tag.setBoolean(ZPMItem.LOADED, false);
+            this.storage.extractEnergy(this.storage.getEnergyStored(), false); // Empty the storage when the ZPM is removed.
+        }
+        this.loaded = false;
+
+        IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
+        world.setBlockState(pos, other, 3);
 
         return item;
     }
@@ -180,7 +210,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
 
                 tag.setBoolean(ZPMItem.LOADED, true);
 
-                if (!tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
+                if (!tag.hasKey(ZPMItem.ENERGY, 99)) {
                     tag.setDouble(ZPMItem.ENERGY, Integer.MAX_VALUE);
                     item.setTagCompound(tag);
                 }
@@ -189,6 +219,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
             }
 
             if (world != null && !world.isRemote) {
+                this.markChanged();
                 IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, true);
                 world.setBlockState(pos, other, 3);
             }
@@ -198,27 +229,6 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     public static boolean isValidFuelItem(ItemStack stack) {
         return stack != null && stack.getItem() == SGCraft.zpm && stack.getCount() > 0;
     }
-
-    private void removeZPM() {
-        final ItemStack item = ItemStackHelper.getAndSplit(this.items, 0, 1);
-        NBTTagCompound tag = item.getTagCompound();
-
-        if(tag == null) {
-            tag = new NBTTagCompound();
-            item.setTagCompound(tag);
-        }
-
-        if(tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
-            tag.setDouble(ZPMItem.ENERGY, this.storage.getEnergyStored());
-            tag.setBoolean(ZPMItem.LOADED, false);
-            this.storage.extractEnergy(this.storage.getEnergyStored(), false); // Empty the storage when the ZPM is removed.
-        }
-        item.setTagCompound(tag);
-
-        IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
-        world.setBlockState(pos, other, 3);
-    }
-
 
     @Override
     public int getInventoryStackLimit() {
@@ -288,20 +298,42 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
 
 
     @Override
-    public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-        return capability.equals(CapabilityEnergy.ENERGY) || super.hasCapability(capability, facing);
+    public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing)
+    {
+        return capability == CapabilityEnergy.ENERGY;
     }
 
-    @Nullable
+    @SuppressWarnings("unchecked")
     @Override
-    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
-        if (hasCapability(capability, facing))
-            return CapabilityEnergy.ENERGY.cast(this);
+    @Nullable
+    public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing)
+    {
+        if (capability == CapabilityEnergy.ENERGY) {
+            return (T) this.storage;
+        }
+        return null;
+    }
 
-        return super.getCapability(capability, facing);
+    @Override
+    public void update() {
+        if(!this.world.isRemote) {
+            for (EnumFacing side : EnumFacing.values()) {
+                EnumFacing opposite = side.getOpposite();
+                TileEntity tile = this.world.getTileEntity(this.pos.offset(side));
+                if (tile != null) {
+                    if (tile.hasCapability(CapabilityEnergy.ENERGY, side)) {
+                        if (tile.getCapability(CapabilityEnergy.ENERGY, side).getEnergyStored() < tile.getCapability(CapabilityEnergy.ENERGY, side).getMaxEnergyStored()) {
+                            tile.getCapability(CapabilityEnergy.ENERGY, side).receiveEnergy(this.extractEnergy(50000, false), false);
+                        }
+                    }
+                }
+            }
+
+        }
     }
 
     //------------------------ IEnergyStorage ---------------------------
+
 
     @Override
     public int receiveEnergy(int maxReceive, boolean simulate) {
@@ -312,8 +344,11 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     }
 
     @Override
-    public int extractEnergy(int maxExtract, boolean simulate) {
-        int result = storage.extractEnergy(maxExtract, simulate);
+    public int extractEnergy(int extract, boolean simulate) {
+        if (extract > this.maxExtract) {
+            extract = this.maxExtract;
+        }
+        int result = storage.extractEnergy(extract, simulate);
         markChanged();
 
         return result;
@@ -336,14 +371,12 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
 
     @Override
     public boolean canReceive() {
-        return false; // prevent ZPM from being charged.
+        return false;
     }
 
     @Override
     public double availableEnergy() {
         double available = this.storage.getEnergyStored() / energyPerSGEnergyUnit;
-        if (debugOutput)
-            System.out.printf("SGCraft: ZPM Console: %s SGU available\n", available);
         return available;
     }
 
@@ -361,10 +394,6 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
         if(debugOutput)
             System.out.printf("SGCraft: ZPM Console: Supplying %s SGU of %s requested\n", supply, request);
         return supply;
-    }
-
-    public boolean isLoaded() {
-        return this.loaded;
     }
 
     public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
