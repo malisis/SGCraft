@@ -347,7 +347,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     }
 
     // **********************************************************
-    // IEnergyStorage intefaces
+    // IEnergyStorage interfaces
     // **********************************************************
     @Override
     public int receiveEnergy(int maxReceive, boolean simulate) {
@@ -395,7 +395,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     }
 
     // **********************************************************
-    // SGEnergyStorage intefaces
+    // SGEnergyStorage interfaces
     // **********************************************************
 
     public double totalAvailableEnergy() {
