@@ -249,8 +249,12 @@ public class SGBaseTERenderer extends BaseTileEntityRenderer {
             glRotatef(90 - (i - 4) * a, 0, 0, 1);
         }
 
-        if (gate.gateOrientation == 2 || gate.gateOrientation == 3) {
+        if (gate.gateOrientation == 2) {
             glRotatef(-90 - (i - 4) * a, 0, 0, 1);
+        }
+
+        if (gate.gateOrientation == 3) {
+            glRotatef(90 - (i - 4) * a, 0, 0, 1);
         }
 
         chevron(engaged);
