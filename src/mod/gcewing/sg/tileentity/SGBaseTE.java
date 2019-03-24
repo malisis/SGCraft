@@ -1416,10 +1416,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             boolean last = address.length() == this.dialedDigit;
             this.finishDiallingSymbol(Character.toString(currentSymbol), true, false, last);
             this.dialledAddress = enteredAddress;
-            this.numEngagedChevrons = enteredAddress.length() - 1;
+            this.numEngagedChevrons = enteredAddress.length();
 
             if (last) {
-                if (connect(address, player, false) != null) {
+                String value = connect(address, player, false);
+
+                if (value != null) {
+                    this.clearIdleConnection();
                 }
             } else {
                 this.markChanged(); // need current state of server TE sent to client so thing stay in sync.
