@@ -1200,6 +1200,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         player.sendMessage(component);
     }
 
+    public static void sendBasicMsg(EntityPlayer player, String msg, Object... args) {
+        ITextComponent component = new TextComponentTranslation("message.sgcraft:" + msg, args);
+        player.sendMessage(component);
+    }
+
     //Todo: get rid of this and add all translations.
     public static void sendGenericErrorMsg(EntityPlayer player, String message) {
         TextComponentString component = new TextComponentString(message);
@@ -1306,11 +1311,21 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     public List<GateAccessData> getGateAccessData() {
-        return this.gateAccessData;
+        if (this.gateAccessData != null) {
+            return this.gateAccessData;
+        } else {
+            System.err.println("Exception in SGBaseTE: getGateAccessData is null when it shouldn't be.");
+            return null;
+        }
     }
 
     public List <PlayerAccessData>getPlayerAccessData() {
-       return this.playerAccessData;
+        if (this.playerAccessData != null) {
+            return this.playerAccessData;
+        } else {
+            System.err.println("Exception in SGBaseTE: getPlayerAccessData is null when it shouldn't be.");
+            return null;
+        }
     }
 
     // *********************************************************************************************

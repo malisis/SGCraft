@@ -1,5 +1,7 @@
 package gcewing.sg.network;
 
+import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
+
 import gcewing.sg.BaseDataChannel;
 import gcewing.sg.SGCraft;
 import gcewing.sg.features.configurator.client.gui.ConfiguratorScreen;
@@ -33,30 +35,30 @@ public class GuiNetworkHandler extends SGChannel {
     public void handleGUIRequestFromClient(EntityPlayer player, ChannelInput data) {
         BlockPos pos = readCoords(data);
         SGBaseTE localGate = SGBaseTE.at(player.world, pos);
-        boolean canEditLocal = localGate.getWorld().isBlockModifiable(player, localGate.getPos());
+        boolean canAccessLocal = localGate.allowGateAccess(player.getName());
         boolean canEditRemote = false;
         if (localGate.isConnected() && localGate.state == SGState.Connected) {
             SGBaseTE remoteGate = localGate.getConnectedStargateTE();
-            canEditRemote = remoteGate.getWorld().isBlockModifiable(player, remoteGate.getPos());
+            canEditRemote = remoteGate.allowGateAccess(player.getName());
         }
         int guiType = data.readInt();
         if (guiType == 1) {
             if (SGCraft.hasPermission(player, "sgcraft.gui.configurator")) {
-                if (canEditLocal) {
-                    this.openGuiAtClient(localGate, player, 1, SGCraft.hasPermission(player, "sgcraft.admin"), canEditLocal, canEditRemote);
+                if (canAccessLocal) {
+                    this.openGuiAtClient(localGate, player, 1, SGCraft.hasPermission(player, "sgcraft.admin"), canAccessLocal, canEditRemote);
                 } else {
-                    player.sendMessage(new TextComponentString("Insufficient block permissions!"));
+                    sendErrorMsg(player, "insufficientGatePermission");
                 }
             } else {
-                player.sendMessage(new TextComponentString("Insufficient permissions!  Requires 'sgcraft.gui.configurator'"));
+                sendErrorMsg(player, "configuratorPermission");
             }
         }
 
         if (guiType == 2) {
             if (SGCraft.hasPermission(player, "sgcraft.gui.gdo")) {
-                this.openGuiAtClient(localGate, player, 2, SGCraft.hasPermission(player, "sgcraft.admin"), canEditLocal, canEditRemote);
+                this.openGuiAtClient(localGate, player, 2, SGCraft.hasPermission(player, "sgcraft.admin"), canAccessLocal, canEditRemote);
             } else {
-                player.sendMessage(new TextComponentString("Insufficient permissions!  Requires 'sgcraft.gui.gdo'"));
+                sendErrorMsg(player, "gdoPermission");
             }
         }
 

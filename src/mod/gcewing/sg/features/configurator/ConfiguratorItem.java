@@ -1,7 +1,11 @@
 package gcewing.sg.features.configurator;
 
+import static gcewing.sg.tileentity.SGBaseTE.sendBasicMsg;
+import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
+
 import gcewing.sg.SGCraft;
 import gcewing.sg.network.GuiNetworkHandler;
+import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.GateUtil;
 import gcewing.sg.util.SGState;
@@ -12,6 +16,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
@@ -25,6 +30,8 @@ import javax.annotation.Nullable;
 
 public class ConfiguratorItem extends Item {
 
+    private SGBaseTE toLinkTE = null;
+
   public ConfiguratorItem() {}
 
   @SideOnly(Side.CLIENT)
@@ -33,10 +40,33 @@ public class ConfiguratorItem extends Item {
     super.addInformation(stack, player, tooltip, advanced);
   }
 
+    @Override
+    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing side, float hitX, float hitY, float hitZ) {
+      if (!world.isRemote && player.isSneaking()) {
+            TileEntity te = world.getTileEntity(pos);
+            if (te instanceof DHDTE) {
+                if (toLinkTE != null) {
+                    ((DHDTE) te).linkToStargate(toLinkTE);
+                    sendBasicMsg(player, "configuratorLink");
+                    toLinkTE = null;
+                }
+            }
+            if (te instanceof SGBaseTE) {
+                toLinkTE = (SGBaseTE)te;
+                sendBasicMsg(player, "gateLocationSaved");
+            }
+
+        }
+
+        return EnumActionResult.PASS;
+    }
+
+
   @Override
   public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer player, EnumHand handIn) {
-      if (!worldIn.isRemote) {
+      if (!worldIn.isRemote && !player.isSneaking()) {
           TileEntity localGateTE = GateUtil.locateLocalGate(worldIn, new BlockPos(player.posX, player.posY, player.posZ), 6, false);
+
           if (localGateTE instanceof SGBaseTE) {
               SGBaseTE localGate = (SGBaseTE) localGateTE;
 
@@ -52,15 +82,19 @@ public class ConfiguratorItem extends Item {
               boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
               if (SGCraft.hasPermission(player, "sgcraft.gui.configurator") && localGate.allowAdminAccess(player.getName()) || isPermissionsAdmin) {
-                  GuiNetworkHandler.openGuiAtClient(localGate, player, 1, SGCraft.hasPermission(player, "sgcraft.admin"), canEditLocal, canEditRemote);
+                  GuiNetworkHandler.openGuiAtClient(localGate, player, 1, isPermissionsAdmin, canEditLocal, canEditRemote);
               } else {
-                  player.sendMessage(new TextComponentString("Insufficient permissions.  Requires 'sgcraft.gui.configurator'"));
+                  if (!SGCraft.hasPermission(player, "sgcraft.gui.configurator"))
+                      sendErrorMsg(player, "configuratorPermission");
+                  if (!localGate.allowAdminAccess(player.getName()))
+                      sendErrorMsg(player, "insufficientPlayerAdminAccessPermission");
+
                   return new ActionResult<>(EnumActionResult.FAIL, player.getHeldItem(handIn));
               }
 
               return new ActionResult<>(EnumActionResult.PASS, player.getHeldItem(handIn));  //Both Server & Client expect a returned value.
           } else {
-              player.sendMessage(new TextComponentString("Could not detect Stargate near current position."));
+              sendErrorMsg(player, "cantFindStargate");
               return new ActionResult<>(EnumActionResult.FAIL, player.getHeldItem(handIn));
           }
       }

@@ -1,5 +1,7 @@
 package gcewing.sg.features.configurator.client.gui;
 
+import static gcewing.sg.tileentity.SGBaseTE.sendBasicMsg;
+
 import com.google.common.eventbus.Subscribe;
 import gcewing.sg.features.configurator.network.ConfiguratorNetworkHandler;
 import gcewing.sg.features.pdd.client.gui.PddEntryScreen;
@@ -158,7 +160,7 @@ public class GateAddressAccessScreen extends BasicScreen {
                     if (this.gateAccessList.getSize() > 0 && this.gateAccessList.getSelectedItem() != null) {
                         if (!this.gateAccessList.getSelectedItem().getAddress().isEmpty()) {
                             ConfiguratorNetworkHandler.sendGateAddressAccessInputToServer(localGate, this.gateAccessList.getSelectedItem().getAddress().toUpperCase(),false, false,  this.allowIncomingCheckbox.isChecked(), this.allowOutgoingCheckbox.isChecked());
-                            player.sendMessage(new TextComponentString("Changes Saved for " + this.gateAccessList.getSelectedItem().getAddress().toUpperCase() + "."));
+                            sendBasicMsg(player, "changesSaved");
                         }
                     }
                 })
@@ -243,7 +245,7 @@ public class GateAddressAccessScreen extends BasicScreen {
             .text("Save")
             .onClick(() -> {
                 ConfiguratorNetworkHandler.sendGateAddressAccessInputToServer(localGate, "", this.defaultAllowIncomingCheckbox.isChecked(), this.defaultAllowOutgoingCheckbox.isChecked(), this.allowIncomingCheckbox.isChecked(), this.allowOutgoingCheckbox.isChecked());
-                player.sendMessage(new TextComponentString("Changes Saved!"));
+                sendBasicMsg(player, "changesSaved");
                 this.close();
             })
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)

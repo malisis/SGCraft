@@ -76,30 +76,41 @@ public class PddNetworkHandler extends SGChannel {
             }
         }
 
-        if (!SGCraft.hasPermission(player, "sgcraft.gui.pdd")) {
+        boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+
+        if (SGCraft.hasPermission(player, "sgcraft.gui.pdd") || isPermissionsAdmin) {
+
+            if (setting == 1) { // Connect / Dial / Double Click
+                if (!localGate.isConnected()) {
+                    if (localGate.allowGateAccess(player.getName()) || isPermissionsAdmin) {
+                        localGate.connect(destination, player, false);
+                    }
+                }
+            }
+            if (setting == 2) {
+                if (localGate.isConnected()) {
+                    if (localGate.allowGateAccess(player.getName()) || isPermissionsAdmin) {
+                        localGate.disconnect(player);
+                    }
+                }
+            }
+            if (setting == 3) {
+                if (localGate.allowGateAccess(player.getName()) || isPermissionsAdmin) {
+                    localGate.connectOrDisconnect("", player);
+                    localGate.errorState = false; // Force this on the servers' TE.
+                }
+            }
+
+            if (setting == 4) {
+                if (localGate.allowGateAccess(player.getName()) || isPermissionsAdmin) {
+                    localGate.connectOrDisconnect("", player);
+                    localGate.clearIdleConnection();
+                    localGate.errorState = false; // Force this on the servers' TE.
+                }
+            }
+        } else {
             System.err.println("SGCraft - Hacked Client detected!");
             return;
-        }
-
-        if (setting == 1) { // Connect / Dial / Double Click
-            if (!localGate.isConnected()) {
-                localGate.connect(destination, player, false);
-            }
-        }
-        if (setting == 2) {
-            if (localGate.isConnected()) {
-                localGate.disconnect(player);
-            }
-        }
-        if (setting == 3) {
-            localGate.connectOrDisconnect("", player);
-            localGate.errorState = false; // Force this on the servers' TE.
-        }
-
-        if (setting == 4) {
-            localGate.connectOrDisconnect("", player);
-            localGate.clearIdleConnection();
-            localGate.errorState = false; // Force this on the servers' TE.
         }
     }
 

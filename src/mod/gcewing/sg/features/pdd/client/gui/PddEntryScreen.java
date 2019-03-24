@@ -1,5 +1,7 @@
 package gcewing.sg.features.pdd.client.gui;
 
+import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
+
 import gcewing.sg.features.pdd.network.PddNetworkHandler;
 import net.malisis.core.client.gui.Anchor;
 import net.malisis.core.client.gui.BasicScreen;
@@ -130,7 +132,7 @@ public class PddEntryScreen extends BasicScreen {
                     PddNetworkHandler.sendPddEntryUpdateToServer(this.nameTextField.getText().trim(), this.addressTextField.getText().trim(), Integer.valueOf(this.indexTextField.getText()), this.unid, this.isLocked);
                     this.close();
                 } else {
-                    player.sendMessage(new TextComponentString("Invalid format"));
+                    sendErrorMsg(player, "invalidFormat");
                 }
             })
             .listener(this)

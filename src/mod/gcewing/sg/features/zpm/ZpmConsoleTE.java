@@ -44,7 +44,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     private double maxEnergyBufferSize = Integer.MAX_VALUE;
     private double energyPerSGEnergyUnit = 0;
 
-    private int maxInput = 10000;
+    private int maxInput = Integer.MAX_VALUE;
     private int maxOutput = 10000;
 
     private static final int firstZpmSlot = 0;

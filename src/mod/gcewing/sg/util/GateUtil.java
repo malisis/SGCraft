@@ -1,5 +1,6 @@
 package gcewing.sg.util;
 
+import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -19,6 +20,29 @@ public class GateUtil {
                         System.err.println("Found SGBaseTE at: " + gateTE.getPos());
                     }
                     return gateTE;
+                }
+            }
+        }
+
+        if (debug) {
+            System.err.println("Failed to find SGBaseTE.");
+        }
+        return null;
+    }
+
+    public static TileEntity locateDHD(World world, BlockPos pos, int radius, boolean debug) {
+        for (final BlockPos.MutableBlockPos nearPos : BlockPos.getAllInBoxMutable(
+            pos.add(-radius, -radius, -radius),
+            pos.add(radius, radius, radius)
+        )) {
+            TileEntity dhdTE = world.getTileEntity(nearPos);
+
+            if (dhdTE instanceof DHDTE) {
+                if (dhdTE != null) {
+                    if (debug) {
+                        System.err.println("Found SGBaseTE at: " + dhdTE.getPos());
+                    }
+                    return dhdTE;
                 }
             }
         }

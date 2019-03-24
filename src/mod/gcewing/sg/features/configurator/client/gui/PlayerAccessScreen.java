@@ -1,5 +1,8 @@
 package gcewing.sg.features.configurator.client.gui;
 
+import static gcewing.sg.tileentity.SGBaseTE.sendBasicMsg;
+import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
+
 import com.google.common.eventbus.Subscribe;
 import gcewing.sg.features.configurator.network.ConfiguratorNetworkHandler;
 import gcewing.sg.tileentity.SGBaseTE;
@@ -173,7 +176,7 @@ public class PlayerAccessScreen extends BasicScreen {
                 if (this.playerAccessList.getSize() > 0 && this.playerAccessList.getSelectedItem() != null) {
                     if (!this.playerAccessList.getSelectedItem().getPlayerName().isEmpty()) {
                         ConfiguratorNetworkHandler.sendPlayerAccessInputToServer(localGate, this.playerAccessList.getSelectedItem().getPlayerName(),false, false,  false,this.allowAccessCheckbox.isChecked(), this.allowIrisControllerCheckbox.isChecked(), this.allowAdminCheckbox.isChecked());
-                        player.sendMessage(new TextComponentString("Changes Saved for " + this.playerAccessList.getSelectedItem().getPlayerName() + "."));
+                        sendBasicMsg(player, "changesSaved");
                     }
                 }
             })
@@ -282,7 +285,7 @@ public class PlayerAccessScreen extends BasicScreen {
             .text("Save")
             .onClick(() -> {
                 ConfiguratorNetworkHandler.sendPlayerAccessInputToServer(localGate, "",this.defaultAllowAccessCheckbox.isChecked(), this.defaultAllowIrisCheckbox.isChecked(),  this.defaultAllowAdminCheckbox.isChecked(),this.allowAccessCheckbox.isChecked(), this.allowIrisControllerCheckbox.isChecked(), this.allowAdminCheckbox.isChecked());
-                player.sendMessage(new TextComponentString("Changes Saved!"));
+                sendBasicMsg(player, "changesSaved");
                 this.close();
             })
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)

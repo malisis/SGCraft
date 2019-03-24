@@ -58,19 +58,17 @@ public class GdoNetworkHandler extends SGChannel {
                 if (setting == 4 || setting == 5 || setting == 6) {
                     if (localGate.isConnected()) {
                         SGBaseTE remoteGate = localGate.getConnectedStargateTE();
-
-                       // Todo: this may need to be implemented in the future?
-                        // canEditRemote = remoteGate.getWorld().isBlockModifiable(player, remoteGate.getPos());
-
-                        if (!localGate.allowAccessToIrisController(player.getName())) {
-                            playerAccessRemoteControl = false;
-                        }
-                        if (playerAccessRemoteControl || isPermissionsAdmin) {
-                            if (setting == 4) {
-                                remoteGate.openIris();
+                        if (remoteGate != null) {
+                            if (!remoteGate.allowAccessToIrisController(player.getName())) {
+                                playerAccessRemoteControl = false;
                             }
-                            if (setting == 5) {
-                                remoteGate.closeIris();
+                            if (playerAccessRemoteControl || isPermissionsAdmin) {
+                                if (setting == 4) {
+                                    remoteGate.openIris();
+                                }
+                                if (setting == 5) {
+                                    remoteGate.closeIris();
+                                }
                             }
                         }
                     }

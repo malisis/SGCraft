@@ -1,5 +1,7 @@
 package gcewing.sg.features.pdd;
 
+import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
+
 import com.google.common.collect.Lists;
 import gcewing.sg.SGCraft;
 import gcewing.sg.block.SGBaseBlock;
@@ -63,12 +65,16 @@ public class PddItem extends Item {
             if (localGateTE instanceof SGBaseTE) {
                 SGBaseTE localGate = (SGBaseTE) localGateTE;
 
-                boolean canEditLocal = localGate.getWorld().isBlockModifiable(player, localGate.getPos());
+                boolean canEditLocal = localGate.allowGateAccess(player.getName());
                 boolean canEditRemote = false;
                 if (localGate.isConnected() && localGate.state == SGState.Connected) {
                     SGBaseTE remoteGate = localGate.getConnectedStargateTE();
-                    canEditRemote = remoteGate.getWorld().isBlockModifiable(player, remoteGate.getPos());
+                    if (remoteGate != null) {
+                        canEditRemote = remoteGate.allowGateAccess(player.getName());
+                    }
                 }
+
+                boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
                 if (SGCraft.hasPermission(player, "sgcraft.gui.pdd")) {
                     if (player.isSneaking()) {
@@ -77,16 +83,23 @@ public class PddItem extends Item {
                         if (addresses.stream().noneMatch(data -> data.getAddress().replaceAll("-","").equalsIgnoreCase(localGateAddress))) {
                             PddNetworkHandler.addPddEntryFromServer(player, localGateAddress);
                         } else {
-                            player.sendMessage(new TextComponentString("PDD already contains this address!"));
+                            sendErrorMsg(player, "pddContainsAddress");
                         }
                     } else {
-                        GuiNetworkHandler.openGuiAtClient(localGate, player, 3, SGCraft.hasPermission(player, "sgcraft.admin"), canEditLocal, canEditRemote);
+                        if (localGate.allowGateAccess(player.getName()) || isPermissionsAdmin){
+                            GuiNetworkHandler.openGuiAtClient(localGate, player, 3, isPermissionsAdmin, canEditLocal, canEditRemote);
+                        } else {
+                            if (!SGCraft.hasPermission(player, "sgcraft.gui.pdd"))
+                                sendErrorMsg(player, "pddPermission");
+                            if (!localGate.allowGateAccess(player.getName()))
+                                sendErrorMsg(player, "insufficientPlayerAccessPermission");
+                        }
                     }
                 }
 
                 return new ActionResult<>(EnumActionResult.PASS, player.getHeldItem(handIn));  //Both Server & Client expect a returned value.
             } else {
-                player.sendMessage(new TextComponentString("Could not detect Stargate near current position."));
+                sendErrorMsg(player, "cantFindStargate");
                 return new ActionResult<>(EnumActionResult.FAIL, player.getHeldItem(handIn));
             }
         }

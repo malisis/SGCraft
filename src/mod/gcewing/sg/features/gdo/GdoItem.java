@@ -1,5 +1,7 @@
 package gcewing.sg.features.gdo;
 
+import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
+
 import gcewing.sg.SGCraft;
 import gcewing.sg.network.GuiNetworkHandler;
 import gcewing.sg.tileentity.SGBaseTE;
@@ -47,16 +49,22 @@ public class GdoItem extends Item {
                     canAccessRemote = remoteGate.allowAccessToIrisController(player.getName());
                 }
 
-                if (SGCraft.hasPermission(player, "sgcraft.gui.gdo")) {
-                    GuiNetworkHandler.openGuiAtClient(localGate, player, 2, SGCraft.hasPermission(player, "sgcraft.admin"), canAccessLocal, canAccessRemote);
+                boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+
+                if (SGCraft.hasPermission(player, "sgcraft.gui.gdo") && localGate.allowGateAccess(player.getName()) || isPermissionsAdmin) {
+                    GuiNetworkHandler.openGuiAtClient(localGate, player, 2, isPermissionsAdmin, canAccessLocal, canAccessRemote);
                 } else {
-                    player.sendMessage(new TextComponentString("Insufficient permissions.  Requires 'sgcraft.gui.gdo."));
+                    if (!SGCraft.hasPermission(player, "sgcraft.gui.gdo"))
+                        sendErrorMsg(player, "gdoPermission");
+                    if (!localGate.allowGateAccess(player.getName()))
+                        sendErrorMsg(player, "insufficientPlayerAccessPermission");
+
                     return new ActionResult<>(EnumActionResult.FAIL, player.getHeldItem(handIn));
                 }
 
                 return new ActionResult<>(EnumActionResult.PASS, player.getHeldItem(handIn));  //Both Server & Client expect a returned value.
             } else {
-                player.sendMessage(new TextComponentString("Could not detect Stargate near current position."));
+                sendErrorMsg(player, "cantFindStargate");
                 return new ActionResult<>(EnumActionResult.FAIL, player.getHeldItem(handIn));
             }
         }

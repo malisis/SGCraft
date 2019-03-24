@@ -1,5 +1,8 @@
 package gcewing.sg.features.configurator.network;
 
+import static gcewing.sg.tileentity.SGBaseTE.sendBasicMsg;
+import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
+
 import gcewing.sg.BaseDataChannel;
 import gcewing.sg.SGCraft;
 import gcewing.sg.network.SGChannel;
@@ -87,30 +90,30 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
         if (SGCraft.hasPermission(player, "sgcraft.configurator") && te.allowAdminAccess(playerName) || isPermissionsAdmin) {
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.secondsToStayOpen")) te.secondsToStayOpen = secondsToStayOpen;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.ringRotationSpeed")) te.ringRotationSpeed = ringRotationSpeed;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.maxEnergyBuffer")) te.maxEnergyBuffer = maxEnergyBuffer;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.energyPerFuelItem")) te.energyPerFuelItem = energyPerFuelItem;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.gateOpeningsPerFuelItem")) te.gateOpeningsPerFuelItem = gateOpeningsPerFuelItem;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.distanceFactorMultiplier")) te.distanceFactorMultiplier = distanceFromMultiplier;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.interDimensionalMultiplier")) te.interDimensionMultiplier = interDimensionalMultiplier;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.oneWayTravel")) te.oneWayTravel = oneWayTravel;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.hasIrisUpgrade")) te.hasIrisUpgrade = hasIrisUpgrade;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.hasChevronUpgrade")) te.hasChevronUpgrade = hasChevronUpgrade;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.gateType")) te.gateType = gateType;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.reverseWormholeKills")) te.reverseWormholeKills = reverseWormholeKills;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.closeFromEitherEnd")) te.closeFromEitherEnd = closeFromEitherEnd;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.preserveInventory")) te.preserveInventory = preserveInventory;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.noPowerRequired")) te.requiresNoPower = requiresNoPower;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.chevronsLockOnDial")) te.chevronsLockOnDial = chevronsLockOnDial;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.returnToPreviousIrisState")) te.returnToPreviousIrisState = returnToPreviousIrisState;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.transientDamage")) te.transientDamage = transientDamage;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.transparency")) te.transparency = transparency;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.orientation")) te.gateOrientation = orientation;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.useDHDFuelSource")) te.useDHDFuelSource = useDHDFuelSource;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.allowRedstoneOutput")) te.allowRedstoneOutput = allowRedstoneOutput;
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.allowRedstoneInput")) te.allowRedstoneInput = allowRedstoneInput;
-            player.sendMessage(new TextComponentString("Changes Saved!"));
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.secondsToStayOpen") || isPermissionsAdmin) te.secondsToStayOpen = secondsToStayOpen;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.ringRotationSpeed") || isPermissionsAdmin) te.ringRotationSpeed = ringRotationSpeed;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.maxEnergyBuffer") || isPermissionsAdmin) te.maxEnergyBuffer = maxEnergyBuffer;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.energyPerFuelItem") || isPermissionsAdmin) te.energyPerFuelItem = energyPerFuelItem;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.gateOpeningsPerFuelItem") || isPermissionsAdmin) te.gateOpeningsPerFuelItem = gateOpeningsPerFuelItem;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.distanceFactorMultiplier") || isPermissionsAdmin) te.distanceFactorMultiplier = distanceFromMultiplier;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.interDimensionalMultiplier") || isPermissionsAdmin) te.interDimensionMultiplier = interDimensionalMultiplier;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.oneWayTravel") || isPermissionsAdmin) te.oneWayTravel = oneWayTravel;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.hasIrisUpgrade") || isPermissionsAdmin) te.hasIrisUpgrade = hasIrisUpgrade;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.hasChevronUpgrade") || isPermissionsAdmin) te.hasChevronUpgrade = hasChevronUpgrade;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.gateType") || isPermissionsAdmin) te.gateType = gateType;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.reverseWormholeKills") || isPermissionsAdmin) te.reverseWormholeKills = reverseWormholeKills;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.closeFromEitherEnd") || isPermissionsAdmin) te.closeFromEitherEnd = closeFromEitherEnd;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.preserveInventory") || isPermissionsAdmin) te.preserveInventory = preserveInventory;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.noPowerRequired") || isPermissionsAdmin) te.requiresNoPower = requiresNoPower;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.chevronsLockOnDial") || isPermissionsAdmin) te.chevronsLockOnDial = chevronsLockOnDial;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.returnToPreviousIrisState") || isPermissionsAdmin) te.returnToPreviousIrisState = returnToPreviousIrisState;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.transientDamage") || isPermissionsAdmin) te.transientDamage = transientDamage;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.transparency") || isPermissionsAdmin) te.transparency = transparency;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.orientation") || isPermissionsAdmin) te.gateOrientation = orientation;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.useDHDFuelSource") || isPermissionsAdmin) te.useDHDFuelSource = useDHDFuelSource;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.allowRedstoneOutput") || isPermissionsAdmin) te.allowRedstoneOutput = allowRedstoneOutput;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.allowRedstoneInput") || isPermissionsAdmin) te.allowRedstoneInput = allowRedstoneInput;
+            sendBasicMsg(player, "changesSaved");
             te.markForUpdate();
         }
     }
@@ -191,7 +194,9 @@ public class ConfiguratorNetworkHandler extends SGChannel {
             return;
         }
 
-        if (SGCraft.hasPermission(player, "sgcraft.configurator") && te.allowAdminAccess(playerName)) {
+        boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+
+        if (SGCraft.hasPermission(player, "sgcraft.configurator") && te.allowAdminAccess(playerName) || isPermissionsAdmin) {
             if (playerName.isEmpty()) {
                 te.defaultAllowGateAccess = defaultAllowAccess;
                 te.defaultAllowIrisAccess = defaultAllowIris;
@@ -303,9 +308,6 @@ public class ConfiguratorNetworkHandler extends SGChannel {
                 }
 
                 localGate.markChanged();
-            } else {
-                System.out.println("Exception in handlePAEntryUpdateFromClient Handler");
-                // Todo: throw exception
             }
         }
     }

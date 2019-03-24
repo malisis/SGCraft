@@ -1,5 +1,7 @@
 package gcewing.sg.features.configurator.client.gui;
 
+import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
+
 import gcewing.sg.features.configurator.network.ConfiguratorNetworkHandler;
 import gcewing.sg.features.pdd.network.PddNetworkHandler;
 import gcewing.sg.tileentity.SGBaseTE;
@@ -111,7 +113,7 @@ public class GateAddressAccessEntryScreen extends BasicScreen {
                         }
                         this.close();
                     } else {
-                        player.sendMessage(new TextComponentString("Invalid format"));
+                        sendErrorMsg(player, "invalidFormat");
                     }
                 })
                 .listener(this)
@@ -159,7 +161,7 @@ public class GateAddressAccessEntryScreen extends BasicScreen {
                 }
                 this.close();
             } else {
-                player.sendMessage(new TextComponentString("Invalid format"));
+                sendErrorMsg(player, "invalidFormat");
             }
         }
         super.keyTyped(keyChar, keyCode);
