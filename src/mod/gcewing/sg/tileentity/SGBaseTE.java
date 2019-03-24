@@ -699,7 +699,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             if (this.playerAccessData == null)
                 this.playerAccessData = PlayerAccessData.getPlayerAccessList(nbt);
 
-            if (this.getGateAccessData() == null)
+            if (this.gateAccessData == null)
                 this.gateAccessData = GateAccessData.getGateAccessList(nbt);
 
             if (this.playerAccessData != null)
@@ -1327,6 +1327,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             return this.gateAccessData;
         } else {
             System.err.println("Exception in SGBaseTE: getGateAccessData is null when it shouldn't be.");
+            Thread.dumpStack();
             return null;
         }
     }
