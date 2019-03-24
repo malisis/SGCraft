@@ -318,7 +318,8 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     public void update() {
         if(!this.world.isRemote) {
             for (EnumFacing side : EnumFacing.values()) {
-                EnumFacing opposite = side.getOpposite();
+                if (side == EnumFacing.UP)
+                    continue;
                 TileEntity tile = this.world.getTileEntity(this.pos.offset(side));
                 if (tile != null) {
                     if (tile.hasCapability(CapabilityEnergy.ENERGY, side)) {
