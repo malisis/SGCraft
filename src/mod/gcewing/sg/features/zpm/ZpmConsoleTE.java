@@ -143,6 +143,11 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
         return true;
     }
 
+    @Override // This prevents the zpm from being input/extract from the console.
+    public int[] getSlotsForFace(EnumFacing side) {
+        return new int[0];
+    }
+
     @Override
     public ItemStack getStackInSlot(final int index) {
         return this.items.get(0);
@@ -324,7 +329,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
                 if (tile != null) {
                     if (tile.hasCapability(CapabilityEnergy.ENERGY, side)) {
                         if (tile.getCapability(CapabilityEnergy.ENERGY, side).getEnergyStored() < tile.getCapability(CapabilityEnergy.ENERGY, side).getMaxEnergyStored()) {
-                            int max = tile.getCapability(CapabilityEnergy.ENERGY, side).receiveEnergy(this.extractEnergy(50000, true), true);
+                            int max = tile.getCapability(CapabilityEnergy.ENERGY, side).receiveEnergy(this.extractEnergy(50000, true), true); // Prevent the draw of what ever the entery is going to > than capability.
                             tile.getCapability(CapabilityEnergy.ENERGY, side).receiveEnergy(this.extractEnergy(max, false), false);
                         }
                     }
@@ -333,9 +338,17 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
         }
     }
 
-    //------------------------ IEnergyStorage ---------------------------
+    public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
+        if (oldState.getBlock() != newState.getBlock()) { // Prevents the TE from nullifying itself when we force change the state to change it models.  Vanilla mechanics invalidate the TE.
+            return true;
+        } else {
+            return false;
+        }
+    }
 
-
+    // **********************************************************
+    // IEnergyStorage intefaces
+    // **********************************************************
     @Override
     public int receiveEnergy(int maxReceive, boolean simulate) {
         int result = storage.receiveEnergy(maxReceive, simulate);
@@ -381,6 +394,10 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
         return available;
     }
 
+    // **********************************************************
+    // SGEnergyStorage intefaces
+    // **********************************************************
+
     public double totalAvailableEnergy() {
         return storage.getEnergyStored();
     }
@@ -394,18 +411,5 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
         if(debugOutput)
             System.out.printf("SGCraft: ZPM Console: Supplying %s SGU of %s requested\n", supply, request);
         return supply;
-    }
-
-    public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
-        if (oldState.getBlock() != newState.getBlock()) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @Override // This prevents the zpm from being input/extract from the console.
-    public int[] getSlotsForFace(EnumFacing side) {
-        return new int[0];
     }
 }
