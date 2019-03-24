@@ -40,7 +40,7 @@ public class GateUtil {
             if (dhdTE instanceof DHDTE) {
                 if (dhdTE != null) {
                     if (debug) {
-                        System.err.println("Found SGBaseTE at: " + dhdTE.getPos());
+                        System.err.println("Found DHDTE at: " + dhdTE.getPos());
                     }
                     return dhdTE;
                 }
@@ -48,7 +48,7 @@ public class GateUtil {
         }
 
         if (debug) {
-            System.err.println("Failed to find SGBaseTE.");
+            System.err.println("Failed to find DHDTE.");
         }
         return null;
     }

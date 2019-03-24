@@ -1043,7 +1043,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         boolean accessSystemAcceptIncoming = true;
 
         if (targetGate.defaultAllowIncoming) {
-            if (!targetGate.allowOutgoingAddress(this.homeAddress)) {
+            if (!targetGate.allowIncomingAddress(this.homeAddress)) {
                 accessSystemAcceptIncoming = false;
             }
         } else {
@@ -1075,7 +1075,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         //Reset this value:
         if (!this.requiresNoPower) {
             energyToOpen = energyPerFuelItem / gateOpeningsPerFuelItem;
-            System.out.println("EnergyToOpen: " + energyToOpen);
+            if (debugEnergyUse) {
+                System.out.println("EnergyToOpen: " + energyToOpen);
+            }
         } else {
             energyToOpen = 0;
         }
@@ -1218,7 +1220,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     //return this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().map(GateAccessData::hasOutgoingAccess).orElse(false);
 
-    public boolean allowOutgoingAddress(String address) {
+    public boolean allowOutgoingAddress(String inputRawAddress) {
+        if (inputRawAddress.length() == 9) {
+            inputRawAddress = SGAddressing.formatAddress(inputRawAddress, "-", "-");
+        }
+        final String address = inputRawAddress;
         if (this.gateAccessData != null && this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().isPresent()) {
             GateAccessData gateAccessEntry = this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().get();
             return gateAccessEntry.hasOutgoingAccess();
@@ -1233,9 +1239,15 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    public boolean allowIncomingAddress(String address) {
+    public boolean allowIncomingAddress(String inputRawAddress) {
+        if (inputRawAddress.length() == 9) {
+            inputRawAddress = SGAddressing.formatAddress(inputRawAddress, "-", "-");
+        }
+        final String address = inputRawAddress;
+
         if (this.gateAccessData != null && this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().isPresent()) {
             GateAccessData gateAccessEntry = this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().get();
+            System.out.println("Found address: " + address + " | " + gateAccessEntry.hasIncomingAccess());
             return gateAccessEntry.hasIncomingAccess();
         }
         return true;
@@ -2429,7 +2441,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     case Disconnecting:
                         numEngagedChevrons = 0;
                         enterState(SGState.Idle, 0);
-                        System.out.println("Address: " + this.homeAddress + " | " + this.hasIrisUpgrade + " | " + this.returnToPreviousIrisState + " | " + this.wasIrisClosed);
                         if (this.hasIrisUpgrade && this.returnToPreviousIrisState && this.wasIrisClosed) {
                             this.closeIris();
                             // Note: this is fired at both the origin and destination gates.

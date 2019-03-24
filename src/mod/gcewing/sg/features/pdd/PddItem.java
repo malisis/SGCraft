@@ -5,6 +5,7 @@ import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
 import gcewing.sg.SGCraft;
 import gcewing.sg.features.pdd.network.PddNetworkHandler;
 import gcewing.sg.network.GuiNetworkHandler;
+import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.GateUtil;
 import gcewing.sg.util.SGState;
@@ -54,6 +55,17 @@ public class PddItem extends Item {
             }
 
             TileEntity localGateTE = GateUtil.locateLocalGate(worldIn, new BlockPos(player.posX, player.posY, player.posZ), 6, false);
+
+            if (!(localGateTE instanceof SGBaseTE)) {
+                TileEntity dhdBaseTE = GateUtil.locateDHD(worldIn,new BlockPos(player.posX, player.posY, player.posZ), 6, false);
+                if (dhdBaseTE instanceof DHDTE) {
+                    DHDTE dhd = (DHDTE) dhdBaseTE;
+                    if (dhd.isLinkedToStargate) {
+                        localGateTE = dhd.getLinkedStargateTE();
+                    }
+                }
+            }
+
             if (localGateTE instanceof SGBaseTE) {
                 SGBaseTE localGate = (SGBaseTE) localGateTE;
 

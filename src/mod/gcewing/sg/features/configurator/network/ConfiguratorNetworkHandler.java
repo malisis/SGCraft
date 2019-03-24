@@ -207,7 +207,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
             te.setAllowAccessToIrisController(playerName, allowIris);
             te.setAllowAccessAdmin(playerName, allowAdmin);
 
-            te.markForUpdate();
+            te.markChanged();
         }
     }
 

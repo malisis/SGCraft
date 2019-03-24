@@ -16,6 +16,7 @@ import com.google.common.eventbus.Subscribe;
 import gcewing.sg.SGCraft;
 import gcewing.sg.features.pdd.AddressData;
 import gcewing.sg.features.pdd.network.PddNetworkHandler;
+import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.tileentity.data.GateAccessData;
 import gcewing.sg.util.GateUtil;
@@ -85,7 +86,18 @@ public class PddScreen extends BasicScreen {
 
         this.guiscreenBackground = false;
         Keyboard.enableRepeatEvents(true);
-        final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
+        TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
+
+        if (!(localGateTE instanceof SGBaseTE)) {
+            TileEntity dhdBaseTE = GateUtil.locateDHD(world,new BlockPos(player.posX, player.posY, player.posZ), 6, false);
+            if (dhdBaseTE instanceof DHDTE) {
+                DHDTE dhd = (DHDTE) dhdBaseTE;
+                if (dhd.isLinkedToStargate) {
+                    localGateTE = dhd.getLinkedStargateTE();
+                }
+            }
+        }
+
         if (localGateTE instanceof SGBaseTE) {
             localGate = (SGBaseTE) localGateTE;
         }

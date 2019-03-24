@@ -174,7 +174,13 @@ public class GateAddressAccessScreen extends BasicScreen {
 
         this.addAddressButton = new UIButtonBuilder(this)
                 .text(TextFormatting.GREEN + "+")
-                .onClick(() -> new GateAddressAccessEntryScreen(this, player, localGate,"", "Address Here", 1).display())
+                .onClick(() -> {
+                    if (!(localGate.getGateAccessData() != null && localGate.getGateAccessData().stream().filter(g -> g.getAddress().equalsIgnoreCase(SGAddressing.formatAddress(localGate.homeAddress, "-", "-"))).findFirst().isPresent())) {
+                        new GateAddressAccessEntryScreen(this, player, localGate, "", SGAddressing.formatAddress(localGate.homeAddress, "-", "-"), 1).display();
+                    } else {
+                        new GateAddressAccessEntryScreen(this, player, localGate, "", "Address Here", 1).display();
+                    }
+                })
                 .anchor(Anchor.TOP | Anchor.LEFT)
                 .position(this.addressContainer.getWidth() + 17, 40)
                 //.visible(this.canAdd)

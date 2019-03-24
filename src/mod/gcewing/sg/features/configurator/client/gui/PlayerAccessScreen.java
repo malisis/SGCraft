@@ -310,7 +310,7 @@ public class PlayerAccessScreen extends BasicScreen {
     @Subscribe
     public void onListChange(BasicList.SelectEvent<PlayerAccessData> event) {
         boolean firstClick = (event.getOldValue() == null);
-        if (localGate.getGateAccessData().size() > 0) {
+        if (localGate.getPlayerAccessData().size() > 0) {
             this.allowAccessCheckbox.setChecked(localGate.allowGateAccess(event.getNewValue().getPlayerName()));
             this.denyAccessCheckbox.setChecked(!localGate.allowGateAccess(event.getNewValue().getPlayerName()));
             this.allowIrisControllerCheckbox.setChecked(localGate.allowAccessToIrisController(event.getNewValue().getPlayerName()));

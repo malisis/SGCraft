@@ -3,6 +3,7 @@ package gcewing.sg.features.gdo.client.gui;
 import com.google.common.eventbus.Subscribe;
 import gcewing.sg.features.gdo.network.GdoNetworkHandler;
 import gcewing.sg.network.GuiNetworkHandler;
+import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.util.IrisState;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.network.SGChannel;
@@ -67,6 +68,17 @@ public class GdoScreen extends BasicScreen {
         Keyboard.enableRepeatEvents(true);
 
         TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
+
+        if (!(localGateTE instanceof SGBaseTE)) {
+            TileEntity dhdBaseTE = GateUtil.locateDHD(world,new BlockPos(player.posX, player.posY, player.posZ), 6, false);
+            if (dhdBaseTE instanceof DHDTE) {
+                DHDTE dhd = (DHDTE) dhdBaseTE;
+                if (dhd.isLinkedToStargate) {
+                    localGateTE = dhd.getLinkedStargateTE();
+                }
+            }
+        }
+
         if (localGateTE instanceof SGBaseTE) {
             localGate = (SGBaseTE) localGateTE;
             if (!localGate.isMerged) { // Block GDO usage when gate is not merged.

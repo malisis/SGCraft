@@ -73,7 +73,11 @@ public class GateAddressAccessEntryScreen extends BasicScreen {
         addressLabel.setPosition(15, 10, Anchor.LEFT | Anchor.TOP);
 
         this.addressTextField = new UITextField(this, "", false);
-        this.addressTextField.setText(this.oldAddress);
+        if (this.oldAddress.isEmpty()) {
+            this.addressTextField.setText(this.newAddress);
+        } else {
+            this.addressTextField.setText(this.oldAddress);
+        }
         this.addressTextField.setSize(80, 0);
         this.addressTextField.setPosition(addressLabel.getX() + addressLabel.getWidth() + 10, addressLabel.getY() - 1, Anchor.LEFT | Anchor.TOP);
         this.addressTextField.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(false).build());

@@ -32,7 +32,7 @@ public final class AddressNameRegistry {
             final ConfigurationNode node = loader.createEmptyNode(ConfigurationOptions.defaults());
             // Simply writing out default template, don't mind me
             node.getNode(ADDRESSES_NODE, "ABCD-EFG-HI", "name").setValue("Descriptive Name Here");
-            node.getNode(ADDRESSES_NODE, "ABCD-EFG-HI", "locked").setValue(true);
+            node.getNode(ADDRESSES_NODE, "ABCD-EFG-HI", "locked").setValue(false);
             loader.save(node);
         }
 

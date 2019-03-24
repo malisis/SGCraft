@@ -109,7 +109,6 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.secondsToStayOpen = new UITextField(this, "", false);
         this.secondsToStayOpen.setSize(45, 0);
-        this.secondsToStayOpen.setEditable(this.isAdmin);
         this.secondsToStayOpen.setPosition(-10, secondsToStayOpenLabel.getY(), Anchor.RIGHT | Anchor.TOP);
         this.secondsToStayOpen.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(false).build());
         this.secondsToStayOpen.setFilter(s -> {
@@ -128,7 +127,6 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.gateRotationSpeed = new UITextField(this, "", false);
         this.gateRotationSpeed.setSize(45, 0);
-        this.gateRotationSpeed.setEditable(this.isAdmin);
         this.gateRotationSpeed.setPosition(-10, gateRotationSpeedLabel.getY(), Anchor.RIGHT | Anchor.TOP);
         this.gateRotationSpeed.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(false).build());
         this.gateRotationSpeed.setFilter(s -> {
@@ -147,7 +145,6 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.energyBufferSize = new UITextField(this, "", false);
         this.energyBufferSize.setSize(45, 0);
-        this.energyBufferSize.setEditable(this.isAdmin);
         this.energyBufferSize.setPosition(-10, energyBufferMaxSizeLabel.getY(), Anchor.RIGHT | Anchor.TOP);
         this.energyBufferSize.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(false).build());
         this.energyBufferSize.setFilter(s -> {
@@ -166,7 +163,6 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.energyPerNaquadah = new UITextField(this, "", false);
         this.energyPerNaquadah.setSize(45, 0);
-        this.energyPerNaquadah.setEditable(this.isAdmin);
         this.energyPerNaquadah.setPosition(-10, energyPerItemLabel.getY(), Anchor.RIGHT | Anchor.TOP);
         this.energyPerNaquadah.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(false).build());
         this.energyPerNaquadah.setFilter(s -> {
@@ -185,7 +181,6 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.gateOpeningsPerNaquadah = new UITextField(this, "", false);
         this.gateOpeningsPerNaquadah.setSize(45, 0);
-        this.gateOpeningsPerNaquadah.setEditable(this.isAdmin);
         this.gateOpeningsPerNaquadah.setPosition(-10, energyPerOpeningLabel.getY(), Anchor.RIGHT | Anchor.TOP);
         this.gateOpeningsPerNaquadah.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(false).build());
         this.gateOpeningsPerNaquadah.setFilter(s -> {
@@ -204,7 +199,6 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.distanceMultiplier = new UITextField(this, "", false);
         this.distanceMultiplier.setSize(45, 0);
-        this.distanceMultiplier.setEditable(this.isAdmin);
         this.distanceMultiplier.setPosition(-10, distanceFactorMultiplierLabel.getY(), Anchor.RIGHT | Anchor.TOP);
         this.distanceMultiplier.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(false).build());
         this.distanceMultiplier.setFilter(s -> {
@@ -223,7 +217,6 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.dimensionalMultiplier = new UITextField(this, "", false);
         this.dimensionalMultiplier.setSize(45, 0);
-        this.dimensionalMultiplier.setEditable(this.isAdmin);
         this.dimensionalMultiplier.setPosition(-10, interDimensionalMultiplierLabel.getY(), Anchor.RIGHT | Anchor.TOP);
         this.dimensionalMultiplier.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(false).build());
         this.dimensionalMultiplier.setFilter(s -> {
