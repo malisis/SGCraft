@@ -13,16 +13,12 @@ import gcewing.sg.features.zpm.ZPMItem;
 import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
 import net.minecraft.block.BlockChest;
-import net.minecraft.block.BlockColored;
-import net.minecraft.block.BlockSandStone;
-import net.minecraft.block.BlockStairs;
 import net.minecraft.block.BlockStoneSlab;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntityChest;
@@ -36,13 +32,14 @@ import net.minecraftforge.fml.common.registry.VillagerRegistry;
 
 import java.util.Random;
 
-public class FeatureUnderDesertPyramid extends StructureComponent {
+public class FeatureJungleTemple extends StructureComponent {
 
     StructureComponent base;
     boolean generateStructure = false;
     boolean generateChevronUpgrade = false;
     boolean generateZpmChest = false;
     boolean taintedZpm = false;
+    BlockPos centerPos = null;
     int pass = 0;
 
     @Override
@@ -51,28 +48,30 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
     @Override
     protected void writeStructureToNBT(NBTTagCompound compound) {}
 
-    public FeatureUnderDesertPyramid() {
+    public FeatureJungleTemple() {
         //System.out.printf("SGCraft: FeatureUnderDesertPyramid instantiated with no arguments\n");
     }
 
-    public FeatureUnderDesertPyramid(StructureComponent base) {
+    public FeatureJungleTemple(StructureComponent base) {
         super(0);
         this.base = base;
         Random rand = new Random();
-        generateStructure = rand.nextInt(100) <= FeatureGeneration.pyramidAddonChance;
-        generateChevronUpgrade = rand.nextInt(100) <= FeatureGeneration.pyramidChevronUpgradeChance;
-        generateZpmChest = rand.nextInt(100) <= FeatureGeneration.pyramidZpmChestChance;
+        generateStructure = rand.nextInt(100) <= FeatureGeneration.jungleAddonChance;
+        generateChevronUpgrade = rand.nextInt(100) <= FeatureGeneration.jungleChevronUpgradeChance;
+        generateZpmChest = rand.nextInt(100) <= FeatureGeneration.jungleZpmChestChance;
         taintedZpm = rand.nextInt(100) <= 10;
 
         if (FeatureGeneration.debugStructures) {
-            //System.out.println("SGCraft: Creating FeatureUnderDesertPyramid with GenerateStructure: " + generateStructure);
+            //System.out.println("SGCraft: Creating FeatureJungleTemple with GenerateStructure: " + generateStructure);
         }
 
         StructureBoundingBox baseBox = base.getBoundingBox();
         BlockPos boxCenter = new BlockPos(baseBox.minX + (baseBox.maxX - baseBox.minX + 1) / 2, baseBox.minY + (baseBox.maxY - baseBox.minY + 1) / 2, baseBox.minZ + (baseBox.maxZ - baseBox.minZ + 1) / 2);
-        int cx = boxCenter.getX();
+        int cx = boxCenter.getX()-15;
         int cz = boxCenter.getZ();
-        int bottom = baseBox.minY - 7;
+        int bottom = baseBox.minY;
+        centerPos = boxCenter;
+
         boundingBox = new StructureBoundingBox(cx - 5, bottom, cz - 5, cx + 5, bottom + 7, cz + 8);
         setCoordBaseMode(EnumFacing.SOUTH);
     }
@@ -84,51 +83,29 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
 
     protected boolean addAugmentationParts(World world, Random rand, StructureBoundingBox clip) {
         if (FeatureGeneration.debugStructures) {
-            //System.out.printf("SGCraft: FeatureUnderDesertPyramid.addComponentParts in %s clipped to %s\n", getBoundingBox(), clip);
+            //System.out.printf("SGCraft: FeatureJungleTemple.addComponentParts in %s clipped to %s\n", getBoundingBox(), clip);
         }
         if (base == null) {
-            //System.out.printf("SGCraft: FeatureUnderDesertPyramid.addComponentParts: no base\n");
+            //System.out.printf("SGCraft: FeatureJungleTemple.addComponentParts: no base\n");
             return false;
         }
         StructureBoundingBox box = getBoundingBox();
+
+        BlockPos boxCenter = new BlockPos(box.minX + (box.maxX - box.minX + 1) / 2, box.minY + (box.maxY - box.minY + 1) / 2, box.minZ + (box.maxZ - box.minZ + 1) / 2);
+        System.out.println("New Y: " + world.getTopSolidOrLiquidBlock(boxCenter));
+        BlockPos newYPos = world.getTopSolidOrLiquidBlock(boxCenter);
+
+        clip.minY = newYPos.getY()-1;
+        box.minY = newYPos.getY()-1;
+
         IBlockState air = Blocks.AIR.getDefaultState();
-        IBlockState sandstone = Blocks.SANDSTONE.getDefaultState().withProperty(BlockSandStone.TYPE, BlockSandStone.EnumType.SMOOTH);
-        IBlockState orange = Blocks.STAINED_HARDENED_CLAY.getDefaultState().withProperty(BlockColored.COLOR, EnumDyeColor.ORANGE);
-        IBlockState stairs = Blocks.SANDSTONE_STAIRS.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.EAST);
-        IBlockState ladder = Blocks.LADDER.getDefaultState();
         IBlockState dhd = SGCraft.sgControllerBlock.getDefaultState().withProperty(BaseOrientation.Orient4WaysByState.FACING, EnumFacing.NORTH);
         IBlockState sgBase = SGCraft.sgBaseBlock.getDefaultState().withProperty(BaseOrientation.Orient4WaysByState.FACING, EnumFacing.NORTH);
         IBlockState[] sgRings = new IBlockState[2];
         sgRings[0] = SGCraft.sgRingBlock.getDefaultState();
         sgRings[1] = sgRings[0].withProperty(SGRingBlock.VARIANT, 1);
         IBlockState chest = Blocks.CHEST.getDefaultState().withProperty(BlockChest.FACING, EnumFacing.NORTH);
-        //System.out.printf("SGCraft: FeatureUnderDesertPyramid.addComponentParts: " +
-        //  "Filling (%d,%d,%d)-(%d,%d,%d)\n", box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
-        // Main chamber
-        fillWithBlocks(world, clip, 0, 0, 0, 10, 7, 10, sandstone, air, false);
-        // Stairwell
-        fillWithBlocks(world, clip, 4, 0, 11, 13, 7, 13, sandstone, air, false);
-        // Stairwell entrance
-        fillWithAir(world, clip, 12, 7, 12, 12, 9, 12);
-        // Stairwell exit
-        fillWithAir(world, clip, 5, 1, 10, 5, 2, 11);
-        // Stairs
-        setBlockState(world, sandstone, 12, 4, 12, clip);
-        for (int i = 0; i < 4; i++)
-            setBlockState(world, stairs, 8+i, 1+i, 12, clip);
-        for (int i = 0; i < 3; i++)
-            setBlockState(world, ladder, 12, 5+i, 12, clip);
-        // Wall decorations
-        fillWithBlocks(world, clip, 0, 3, 0, 10, 3, 10, orange, air, true);
-        fillWithBlocks(world, clip, 3, 4, 10, 7, 4, 10, orange, air, true);
-        // Floor decorations
-        fillWithBlocks(world, clip, 3, 0, 4, 3, 0, 6, orange, air, true);
-        fillWithBlocks(world, clip, 7, 0, 4, 7, 0, 6, orange, air, true);
-        fillWithBlocks(world, clip, 4, 0, 3, 6, 0, 3, orange, air, true);
-        fillWithBlocks(world, clip, 4, 0, 7, 6, 0, 7, orange, air, true);
-        setBlockState(world, orange, 5, 0, 5, clip);
-        // Door frame
-        fillWithBlocks(world, clip, 4, 1, 10, 6, 3, 10, sandstone, air, true);
+
         // Stargate
         for (int i = -2; i <= 2; i++)
             for (int j = 0; j <= 4; j++) {
@@ -142,13 +119,13 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
                 else {
                     id = air;
                 }
-                setBlockState(world, id, 5+i, j, 2, clip);
+                setBlockState(world, id, 5+i, 1+j, 2, clip);
             }
 
-        int baseX = box.minX + 5, baseY = box.minY, baseZ = box.minZ + 2;
+        int baseX = box.minX + 5, baseY = box.minY + 1, baseZ = box.minZ + 2;
         SGBaseTE te = (SGBaseTE)world.getTileEntity(new BlockPos(baseX, baseY, baseZ));
         if (FeatureGeneration.debugStructures) {
-            System.out.println("Pyramid Stargate built at: " + baseX + "/" + baseY + "/" + baseZ);
+            System.out.println("Jungle Temple Stargate built at: " + baseX + "/" + baseY + "/" + baseZ);
         }
 
         if (te != null) {
@@ -156,22 +133,23 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
             if (generateChevronUpgrade) {
                 te.hasChevronUpgrade = true;
                 if (FeatureGeneration.debugStructures) {
-                    System.out.println("Pyramid Stargate at: [" + baseX + "/" + baseY + "/" + baseZ + "] granted chevron upgrade.");
+                    System.out.println("Jungle Temple Stargate at: [" + baseX + "/" + baseY + "/" + baseZ + "] granted chevron upgrade.");
                 }
             }
 
             // Set sandstone base so Stargate doesn't appear to float.
-            ItemStack sandStoneSlab = new ItemStack(Blocks.SANDSTONE, 1);
-            te.getInventory().setInventorySlotContents(0, sandStoneSlab.copy());
-            te.getInventory().setInventorySlotContents(1, sandStoneSlab.copy());
-            te.getInventory().setInventorySlotContents(2, sandStoneSlab.copy());
-            te.getInventory().setInventorySlotContents(3, sandStoneSlab.copy());
-            te.getInventory().setInventorySlotContents(4, sandStoneSlab.copy());
+            ItemStack grassBlock = new ItemStack(Blocks.GRASS, 1, 0);
+            te.getInventory().setInventorySlotContents(0, grassBlock.copy());
+            te.getInventory().setInventorySlotContents(1, grassBlock.copy());
+            te.getInventory().setInventorySlotContents(2, grassBlock.copy());
+            te.getInventory().setInventorySlotContents(3, grassBlock.copy());
+            te.getInventory().setInventorySlotContents(4, grassBlock.copy());
+            te.markChanged();
         }
 
         // DHD
         setBlockState(world, dhd, 5, 1, 7, clip);
-        int dhdX = box.minX + 5, dhdY = box.minY +1, dhdZ = box.minZ + 7;
+        int dhdX = box.minX + 5, dhdY = box.minY+1, dhdZ = box.minZ + 7;
         DHDTE dhdte = (DHDTE)world.getTileEntity(new BlockPos(dhdX, dhdY, dhdZ));
         if (dhdte != null) {
             ItemStack naquadahPieces = new ItemStack(SGCraft.naquadah, 3);
@@ -218,7 +196,7 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
             }
         }
 
-        if (FeatureGeneration.pyramidSpawnTokra && pass == 0) { // pass = 0 prevents more than 1 entity from spawning.
+        if (FeatureGeneration.jungleSpawnTokra && pass == 0) { // pass = 0 prevents more than 1 entity from spawning.
             EntityVillager entityvillager = new EntityVillager(world);
             entityvillager.setLocationAndAngles((double)chestX + 0.5D, (double)chestY + 2, (double)chestZ + 0.5D, 0.0F, 0.0F);
             entityvillager.setProfession(VillagerRegistry.getId(SGCraft.tokraProfession));

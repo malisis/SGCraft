@@ -38,6 +38,9 @@ import gcewing.sg.features.zpm.ZpmConsole;
 import gcewing.sg.features.zpm.ZpmConsoleContainer;
 import gcewing.sg.features.zpm.ZpmConsoleTE;
 import gcewing.sg.generator.FeatureGeneration;
+import gcewing.sg.generator.FeatureIgloo;
+import gcewing.sg.generator.FeatureJungleTemple;
+import gcewing.sg.generator.FeatureSwampHut;
 import gcewing.sg.generator.FeatureUnderDesertPyramid;
 import gcewing.sg.interfaces.IIntegration;
 import gcewing.sg.interfaces.SoundSource;
@@ -445,6 +448,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             GameRegistry.registerWorldGenerator(naquadahOreGenerator, 0);
         }
         MapGenStructureIO.registerStructureComponent(FeatureUnderDesertPyramid.class, "SGCraft:FeatureUnderDesertPyramid");
+        MapGenStructureIO.registerStructureComponent(FeatureSwampHut.class, "SGCraft:FeatureSwampHut");
+        MapGenStructureIO.registerStructureComponent(FeatureIgloo.class, "SGCraft:FeatureIgloo");
+        MapGenStructureIO.registerStructureComponent(FeatureJungleTemple.class, "SGCraft:FeatureJungleTemple");
     }
 
     @Override //[VILL]
