@@ -1129,7 +1129,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             return diallingFailure(player, "insufficientEnergy");
         }
 
-        if (this.hasChevronUpgrade) {
+        if (this.hasIrisUpgrade) {
             this.wasIrisClosed = this.irisIsClosed();
         }
 
@@ -2426,7 +2426,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     case Disconnecting:
                         numEngagedChevrons = 0;
                         enterState(SGState.Idle, 0);
-
+                        System.out.println("Address: " + this.homeAddress + " | " + this.hasIrisUpgrade + " | " + this.returnToPreviousIrisState + " | " + this.wasIrisClosed);
                         if (this.hasIrisUpgrade && this.returnToPreviousIrisState && this.wasIrisClosed) {
                             this.closeIris();
                             // Note: this is fired at both the origin and destination gates.
