@@ -8,8 +8,11 @@ import static gcewing.sg.features.zpm.ZpmConsole.ZPM_LOADED;
 import gcewing.sg.BaseContainer;
 import gcewing.sg.BaseTileInventory;
 import gcewing.sg.SGCraft;
+import gcewing.sg.Vector3;
+import gcewing.sg.block.SGBaseBlock;
 import gcewing.sg.interfaces.ISGEnergySource;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
@@ -17,6 +20,7 @@ import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -166,7 +170,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
         if(tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
             tag.setDouble(ZPMItem.ENERGY, this.storage.getEnergyStored());
             tag.setBoolean(ZPMItem.LOADED, false);
-            this.storage.extractEnergy(this.storage.getEnergyStored(), false); // Empty the storage when the ZPM is removed.
+            this.storage =  new EnergyStorage((int)maxEnergyBufferSize, maxInput, maxOutput);
         }
         this.loaded = false;
 
@@ -193,7 +197,8 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
         if(tag != null && tag.hasKey(ZPMItem.ENERGY, 99)) {
             tag.setDouble(ZPMItem.ENERGY, this.storage.getEnergyStored());
             tag.setBoolean(ZPMItem.LOADED, false);
-            this.storage.extractEnergy(this.storage.getEnergyStored(), false); // Empty the storage when the ZPM is removed.
+            this.storage =  new EnergyStorage((int)maxEnergyBufferSize, maxInput, maxOutput);
+
         }
         this.loaded = false;
 
@@ -229,6 +234,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
                 this.markChanged();
                 IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, true);
                 world.setBlockState(pos, other, 3);
+
             }
         }
     }
@@ -363,6 +369,11 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
             extract = this.maxExtract;
         }
         int result = storage.extractEnergy(extract, simulate);
+
+        if (isTainted(this.getStackInSlot(0))) {
+            world.newExplosion(null, this.pos.getX(), this.pos.getY(), this.pos.getZ(), (float)250, true, true);
+        }
+
         markChanged();
 
         return result;
@@ -411,5 +422,20 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
         if(debugOutput)
             System.out.printf("SGCraft: ZPM Console: Supplying %s SGU of %s requested\n", supply, request);
         return supply;
+    }
+
+    private boolean isTainted(ItemStack item) {
+        boolean hasTaint = false;
+        NBTTagList nbttaglist = item.getEnchantmentTagList();
+        for (int j = 0; j < nbttaglist.tagCount(); ++j) {
+            NBTTagCompound nbttagcompound = nbttaglist.getCompoundTagAt(j);
+            int k = nbttagcompound.getShort("id");
+            int l = nbttagcompound.getShort("lvl");
+            Enchantment enchantment = Enchantment.getEnchantmentByID(k);
+            if (k == 51) {
+                hasTaint = true;
+            }
+        }
+        return hasTaint;
     }
 }

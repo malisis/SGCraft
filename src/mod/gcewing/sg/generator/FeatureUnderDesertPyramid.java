@@ -17,6 +17,7 @@ import net.minecraft.block.BlockSandStone;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.block.BlockStoneSlab;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.IEntityLivingData;
 import net.minecraft.entity.passive.EntityVillager;
 import net.minecraft.init.Blocks;
@@ -40,6 +41,7 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
     boolean generateStructure = false;
     boolean generateChevronUpgrade = false;
     boolean generateZpmChest = false;
+    boolean taintedZpm = false;
     int pass = 0;
 
     @Override
@@ -59,6 +61,8 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
         generateStructure = rand.nextInt(100) <= FeatureGeneration.structureAugmentationChance;
         generateChevronUpgrade = rand.nextInt(100) <= FeatureGeneration.chevronUpgradeChance;
         generateZpmChest = rand.nextInt(100) <= FeatureGeneration.zpmChestChance;
+        taintedZpm = rand.nextInt(100) <= 10;
+
         if (FeatureGeneration.debugStructures) {
             System.out.println("SGCraft: Creating FeatureUnderDesertPyramid with GenerateStructure: " + generateStructure);
         }
@@ -198,6 +202,9 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
                         zpm.setTagCompound(tag);
                         tag.setDouble(ZPMItem.ENERGY, Integer.MAX_VALUE);
                         tag.setBoolean(ZPMItem.LOADED, false);
+                    }
+                    if (taintedZpm) {
+                        zpm.addEnchantment(Enchantment.getEnchantmentByID(51), 1);
                     }
                     chestTE.getSingleChestHandler().insertItem(0, zpm, false);
                 }
