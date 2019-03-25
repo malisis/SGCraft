@@ -440,6 +440,17 @@ public class PddScreen extends BasicScreen {
         }
     }
 
+    private void dialRandom() {
+        // Todo: figure out how to properly use this.
+        final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
+        if (localGateTE instanceof SGBaseTE) {
+            localGate = (SGBaseTE) localGateTE;
+        }
+        if (localGate != null) {
+            PddNetworkHandler.sendPddInputToServer(localGate, 3, localGate.homeAddress, ""); // Dials specified address based on Gates configuration, rotation vs. immediate dial.
+        }
+    }
+
     private void immediateDialSelectedAddress() {
         final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
         if (localGateTE instanceof SGBaseTE) {

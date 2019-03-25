@@ -11,6 +11,7 @@ import static gcewing.sg.BaseOrientation.Orient4WaysByState.FACING;
 import gcewing.sg.BaseBlockUtils;
 import gcewing.sg.BaseConfiguration;
 import gcewing.sg.BaseOrientation;
+import gcewing.sg.generator.GeneratorAddressRegistry;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.SGCraft;
 import gcewing.sg.util.SGState;
@@ -295,6 +296,7 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
                 goBang = true;
             }
             te.disconnect();
+            GeneratorAddressRegistry.removeAddress(world, te.homeAddress); // This will remove the address from the generation registry.
             te.unlinkFromController();
             te.setMerged(false);
             BaseBlockUtils.markBlockForUpdate(world, pos);

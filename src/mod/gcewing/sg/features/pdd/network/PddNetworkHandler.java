@@ -5,6 +5,7 @@ import gcewing.sg.SGCraft;
 import gcewing.sg.features.pdd.AddressData;
 import gcewing.sg.features.pdd.client.gui.PddEntryScreen;
 import gcewing.sg.features.pdd.client.gui.PddScreen;
+import gcewing.sg.generator.GeneratorAddressRegistry;
 import gcewing.sg.network.SGChannel;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.SGAddressing;
@@ -14,6 +15,8 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
+
+import java.util.Random;
 
 public class PddNetworkHandler extends SGChannel {
 
@@ -95,7 +98,15 @@ public class PddNetworkHandler extends SGChannel {
                     }
                 }
             }
-            // Note: 3 is not used currently.
+
+            if (setting == 3) { // Random Address from Generation Registry.
+                localGate.disconnect(player);
+                GeneratorAddressRegistry.randomAddress(localGate.getWorld(), localGate.homeAddress, new Random()).ifPresent(address -> {
+                    localGate.connect(address, player, false);
+                });
+
+            }
+
             if (setting == 4) {
                 if (localGate.allowGateAccess(player.getName()) || isPermissionsAdmin) {
                     if (localGate.state == SGState.Idle) {

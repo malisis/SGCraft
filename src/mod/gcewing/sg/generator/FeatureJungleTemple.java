@@ -145,6 +145,7 @@ public class FeatureJungleTemple extends StructureComponent {
             te.getInventory().setInventorySlotContents(3, grassBlock.copy());
             te.getInventory().setInventorySlotContents(4, grassBlock.copy());
             te.markChanged();
+            GeneratorAddressRegistry.addAddress(te.getWorld(), te.homeAddress);
         }
 
         // DHD

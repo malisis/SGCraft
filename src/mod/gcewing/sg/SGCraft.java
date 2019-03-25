@@ -6,7 +6,6 @@
 
 package gcewing.sg;
 
-import com.flowpowered.noise.module.combiner.Add;
 import gcewing.sg.block.DHDBlock;
 import gcewing.sg.block.NaquadahBlock;
 import gcewing.sg.block.NaquadahOreBlock;
@@ -42,6 +41,7 @@ import gcewing.sg.generator.FeatureIgloo;
 import gcewing.sg.generator.FeatureJungleTemple;
 import gcewing.sg.generator.FeatureSwampHut;
 import gcewing.sg.generator.FeatureUnderDesertPyramid;
+import gcewing.sg.generator.GeneratorAddressRegistry;
 import gcewing.sg.interfaces.IIntegration;
 import gcewing.sg.interfaces.SoundSource;
 import gcewing.sg.item.SGChevronUpgradeItem;
@@ -321,6 +321,14 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 
             configurator = addItem(new ConfiguratorItem(), "configurator");
             new ConfiguratorNetworkHandler(Info.modID+"-configurator");
+        }
+
+        final ConfigurationNode rootNode;
+        try {
+            rootNode = GeneratorAddressRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "generator.yml"));
+            GeneratorAddressRegistry.populateAddresses(rootNode);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 

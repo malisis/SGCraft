@@ -13,7 +13,6 @@ import gcewing.sg.features.zpm.ZPMItem;
 import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
 import net.minecraft.block.BlockChest;
-import net.minecraft.block.BlockStoneSlab;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.IEntityLivingData;
@@ -149,6 +148,7 @@ public class FeatureIgloo extends StructureComponent {
             te.getInventory().setInventorySlotContents(4, snowBlock.copy());
             te.gateType = 2; // Pegasus Gate
             te.markChanged();
+            GeneratorAddressRegistry.addAddress(te.getWorld(), te.homeAddress);
         }
 
         // DHD
