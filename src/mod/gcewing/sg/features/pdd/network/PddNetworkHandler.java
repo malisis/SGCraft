@@ -67,7 +67,7 @@ public class PddNetworkHandler extends SGChannel {
         data.close();
     }
 
-    @ServerMessageHandler("PddInput") public void handlePddInputFromClient(EntityPlayer player, ChannelInput data) {
+    @ServerMessageHandler("PddInput") public void handlePddInputFromClient(EntityPlayer player, ChannelInput data) throws SGAddressing.AddressingError {
         BlockPos pos = readCoords(data);
         int setting = data.readInt();
         SGBaseTE localGate = SGBaseTE.at(player.world, pos);
@@ -99,12 +99,8 @@ public class PddNetworkHandler extends SGChannel {
                 }
             }
 
-            if (setting == 3) { // Random Address from Generation Registry.
-                localGate.disconnect(player);
-                GeneratorAddressRegistry.randomAddress(localGate.getWorld(), localGate.homeAddress, new Random()).ifPresent(address -> {
-                    localGate.connect(address, player, false);
-                });
-
+            if (setting == 3) {
+                // Reserved for testing purposes.
             }
 
             if (setting == 4) {
