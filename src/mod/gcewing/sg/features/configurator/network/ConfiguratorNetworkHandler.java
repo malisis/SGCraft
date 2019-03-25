@@ -90,7 +90,10 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
         if (SGCraft.hasPermission(player, "sgcraft.configurator") && te.allowAdminAccess(playerName) || isPermissionsAdmin) {
-            if (SGCraft.hasPermission(player, "sgcraft.configurator.secondsToStayOpen") || isPermissionsAdmin) te.secondsToStayOpen = secondsToStayOpen;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.secondsToStayOpen") || isPermissionsAdmin) {
+                te.secondsToStayOpen = secondsToStayOpen;
+                te.ticksToStayOpen = te.secondsToStayOpen * 20;
+            }
             if (SGCraft.hasPermission(player, "sgcraft.configurator.ringRotationSpeed") || isPermissionsAdmin) te.ringRotationSpeed = ringRotationSpeed;
             if (SGCraft.hasPermission(player, "sgcraft.configurator.maxEnergyBuffer") || isPermissionsAdmin) te.maxEnergyBuffer = maxEnergyBuffer;
             if (SGCraft.hasPermission(player, "sgcraft.configurator.energyPerFuelItem") || isPermissionsAdmin) te.energyPerFuelItem = energyPerFuelItem;

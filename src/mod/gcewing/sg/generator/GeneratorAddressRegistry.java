@@ -113,7 +113,7 @@ public final class GeneratorAddressRegistry {
         }
     }
 
-    public static Optional<String> randomAddress(final World world, final String homeAddress, final Random random) {
+    public static String randomAddress(final World world, final String homeAddress, final Random random) {
         checkNotNull(world);
         checkNotNull(random);
 
@@ -123,7 +123,7 @@ public final class GeneratorAddressRegistry {
         boolean removed = worldAddresses.removeIf(s -> s.equalsIgnoreCase(homeAddress));
 
         if (worldAddresses.isEmpty()) {
-            return Optional.empty();
+            return null;
         }
 
         final int max = worldAddresses.size();
@@ -135,12 +135,12 @@ public final class GeneratorAddressRegistry {
         while (iter.hasNext()) {
             final String address = iter.next();
             if (rIndex == index) {
-                return Optional.of(address);
+                return Optional.of(address).get();
             }
             index++;
         }
 
-        return Optional.empty();
+        return null;
     }
 
     private static void populateTemplate(final ConfigurationNode node) {

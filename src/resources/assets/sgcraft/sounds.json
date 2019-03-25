@@ -1,6 +1,7 @@
 {
 	"m_dial_fail": {"category": "ambient", "sounds": ["sgcraft:milkyway/dial_fail"]},
 	"p_dial_fail": {"category": "ambient", "sounds": ["sgcraft:pegasus/dial_fail"]},
+	"malfunction": {"category": "ambient", "sounds": ["sgcraft:malfunction"]},
 	"m_chevron_outgoing": {
 		"category": "ambient",
 		"sounds": [

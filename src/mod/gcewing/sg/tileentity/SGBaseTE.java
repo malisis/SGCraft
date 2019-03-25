@@ -17,6 +17,7 @@ import gcewing.sg.BaseConfiguration;
 import gcewing.sg.BaseTileInventory;
 import gcewing.sg.BaseUtils;
 import gcewing.sg.features.zpm.ZpmConsoleTE;
+import gcewing.sg.generator.GeneratorAddressRegistry;
 import gcewing.sg.tileentity.data.GateAccessData;
 import gcewing.sg.tileentity.data.PlayerAccessData;
 import gcewing.sg.util.SGAddressing;
@@ -45,6 +46,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLiving;
 import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.effect.EntityLightningBolt;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.entity.projectile.EntityArrow;
@@ -115,7 +117,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             m_gateRollSound,
             p_gateRollSound,
             eventHorizonSound,
-            teleportSound;
+            teleportSound,
+            malfunctionSound;
 
     public static void registerSounds(SGCraft mod) {
         m_dialFailSound = mod.newSound("m_dial_fail");
@@ -140,6 +143,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         p_gateRollSound = mod.newSound("p_gate_roll");
         eventHorizonSound = mod.newSound("event_horizon");
         teleportSound = mod.newSound("teleport");
+        malfunctionSound = mod.newSound("malfunction");
     }
 
     public final static String symbolChars = SGAddressing.symbolChars;
@@ -204,6 +208,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public int dialedDigit = 0;
     public String enteredAddress = "";
     public boolean errorState = false;
+    public boolean checkForMalfunction = false;
 
     public SGLocation connectedLocation;
     public boolean isInitiator, redstoneInput, loaded;
@@ -1143,6 +1148,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         targetGate.enterState(SGState.attemptToDial, 0); // Force remote gate immediate change state to help chunk stay loaded
         targetGate.startDiallingStargate(homeAddress, this, false, (this.chevronsLockOnDial && !ccInterface));
 
+        if (this.isInitiator) {
+            checkForMalfunction = true;
+        }
+
         return null;
     }
 
@@ -1373,6 +1382,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             connectedLocation = null;
             numEngagedChevrons = 0;
             isInitiator = false;
+            this.checkForMalfunction = false;
             markChanged();
         }
     }
@@ -1383,7 +1393,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             dialedDigit = 0;
             enteredAddress = "";
             connectedLocation = null;
-
+            checkForMalfunction = false;
             markChanged();
             if (state == SGState.Connected) {
                 enterState(SGState.Disconnecting, disconnectTime);
@@ -1439,6 +1449,25 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 }
             } else {
                 this.markChanged(); // need current state of server TE sent to client so thing stay in sync.
+            }
+        }
+    }
+
+    public void malfunction() throws SGAddressing.AddressingError {
+        String randomAddress = GeneratorAddressRegistry.randomAddress(world, this.homeAddress, new Random()).toUpperCase();
+        if (randomAddress != null) {
+            if (this.allowOutgoingAddress(randomAddress)) {
+                SGBaseTE malfunctionDestinationGate = SGAddressing.findAddressedStargate(randomAddress, world);
+                if (malfunctionDestinationGate != null) {
+                    if (malfunctionDestinationGate.allowIncomingAddress(this.homeAddress)) {
+                        this.getConnectedStargateTE().clearConnection();
+                        this.connectedLocation = new SGLocation(malfunctionDestinationGate);
+                        malfunctionDestinationGate.numEngagedChevrons = 7;
+                        malfunctionDestinationGate.connectedLocation = new SGLocation(this);
+                        SGCraft.playSound(this, malfunctionSound);
+                        malfunctionDestinationGate.enterState(SGState.Connected, 0);
+                    }
+                }
             }
         }
     }
@@ -2317,7 +2346,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             return irisState == IrisState.Opening;
         } else if (sound == irisCloseSound) {
             return irisState == IrisState.Closing;
-        } else if (sound == eventHorizonSound) {
+        } else if (sound == eventHorizonSound || sound == malfunctionSound) {
             return state == SGState.Connected;
         } else {
             return false;
@@ -2391,6 +2420,29 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                             } else {
                                 playSGSoundEffect(p_connectSound, 1F, 1F); // Play sound before gate actually opens.
                             }
+                        }
+                        break;
+
+                    case Connected:
+                        if (this.checkForMalfunction && isInitiator) {
+                            BlockPos rainCheckPos;
+                            if (this.gateType == 1) {
+                                rainCheckPos = new BlockPos(this.getPos().getX(), this.getY() + 5, this.getZ()); // Top of a vertical gate.
+                            } else {
+                                rainCheckPos = new BlockPos(this.getPos().getX(), this.getY(), this.getZ()); // Base block since its horizontal.
+                            }
+                            if (rainCheckPos != null && this.world.isRaining() && this.world.isRainingAt(rainCheckPos)) {
+                                Random rand = new Random();
+                                if(rand.nextInt(100) <= 5) {
+                                    try {
+                                        world.addWeatherEffect(new EntityLightningBolt(this.world, (double)this.pos.getX(), (double)this.pos.getY(), (double)this.pos.getZ(), true));
+                                        malfunction();
+                                    } catch (SGAddressing.AddressingError addressingError) {
+                                        addressingError.printStackTrace();
+                                    }
+                                }
+                            }
+                            checkForMalfunction = false;
                         }
                         break;
                 }
