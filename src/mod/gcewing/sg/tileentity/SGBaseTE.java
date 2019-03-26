@@ -1945,7 +1945,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             AxisAlignedBB box = t.box(p0, p1);
             List<Entity> ents = world.getEntitiesWithinAABB(Entity.class, box);
             for (Entity entity : ents) {
-                if (entity instanceof EntityFishHook  || entity instanceof EntityStargateIris) {
+                if (entity instanceof EntityFishHook || entity instanceof EntityStargateIris) {
                     continue;
                 }
                 if (!entity.isDead && entity.getRidingEntity() == null) {
@@ -2292,7 +2292,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         entity.motionZ = v.z;
     }
 
-    void updateIrisEntity() {
+    public void updateIrisEntity() {
         if (isMerged && hasIrisUpgrade) {
             if (!hasIrisEntity()) {
                 EntityStargateIris ent = new EntityStargateIris(this);

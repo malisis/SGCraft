@@ -53,7 +53,7 @@ message.sgcraft:insufficientPlayerAdminAccessPermission=Insufficient player admi
 message.sgcraft:insufficientPlayerAccessPermission=Insufficient player access permission
 message.sgcraft:accessSystemDeniedDestination=Unable to dial destination, gate address locked out via destination
 message.sgcraft:accessSystemDeniedOrigin=Unable to dial destination, gate address locked out to destination
-message.sgcraft:changesSaved=Changes Saved!t
+message.sgcraft:changesSaved=Changes Saved!
 message.sgcraft:gateLocationSaved=Gate location saved in configurator!
 message.sgcraft:configuratorLink=Link to Stargate created!
 
@@ -63,3 +63,4 @@ item.sgcraft:zpm.name=Zero Point Module
 item.sgcraft:gdo.name=Handheld GDO
 item.sgcraft:pdd.name=Personal Dialer Device
 item.sgcraft:configurator.name=Configurator
+item.sgcraft:tollan_phase_shift_device.name=Tollan Phase Shift Device
