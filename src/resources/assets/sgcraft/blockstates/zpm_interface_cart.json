@@ -21,6 +21,14 @@
             "east": {
                 "y": 90.0
             }
+        },
+        "zpm": {
+            "true": {
+                "model": "sgcraft:zpm_interface_cart_active"
+            },
+            "false": {
+                "model": "sgcraft:zpm_interface_cart"
+            }
         }
     }
 }

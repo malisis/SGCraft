@@ -419,13 +419,20 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             newRecipe("sgcontrollercrystal", sgControllerCrystal, 1, "roo", "odr", "oor", 'o', orangeDye, 'r', Items.REDSTONE, 'd', Items.DIAMOND);
         }
         if (config.getBoolean("recipes", "sgPowerUnit", true)) {
-            // Todo: this recipe makes no sense.
-            newRecipe("sgPowerUnit", sgPowerUnit, 1, "cgc", "gIg", "crc", 'c', "blockGold", 'g', "ingotGold", 'I', "blockIron", 'r', Items.REDSTONE);
+            newRecipe("sgPowerUnit", sgPowerUnit, 1, "rgr", "zIz", "InI", 'n', Blocks.EMERALD_BLOCK, 'z', sgCoreCrystal, 'r', Items.EMERALD, 'g', Blocks.GLASS_PANE, 'I', Blocks.IRON_BLOCK);
         }
 
         if (isModLoaded("malisiscore")) {
-            newRecipe("pdd", pdd, 1, "rcr", "nCn", "xbz", 'n', naquadah, 'z', sgCoreCrystal, 'x', sgControllerCrystal, 'r', Items.REDSTONE, 'b', Items.WRITABLE_BOOK, 'C', Items.CLOCK, 'c', Items.COMPASS);
-            newRecipe("gdo", gdo, 1, "rCr", "xLz", "nbn", 'n', naquadah, 'z', sgCoreCrystal, 'x', sgControllerCrystal, 'r', Items.REDSTONE, 'b', Items.WRITABLE_BOOK, 'C', Items.CLOCK, 'L', Blocks.LEVER);
+            if (config.getBoolean("recipes", "pdd", true)) {
+                newRecipe("pdd", pdd, 1, "rcr", "nCn", "xbz", 'n', naquadah, 'z', sgCoreCrystal, 'x', sgControllerCrystal, 'r', Items.REDSTONE, 'b', Items.WRITABLE_BOOK, 'C', Items.CLOCK, 'c', Items.COMPASS);
+            }
+            if (config.getBoolean("recipes", "gdo", true)) {
+                newRecipe("gdo", gdo, 1, "rCr", "xLz", "nbn", 'n', naquadah, 'z', sgCoreCrystal, 'x', sgControllerCrystal, 'r', Items.REDSTONE, 'b', Items.WRITABLE_BOOK, 'C', Items.CLOCK, 'L', Blocks.LEVER);
+            }
+        }
+
+        if (config.getBoolean("recipes", "zpmConsole", true)) {
+            newRecipe("zpmConsole", zpm_console, 1, "rgr", "xIz", "InI", 'n', Blocks.GOLD_BLOCK, 'z', sgCoreCrystal, 'x', sgControllerCrystal, 'r', Items.EMERALD, 'g', Blocks.GLASS_PANE, 'I', Blocks.IRON_BLOCK);
         }
 
         if (!isModLoaded("ic2")) {

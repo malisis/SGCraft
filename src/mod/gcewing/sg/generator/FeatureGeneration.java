@@ -64,28 +64,28 @@ public class FeatureGeneration {
         // Pyramids
         pyramidAddon = config.getBoolean("generaton", "pyramid_addon", pyramidAddon);
         pyramidAddonChance = config.getInteger("generaton", "pyramid_addon_chance", pyramidAddonChance);
-        pyramidZpmChestChance = config.getInteger("generaton", "pyramid_zpm_chest_change", pyramidZpmChestChance);
+        pyramidZpmChestChance = config.getInteger("generaton", "pyramid_zpm_chest_chance", pyramidZpmChestChance);
         pyramidChevronUpgradeChance = config.getInteger("generaton", "pyramid_chevron_upgrade_chance", pyramidChevronUpgradeChance);
         pyramidSpawnTokra = config.getBoolean("generaton", "pyramid_spawn_tokra", pyramidSpawnTokra);
 
         // Igloo
         iglooAddon = config.getBoolean("generaton", "igloo_addon", iglooAddon);
         iglooAddonChance = config.getInteger("generaton", "igloo_addon_chance", iglooAddonChance);
-        iglooZpmChestChance = config.getInteger("generaton", "igloo_zpm_chest_change", iglooZpmChestChance);
+        iglooZpmChestChance = config.getInteger("generaton", "igloo_zpm_chest_chance", iglooZpmChestChance);
         iglooChevronUpgradeChance = config.getInteger("generaton", "igloo_chevron_upgrade_chance", iglooChevronUpgradeChance);
         iglooSpawnTokra = config.getBoolean("generaton", "igloo_spawn_tokra", iglooSpawnTokra);
 
         // Jungle
         jungleAddon = config.getBoolean("generaton", "jungle_addon", jungleAddon);
         jungleAddonChance = config.getInteger("generaton", "jungle_addon_chance", jungleAddonChance);
-        jungleZpmChestChance = config.getInteger("generaton", "jungle_zpm_chest_change", jungleZpmChestChance);
+        jungleZpmChestChance = config.getInteger("generaton", "jungle_zpm_chest_chance", jungleZpmChestChance);
         jungleChevronUpgradeChance = config.getInteger("generaton", "jungle_chevron_upgrade_chance", jungleChevronUpgradeChance);
         jungleSpawnTokra = config.getBoolean("generaton", "jungle_spawn_tokra", jungleSpawnTokra);
 
         // Swamp
         swampAddon = config.getBoolean("generaton", "swamp_addon", swampAddon);
         swampAddonChance = config.getInteger("generaton", "swamp_addon_chance", swampAddonChance);
-        swampZpmChestChance = config.getInteger("generaton", "swamp_zpm_chest_change", swampZpmChestChance);
+        swampZpmChestChance = config.getInteger("generaton", "swamp_zpm_chest_chance", swampZpmChestChance);
         swampChevronUpgradeChance = config.getInteger("generaton", "swamp_chevron_upgrade_chance", swampChevronUpgradeChance);
         swampSpawnTokra = config.getBoolean("generaton", "swamp_spawn_tokra", swampSpawnTokra);
 

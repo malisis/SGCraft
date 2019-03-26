@@ -28,7 +28,6 @@ public class ZpmConsoleContainer extends BaseContainer {
         if (te != null) {
             return new ZpmConsoleContainer(player, te);
         } else {
-            System.out.println("SHouldn't happen!!!");
             return null;
         }
     }

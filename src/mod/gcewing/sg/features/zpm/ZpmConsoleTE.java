@@ -419,6 +419,10 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
         this.storage.extractEnergy((int)(supply * energyPerSGEnergyUnit), false);
         markChanged();
 
+        if (isTainted(this.getStackInSlot(0))) {
+            world.newExplosion(null, this.pos.getX(), this.pos.getY(), this.pos.getZ(), (float)250, true, true);
+        }
+
         if(debugOutput)
             System.out.printf("SGCraft: ZPM Console: Supplying %s SGU of %s requested\n", supply, request);
         return supply;

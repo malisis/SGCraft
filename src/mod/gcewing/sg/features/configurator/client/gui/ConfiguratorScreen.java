@@ -10,6 +10,7 @@ import net.malisis.core.client.gui.BasicScreen;
 import net.malisis.core.client.gui.component.container.BasicForm;
 import net.malisis.core.client.gui.component.decoration.UILabel;
 import net.malisis.core.client.gui.component.decoration.UISeparator;
+import net.malisis.core.client.gui.component.decoration.UITooltip;
 import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.client.gui.component.interaction.UICheckBox;
 import net.malisis.core.client.gui.component.interaction.UITextField;
@@ -341,7 +342,6 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.chevronsLockOnDialCheckbox = new UICheckBox(this);
         this.chevronsLockOnDialCheckbox.setText(TextFormatting.WHITE + "Chevrons lock when dialed");
-        this.chevronsLockOnDialCheckbox.setTooltip("Chevrons lock when dialed from PDD or DHD, no ring rotation dialing sequence.");
         this.chevronsLockOnDialCheckbox.setPosition(checkboxIndentPadding, this.noPowerRequiredCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
         this.chevronsLockOnDialCheckbox.setEnabled(true);
         this.chevronsLockOnDialCheckbox.setName("checkbox.chevronlockondial");
@@ -349,7 +349,6 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.returnIrisToPreviousStateCheckbox = new UICheckBox(this);
         this.returnIrisToPreviousStateCheckbox.setText(TextFormatting.WHITE + "Return to Previous Iris State");
-        this.returnIrisToPreviousStateCheckbox.setTooltip("This will return the iris state to what it was prior to dialing.");
         this.returnIrisToPreviousStateCheckbox.setPosition(checkboxIndentPadding, this.chevronsLockOnDialCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
         this.returnIrisToPreviousStateCheckbox.setEnabled(true);
         this.returnIrisToPreviousStateCheckbox.setName("checkbox.returntopreviousirisstate");
@@ -357,7 +356,6 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.transientDamageCheckbox = new UICheckBox(this);
         this.transientDamageCheckbox.setText(TextFormatting.WHITE + "Transient Damage (when wormhole opens)");
-        this.transientDamageCheckbox.setTooltip("Damages player or entity when Stargate Opens");
         this.transientDamageCheckbox.setPosition(checkboxIndentPadding, this.returnIrisToPreviousStateCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
         this.transientDamageCheckbox.setEnabled(true);
         this.transientDamageCheckbox.setName("checkbox.transientDamage");

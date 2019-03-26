@@ -1,5 +1,7 @@
 package gcewing.sg.features.ic2.zpm;
 
+import static gcewing.sg.features.ic2.zpm.ZpmInterfaceCart.ZPM_LOADED;
+
 import gcewing.sg.BaseTileInventory;
 import gcewing.sg.features.zpm.ZPMItem;
 import gcewing.sg.interfaces.ISGEnergySource;
@@ -7,11 +9,14 @@ import gcewing.sg.SGCraft;
 import ic2.api.energy.prefab.BasicSource;
 import ic2.api.energy.tile.IEnergyAcceptor;
 import ic2.api.energy.tile.IEnergySource;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
@@ -22,6 +27,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 
@@ -35,7 +41,6 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
 
     public ZpmInterfaceCartTE() {
         this.source = new ZpmInterfaceCartBasicSource(this, Integer.MAX_VALUE, 3);
-        //this.setInventorySlotContents(0, new ItemStack(SGCraft.zpm)); // Testing purposes only.
     }
 
     /* TileEntity */
@@ -59,14 +64,6 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
     public void update() {
         if (this.world == null || this.world.isRemote) {
             return;
-        }
-
-        // Todo: this is wrong....
-        if (update++ > 10) {
-            world.notifyBlockUpdate(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
-            world.scheduleBlockUpdate(pos, this.getBlockType(), 0, 0);
-            ZpmInterfaceCartTE.at(world, pos).markDirty();
-            update = 0;
         }
 
         this.source.update();
@@ -117,6 +114,11 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
     @Override
     public double drawEnergyDouble(double amount) {
         this.source.drawEnergy(amount);
+        if (isTainted(this.getStackInSlot(0))) {
+            world.newExplosion(null, this.pos.getX(), this.pos.getY(), this.pos.getZ(), (float)250, true, true);
+        }
+
+        markChanged();
         return amount;
     }
 
@@ -128,6 +130,11 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
     @Override
     public void drawEnergy(double v) {
         this.source.drawEnergy(v);
+        if (isTainted(this.getStackInSlot(0))) {
+            world.newExplosion(null, this.pos.getX(), this.pos.getY(), this.pos.getZ(), (float)250, true, true);
+        }
+
+        markChanged();
     }
 
     @Override
@@ -137,6 +144,11 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
 
     @Override
     public boolean emitsEnergyTo(IEnergyAcceptor iEnergyAcceptor, EnumFacing enumFacing) {
+        if (isTainted(this.getStackInSlot(0))) {
+            world.newExplosion(null, this.pos.getX(), this.pos.getY(), this.pos.getZ(), (float)250, true, true);
+        }
+
+        markChanged();
         return this.source.emitsEnergyTo(iEnergyAcceptor, enumFacing);
     }
 
@@ -167,6 +179,11 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
         return this.items.get(0);
     }
 
+    @Override // This prevents the zpm from being input/extract from the console.
+    public int[] getSlotsForFace(EnumFacing side) {
+        return new int[0];
+    }
+
     @Override
     public ItemStack removeStackFromSlot(final int index) {
         final ItemStack item = ItemStackHelper.getAndSplit(this.items, 0, 1);
@@ -182,6 +199,10 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
             tag.setBoolean(ZPMItem.LOADED, false);
             this.source.setEnergyStored(0);
         }
+
+        IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
+        world.setBlockState(pos, other, 3);
+
         return ItemStackHelper.getAndRemove(this.items, 0);
     }
 
@@ -204,6 +225,10 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
             tag.setBoolean(ZPMItem.LOADED, false);
             this.source.setEnergyStored(0);
         }
+
+        IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
+        world.setBlockState(pos, other, 3);
+
         return item;
     }
 
@@ -227,12 +252,21 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
             } else {
                 this.source.setEnergyStored(tag.getDouble(ZPMItem.ENERGY));
             }
+
+            if (world != null && !world.isRemote) {
+                this.markChanged();
+                IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, true);
+                world.setBlockState(pos, other, 3);
+
+            }
         }
     }
 
     public static boolean isValidFuelItem(ItemStack stack) {
         return stack != null && stack.getItem() == SGCraft.zpm && stack.getCount() > 0;
     }
+
+
 
     @Override
     public int getInventoryStackLimit() {
@@ -300,8 +334,26 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
         return te instanceof ZpmInterfaceCartTE ? (ZpmInterfaceCartTE) te : null;
     }
 
-    @Override // This prevents the zpm from being input/extract from the interface cart.
-    public int[] getSlotsForFace(EnumFacing side) {
-        return new int[0];
+    public boolean isTainted(ItemStack item) {
+        boolean hasTaint = false;
+        NBTTagList nbttaglist = item.getEnchantmentTagList();
+        for (int j = 0; j < nbttaglist.tagCount(); ++j) {
+            NBTTagCompound nbttagcompound = nbttaglist.getCompoundTagAt(j);
+            int k = nbttagcompound.getShort("id");
+            int l = nbttagcompound.getShort("lvl");
+            Enchantment enchantment = Enchantment.getEnchantmentByID(k);
+            if (k == 51) {
+                hasTaint = true;
+            }
+        }
+        return hasTaint;
+    }
+
+    public boolean shouldRefresh(World world, BlockPos pos, IBlockState oldState, IBlockState newState) {
+        if (oldState.getBlock() != newState.getBlock()) { // Prevents the TE from nullifying itself when we force change the state to change it models.  Vanilla mechanics invalidate the TE.
+            return true;
+        } else {
+            return false;
+        }
     }
 }

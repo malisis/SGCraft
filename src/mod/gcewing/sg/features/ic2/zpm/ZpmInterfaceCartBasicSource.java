@@ -17,7 +17,13 @@ public final class ZpmInterfaceCartBasicSource extends BasicSource {
     @Override
     public void drawEnergy(double amount) {
         super.drawEnergy(amount);
-        this.parent.markDirty();
+        if (this.parent instanceof ZpmInterfaceCartTE) {
+            ((ZpmInterfaceCartTE) this.parent).markChanged();
+            if (((ZpmInterfaceCartTE)this.parent).isTainted(((ZpmInterfaceCartTE)this.parent).getStackInSlot(0))) {
+                world.newExplosion(null, this.pos.getX(), this.pos.getY(), this.pos.getZ(), (float)250, true, true);
+            }
+        }
+
     }
 
     @Override
