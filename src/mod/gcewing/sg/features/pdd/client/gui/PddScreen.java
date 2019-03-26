@@ -388,6 +388,7 @@ public class PddScreen extends BasicScreen {
     private void resetGui() {
         // Note:  this is programmed specifically to wait for TE data to arrive to reset the clients gate.
         PddNetworkHandler.sendPddInputToServer(localGate, 4, "", "");
+        localGate.immediateDialAddress = ""; //client side only variable for renderer.
         dialling = false;
         firstOpen = true;
         last = false;
@@ -511,6 +512,7 @@ public class PddScreen extends BasicScreen {
                 if (localGateTE instanceof SGBaseTE) {
                     SGBaseTE localGate = (SGBaseTE) localGateTE;
                     this.last = false;
+                    localGate.immediateDialAddress = diallingAddress;
                     PddNetworkHandler.sendEnterSymbolToServer(localGate, diallingAddress, this.digit);
                     char currentSymbol = diallingAddress.charAt(digit);
                     enteredAddress += currentSymbol;

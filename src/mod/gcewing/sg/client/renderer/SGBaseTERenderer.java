@@ -231,7 +231,15 @@ public class SGBaseTERenderer extends BaseTileEntityRenderer {
             // Keep previously locked chevrons because te.dialledAddress.length = 0 when disconnecting, thus only 7 show locked.
             k = te.numEngagedChevrons > 7 ? 1: 0;
         } else {
-            k = te.dialledAddress.length() > 7 ? 1 : 0;
+            if (!te.chevronsLockOnDial) {
+                k = te.dialledAddress.length() > 7 ? 1 : 0;
+            } else {
+                if (!te.immediateDialAddress.isEmpty()) { //client side variable for renderer only, specifically for pdd.
+                    k = te.immediateDialAddress.length() > 7 ? 1 : 0;
+                } else {
+                    k = te.dialledAddress.length() > 7 ? 1 : 0;
+                }
+            }
         }
         float a = te.angleBetweenChevrons();
         for (int i = i0; i < i0 + numChevrons; i++) {

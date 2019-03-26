@@ -207,6 +207,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public boolean debugCCInterface = false;
     public int dialedDigit = 0;
     public String enteredAddress = "";
+    public String immediateDialAddress = "";
     public boolean errorState = false;
     public boolean checkForMalfunction = false;
 
@@ -1379,6 +1380,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             dialledAddress = "";
             dialedDigit = 0;
             enteredAddress = "";
+            immediateDialAddress = "";
             connectedLocation = null;
             numEngagedChevrons = 0;
             isInitiator = false;
@@ -1390,6 +1392,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public void clearConnection() {
         if (state != SGState.Idle || connectedLocation != null) {
             dialledAddress = "";
+            immediateDialAddress = "";
             dialedDigit = 0;
             enteredAddress = "";
             connectedLocation = null;
