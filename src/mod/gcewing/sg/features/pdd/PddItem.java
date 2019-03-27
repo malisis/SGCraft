@@ -99,6 +99,8 @@ public class PddItem extends Item {
                                 sendErrorMsg(player, "insufficientPlayerAccessPermission");
                         }
                     }
+                } else {
+                    sendErrorMsg(player, "pddPermission");
                 }
 
                 return new ActionResult<>(EnumActionResult.PASS, player.getHeldItem(handIn));  //Both Server & Client expect a returned value.
