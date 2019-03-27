@@ -12,8 +12,9 @@ import net.malisis.core.client.gui.component.interaction.UITextField;
 import net.malisis.core.client.gui.component.interaction.button.builder.UIButtonBuilder;
 import net.malisis.core.renderer.font.FontOptions;
 import net.malisis.core.util.FontColors;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -58,20 +59,20 @@ public class PddEntryScreen extends BasicScreen {
         this.form.setTopPadding(20);
         this.form.setLeftPadding(3);
 
-        final UILabel titleLabel = new UILabel(this, "PDD Entry");
+        final UILabel titleLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.pdd.label.pddEntry"));
         titleLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
         titleLabel.setPosition(0, -15, Anchor.CENTER | Anchor.TOP);
         if (this.name.equalsIgnoreCase("name here")) {
-            titleLabel.setText("Add PDD Entry");
+            titleLabel.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.pdd.label.addPddEntry"));
         } else {
             if (!delete) {
-                titleLabel.setText("Edit PDD Entry");
+                titleLabel.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.pdd.label.editPddEntry"));
             } else {
-                titleLabel.setText("Delete PDD Entry");
+                titleLabel.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.pdd.label.deletePddEntry"));
             }
         }
 
-        final UILabel nameLabel = new UILabel(this, "Name:");
+        final UILabel nameLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.pdd.label.name")+":");
         nameLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
         nameLabel.setPosition(0, 10, Anchor.LEFT | Anchor.TOP);
 
@@ -82,7 +83,7 @@ public class PddEntryScreen extends BasicScreen {
         this.nameTextField.setPosition(60, 10, Anchor.LEFT | Anchor.TOP);
         this.nameTextField.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(false).build());
 
-        final UILabel addressLabel = new UILabel(this, "Address:");
+        final UILabel addressLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.pdd.label.address")+":");
         addressLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
         addressLabel.setPosition(0, 25, Anchor.LEFT | Anchor.TOP);
 
@@ -93,7 +94,7 @@ public class PddEntryScreen extends BasicScreen {
         this.addressTextField.setPosition(60, 25, Anchor.LEFT | Anchor.TOP);
         this.addressTextField.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(false).build());
 
-        final UILabel indexLabel = new UILabel(this, "Index:");
+        final UILabel indexLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.pdd.label.index")+":");
         indexLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
         indexLabel.setPosition(0, 40, Anchor.LEFT | Anchor.TOP);
 
@@ -111,7 +112,7 @@ public class PddEntryScreen extends BasicScreen {
             .position(-50, 0)
             .visible(this.delete)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text("Delete")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.delete"))
             .onClick(() -> {
                 PddNetworkHandler.sendPddEntryUpdateToServer(this.nameTextField.getText().trim(), this.addressTextField.getText().trim(), -1, this.unid, this.isLocked);
                 this.close();
@@ -126,7 +127,7 @@ public class PddEntryScreen extends BasicScreen {
             .position(-50, 0)
             .visible(!this.delete)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text("Save")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
             .onClick(() -> {
                 if (this.addressTextField.getText().length() == 11 && this.addressTextField.getText().substring(4,5).equalsIgnoreCase("-") && this.addressTextField.getText().substring(8,9).equalsIgnoreCase("-")) {
                     PddNetworkHandler.sendPddEntryUpdateToServer(this.nameTextField.getText().trim(), this.addressTextField.getText().trim(), Integer.valueOf(this.indexTextField.getText()), this.unid, this.isLocked);
@@ -142,7 +143,7 @@ public class PddEntryScreen extends BasicScreen {
         final UIButton buttonClose = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text("Close")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.close"))
             .onClick(() -> {
                 this.close();
             })
