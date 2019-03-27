@@ -85,7 +85,7 @@ public class DHDTE extends BaseTileInventory implements ISGEnergySource {
                     boolean last = enteredAddress.length() == gate.getNumChevrons();
                     gate.finishDiallingSymbol(Character.toString(symbol), true, false, last);
                     gate.dialledAddress = enteredAddress;
-                    gate.numEngagedChevrons = enteredAddress.length()-1;
+                    gate.numEngagedChevrons = enteredAddress.length();
                     gate.markChanged();
                 }
             }
