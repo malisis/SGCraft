@@ -61,15 +61,17 @@ public class SGPowerTE extends PowerTE implements IEnergyStorage {
 
     @Override
     public boolean hasCapability(Capability<?> capability, @Nullable EnumFacing facing) {
-        return capability.equals(CapabilityEnergy.ENERGY) || super.hasCapability(capability, facing);
+        return capability == CapabilityEnergy.ENERGY;
     }
 
-    @Nullable
+    @SuppressWarnings("unchecked")
     @Override
+    @Nullable
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
-        if (hasCapability(capability, facing))
+        if (capability == CapabilityEnergy.ENERGY) {
             return CapabilityEnergy.ENERGY.cast(this);
-        return super.getCapability(capability, facing);
+        }
+        return null;
     }
 
     //------------------------ IEnergyStorage ---------------------------
