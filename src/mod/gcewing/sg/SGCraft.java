@@ -52,6 +52,7 @@ import gcewing.sg.network.SGChannel;
 import gcewing.sg.generator.NaquadahOreWorldGen;
 import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
+import gcewing.sg.util.GeneralAddressRegistry;
 import gcewing.sg.util.Info;
 import gcewing.sg.util.PermissionsUtil;
 import gcewing.sg.util.SGChunkData;
@@ -323,10 +324,20 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             new ConfiguratorNetworkHandler(Info.modID+"-configurator");
         }
 
+        // Structure Generated Address Registry
         final ConfigurationNode rootNode;
         try {
             rootNode = GeneratorAddressRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "generator.yml"));
             GeneratorAddressRegistry.populateAddresses(rootNode);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        // General Gate Address Registry
+        final ConfigurationNode rootNode2;
+        try {
+            rootNode2 = GeneralAddressRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "general.yml"));
+            GeneralAddressRegistry.populateAddresses(rootNode2);
         } catch (IOException e) {
             e.printStackTrace();
         }

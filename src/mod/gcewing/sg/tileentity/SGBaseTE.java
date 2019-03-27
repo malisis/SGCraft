@@ -20,6 +20,7 @@ import gcewing.sg.features.zpm.ZpmConsoleTE;
 import gcewing.sg.generator.GeneratorAddressRegistry;
 import gcewing.sg.tileentity.data.GateAccessData;
 import gcewing.sg.tileentity.data.PlayerAccessData;
+import gcewing.sg.util.GeneralAddressRegistry;
 import gcewing.sg.util.SGAddressing;
 import gcewing.sg.SGCraft;
 import gcewing.sg.util.SGLocation;
@@ -808,7 +809,14 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 if (logStargateEvents) {
                     log.info(String.format("STARGATE %s %s %s %s", action, name, pos, address));
                 }
+                if (state) {
+                    GeneralAddressRegistry.addAddress(world, this.homeAddress);
+                } else {
+                    GeneratorAddressRegistry.removeAddress(world, this.homeAddress); // This will remove the address from the generation registry.
+                    GeneralAddressRegistry.removeAddress(world, this.homeAddress);
+                }
             }
+
             updateIrisEntity();
         }
     }
@@ -1143,6 +1151,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         if (targetGate.hasChevronUpgrade) {
             targetGate.wasIrisClosed = targetGate.irisIsClosed();
+        }
+
+        if (!GeneralAddressRegistry.addressExists(world, this.homeAddress)) {
+            GeneralAddressRegistry.addAddress(world, this.homeAddress);
         }
 
         startDiallingStargate(address, targetGate, true, (this.chevronsLockOnDial && !ccInterface));

@@ -1,4 +1,4 @@
-package gcewing.sg.generator;
+package gcewing.sg.util;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -25,7 +25,7 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 
-public final class GeneratorAddressRegistry {
+public final class GeneralAddressRegistry {
 
     private static final Map<String, Set<String>> addresses = new HashMap<>();
     private static final String WORLDS_NODE = "worlds";
@@ -68,10 +68,11 @@ public final class GeneratorAddressRegistry {
     public static void addAddress(final World world, final String address) {
         checkNotNull(world);
         checkNotNull(address);
+        if (!addressExists(world, address)) {
+            addresses.computeIfAbsent(world.getWorldInfo().getWorldName().toLowerCase(), k -> new HashSet<>()).add(address.toUpperCase());
+        }
 
-        addresses.computeIfAbsent(world.getWorldInfo().getWorldName().toLowerCase(), k -> new HashSet<>()).add(address.toUpperCase());
-
-        GeneratorAddressRegistry.writeAddresses();
+        GeneralAddressRegistry.writeAddresses();
     }
 
     public static boolean removeAddress(final World world, final String homeAddress) {
@@ -80,14 +81,14 @@ public final class GeneratorAddressRegistry {
         final Set<String> worldAddresses = addresses.getOrDefault(world.getWorldInfo().getWorldName().toLowerCase(), new HashSet<>());
         boolean removed = worldAddresses.removeIf(s -> s.equalsIgnoreCase(homeAddress));
 
-        GeneratorAddressRegistry.writeAddresses();
+        GeneralAddressRegistry.writeAddresses();
 
         return removed;
     }
 
 
     public static void writeAddresses() {
-        final Path path = Paths.get(".", "config", "SGCraft", "generator.yml");
+        final Path path = Paths.get(".", "config", "SGCraft", "general.yml");
         final ConfigurationNode rootNode;
         try {
             rootNode = createRootNode(path);
@@ -111,6 +112,18 @@ public final class GeneratorAddressRegistry {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static boolean addressExists(final World world, final String homeAddress) {
+        checkNotNull(world);
+
+        final Set<String> worldAddressesAll = addresses.getOrDefault(world.getWorldInfo().getWorldName().toLowerCase(), new HashSet<>());
+        Set<String> worldAddresses = new HashSet<>(worldAddressesAll);
+        if (worldAddresses.isEmpty()) {
+            return false;
+        }
+
+        return worldAddresses.stream().anyMatch(s -> s.equalsIgnoreCase(homeAddress));
     }
 
     public static String randomAddress(final World world, final String homeAddress, final Random random) {
