@@ -25,6 +25,7 @@ import net.malisis.core.client.gui.component.interaction.button.builder.UIButton
 import net.malisis.core.client.gui.event.ComponentEvent;
 import net.malisis.core.renderer.font.FontOptions;
 import net.malisis.core.util.FontColors;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -73,7 +74,7 @@ public class GateAddressAccessScreen extends BasicScreen {
         }
 
         // Master Panel
-        this.form = new BasicForm(this, 300, 225, "Gate Address Access List");
+        this.form = new BasicForm(this, 300, 225, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.gateAddressAccessList"));
         this.form.setMovable(true);
         this.form.setBackgroundAlpha(255);
 
@@ -86,7 +87,7 @@ public class GateAddressAccessScreen extends BasicScreen {
         this.addressContainer.setPadding(0, 3);
         this.addressContainer.setBackgroundAlpha(0);
 
-        this.addressListLabel = new UILabel(this, "Address List");
+        this.addressListLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.addressList"));
         this.addressListLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
         this.addressListLabel.setPosition(0, 0, Anchor.CENTER | Anchor.TOP);
 
@@ -104,7 +105,7 @@ public class GateAddressAccessScreen extends BasicScreen {
 
         // ****************************************************************************************************************************
 
-        this.perAddressOptionsLabel = new UILabel(this, "Per Address Options");
+        this.perAddressOptionsLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.perAddressOptions"));
         this.perAddressOptionsLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
         this.perAddressOptionsLabel.setPosition(0, 0, Anchor.CENTER | Anchor.TOP);
 
@@ -118,19 +119,19 @@ public class GateAddressAccessScreen extends BasicScreen {
         this.addressOptionsContainer.setPadding(0, 3);
         this.addressOptionsContainer.setBackgroundAlpha(0);
 
-        this.gateIncomingLabel = new UILabel(this, "Incoming:");
+        this.gateIncomingLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.incoming")+":");
         this.gateIncomingLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
         this.gateIncomingLabel.setPosition(5, 20, Anchor.TOP| Anchor.LEFT);
 
         this.allowIncomingCheckbox = new UICheckBox(this);
-        this.allowIncomingCheckbox.setText(TextFormatting.WHITE + "Allow");
+        this.allowIncomingCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.allow"));
         this.allowIncomingCheckbox.setPosition(this.gateIncomingLabel.getX() + this.gateIncomingLabel.getWidth() + 10, this.gateIncomingLabel.getY(), Anchor.LEFT | Anchor.TOP);
         this.allowIncomingCheckbox.setName("checkbox.allowincoming");
         this.allowIncomingCheckbox.setChecked(localGate.defaultAllowIncoming);
         this.allowIncomingCheckbox.register(this);
 
         this.denyIncomingCheckbox = new UICheckBox(this);
-        this.denyIncomingCheckbox.setText(TextFormatting.WHITE + "Deny");
+        this.denyIncomingCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.deny"));
         this.denyIncomingCheckbox.setPosition(this.gateIncomingLabel.getX() + this.gateIncomingLabel.getWidth() + 10 + this.allowIncomingCheckbox.getWidth() + 10, this.gateIncomingLabel.getY(), Anchor.LEFT | Anchor.TOP);
         this.denyIncomingCheckbox.setName("checkbox.denyincoming");
         this.denyIncomingCheckbox.setChecked(!localGate.defaultAllowIncoming);
@@ -141,21 +142,21 @@ public class GateAddressAccessScreen extends BasicScreen {
         this.gateOutgoingLabel.setPosition(5, this.gateIncomingLabel.getY() + 15, Anchor.TOP | Anchor.LEFT);
 
         this.allowOutgoingCheckbox = new UICheckBox(this);
-        this.allowOutgoingCheckbox.setText(TextFormatting.WHITE + "Allow");
+        this.allowOutgoingCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.allow"));
         this.allowOutgoingCheckbox.setPosition(this.gateIncomingLabel.getX() + this.gateIncomingLabel.getWidth() + 10, this.gateOutgoingLabel.getY(), Anchor.LEFT | Anchor.TOP);
         this.allowOutgoingCheckbox.setName("checkbox.allowoutgoing");
         this.allowOutgoingCheckbox.setChecked(localGate.defaultAllowOutgoing);
         this.allowOutgoingCheckbox.register(this);
 
         this.denyOutgoingCheckbox = new UICheckBox(this);
-        this.denyOutgoingCheckbox.setText(TextFormatting.WHITE + "Deny");
+        this.denyOutgoingCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.deny"));
         this.denyOutgoingCheckbox.setPosition(this.gateOutgoingLabel.getX() + this.gateIncomingLabel.getWidth() + 10 + this.allowIncomingCheckbox.getWidth() + 10, this.gateOutgoingLabel.getY(), Anchor.LEFT | Anchor.TOP);
         this.denyOutgoingCheckbox.setName("checkbox.denyoutgoing");
         this.denyOutgoingCheckbox.setChecked(!localGate.defaultAllowOutgoing);
         this.denyOutgoingCheckbox.register(this);
 
         this.saveOptionsButton = new UIButtonBuilder(this)
-                .text("Save")
+                .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
                 .onClick(() -> {
                     if (this.gateAccessList.getSize() > 0 && this.gateAccessList.getSelectedItem() != null) {
                         if (!this.gateAccessList.getSelectedItem().getAddress().isEmpty()) {
@@ -211,44 +212,44 @@ public class GateAddressAccessScreen extends BasicScreen {
         defaultsSeparator.setSize(this.form.getWidth() - 10, 1);
         defaultsSeparator.setPosition(0, -43, Anchor.BOTTOM | Anchor.CENTER);
 
-        this.gateDefaultIncomingLabel = new UILabel(this, "Default Incoming:");
+        this.gateDefaultIncomingLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.defaultIncoming"));
         this.gateDefaultIncomingLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
         this.gateDefaultIncomingLabel.setPosition(5, -25, Anchor.BOTTOM | Anchor.LEFT);
 
         this.defaultAllowIncomingCheckbox = new UICheckBox(this);
-        this.defaultAllowIncomingCheckbox.setText(TextFormatting.WHITE + "Allow");
+        this.defaultAllowIncomingCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.allow"));
         this.defaultAllowIncomingCheckbox.setPosition(this.gateDefaultIncomingLabel.getX() + this.gateDefaultIncomingLabel.getWidth() + 10, this.gateDefaultIncomingLabel.getY(), Anchor.LEFT | Anchor.BOTTOM);
         this.defaultAllowIncomingCheckbox.setName("checkbox.defaultallowincoming");
         this.defaultAllowIncomingCheckbox.setChecked(localGate.defaultAllowIncoming);
         this.defaultAllowIncomingCheckbox.register(this);
 
         this.defaultDenyIncomingCheckbox = new UICheckBox(this);
-        this.defaultDenyIncomingCheckbox.setText(TextFormatting.WHITE + "Deny");
+        this.defaultDenyIncomingCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.deny"));
         this.defaultDenyIncomingCheckbox.setPosition(this.gateDefaultIncomingLabel.getX() + this.gateDefaultIncomingLabel.getWidth() + 10 + this.defaultAllowIncomingCheckbox.getWidth() + 10, this.gateDefaultIncomingLabel.getY(), Anchor.LEFT | Anchor.BOTTOM);
         this.defaultDenyIncomingCheckbox.setName("checkbox.defaultdenyincoming");
         this.defaultDenyIncomingCheckbox.setChecked(!localGate.defaultAllowIncoming);
         this.defaultDenyIncomingCheckbox.register(this);
 
-        this.gateDefaultOutgoingLabel = new UILabel(this, "Default Outgoing:");
+        this.gateDefaultOutgoingLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.defaultOutgoing"));
         this.gateDefaultOutgoingLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
         this.gateDefaultOutgoingLabel.setPosition(5, -5, Anchor.BOTTOM | Anchor.LEFT);
 
         this.defaultAllowOutgoingCheckbox = new UICheckBox(this);
-        this.defaultAllowOutgoingCheckbox.setText(TextFormatting.WHITE + "Allow");
+        this.defaultAllowOutgoingCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.allow"));
         this.defaultAllowOutgoingCheckbox.setPosition(this.gateDefaultIncomingLabel.getX() + this.gateDefaultIncomingLabel.getWidth() + 10, this.gateDefaultOutgoingLabel.getY(), Anchor.LEFT | Anchor.BOTTOM);
         this.defaultAllowOutgoingCheckbox.setName("checkbox.defaultallowoutgoing");
         this.defaultAllowOutgoingCheckbox.setChecked(localGate.defaultAllowOutgoing);
         this.defaultAllowOutgoingCheckbox.register(this);
 
         this.defaultDenyOutgoingCheckbox = new UICheckBox(this);
-        this.defaultDenyOutgoingCheckbox.setText(TextFormatting.WHITE + "Deny");
+        this.defaultDenyOutgoingCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.deny"));
         this.defaultDenyOutgoingCheckbox.setPosition(this.gateDefaultIncomingLabel.getX() + this.gateDefaultIncomingLabel.getWidth() + 10 + this.defaultAllowIncomingCheckbox.getWidth() + 10, this.gateDefaultOutgoingLabel.getY(), Anchor.LEFT | Anchor.BOTTOM);
         this.defaultDenyOutgoingCheckbox.setName("checkbox.defaultdenyoutgoing");
         this.defaultDenyOutgoingCheckbox.setChecked(!localGate.defaultAllowOutgoing);
         this.defaultDenyOutgoingCheckbox.register(this);
 
         this.saveDefaultOptionsButton = new UIButtonBuilder(this)
-            .text("Save")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
             .onClick(() -> {
                 ConfiguratorNetworkHandler.sendGateAddressAccessInputToServer(localGate, "", this.defaultAllowIncomingCheckbox.isChecked(), this.defaultAllowOutgoingCheckbox.isChecked(), this.allowIncomingCheckbox.isChecked(), this.allowOutgoingCheckbox.isChecked());
                 sendBasicMsg(player, "changesSaved");
@@ -261,7 +262,7 @@ public class GateAddressAccessScreen extends BasicScreen {
         buttonClose = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text("Close")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
             .onClick(this::close)
             .build("button.close");
 

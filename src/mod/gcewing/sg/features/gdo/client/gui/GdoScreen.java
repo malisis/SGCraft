@@ -21,9 +21,11 @@ import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.client.gui.component.interaction.button.builder.UIButtonBuilder;
 import net.malisis.core.renderer.font.FontOptions;
 import net.malisis.core.util.FontColors;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -102,7 +104,7 @@ public class GdoScreen extends BasicScreen {
         this.form.setTopPadding(20);
         this.form.setLeftPadding(3);
 
-        final UILabel titleLabel = new UILabel(this, "GDO Controller");
+        final UILabel titleLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.gdo.label.gdoController"));
         titleLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
         titleLabel.setPosition(0, -15, Anchor.CENTER | Anchor.TOP);
         // ****************************************************************************************************************************
@@ -119,7 +121,7 @@ public class GdoScreen extends BasicScreen {
         localGateControlArea.setTopPadding(3);
         localGateControlArea.setLeftPadding(3);
 
-        final UILabel localGateControlLabel = new UILabel(this, "Local Gate Control");
+        final UILabel localGateControlLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.gdo.label.localGateControl"));
         localGateControlLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
         localGateControlLabel.setPosition(0, 0, Anchor.CENTER | Anchor.TOP);
 
@@ -134,7 +136,7 @@ public class GdoScreen extends BasicScreen {
         localIrisOpenButton = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.LEFT)
-            .text("Open Iris")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.openIris"))
             .enabled(this.canAccessLocal)
             .onClick(() -> {
                 GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 1);
@@ -145,7 +147,7 @@ public class GdoScreen extends BasicScreen {
         localGateCloseButton = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.CENTER)
-            .text("Disconnect")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.disconnect"))
             .onClick(() -> {
                 GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 3);
             })
@@ -155,7 +157,7 @@ public class GdoScreen extends BasicScreen {
         localIrisCloseButton = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text("Close Iris")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.closeIris"))
             .enabled(this.canAccessLocal)
             .onClick(() -> {
                 GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 2);
@@ -179,7 +181,7 @@ public class GdoScreen extends BasicScreen {
         remoteGateControlArea.setTopPadding(3);
         remoteGateControlArea.setLeftPadding(3);
 
-        final UILabel remoteGateControlLabel = new UILabel(this, "Remote Gate Control");
+        final UILabel remoteGateControlLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.gdo.label.remoteGateControl"));
         remoteGateControlLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
         remoteGateControlLabel.setPosition(0, 0, Anchor.CENTER | Anchor.TOP);
 
@@ -194,7 +196,7 @@ public class GdoScreen extends BasicScreen {
         remoteIrisOpenButton = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.LEFT)
-            .text("Open Iris")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.openIris"))
             .enabled(this.canAccessRemote)
             .onClick(() -> {
                 GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 4);
@@ -205,7 +207,7 @@ public class GdoScreen extends BasicScreen {
         remoteGateCloseButton = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.CENTER)
-            .text("Disconnect")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.disconnect"))
             .visible(false)
             .onClick(() -> {
                 // Do Nothing at the moment
@@ -216,7 +218,7 @@ public class GdoScreen extends BasicScreen {
         remoteIrisCloseButton = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text("Close Iris")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.closeIris"))
             .enabled(this.canAccessRemote)
             .onClick(() -> {
                 GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 5);
@@ -232,7 +234,7 @@ public class GdoScreen extends BasicScreen {
         final UIButton buttonClose = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text("Close")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.close"))
             .onClick(() -> {
                 this.close();
             })

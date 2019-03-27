@@ -14,8 +14,10 @@ import net.malisis.core.client.gui.component.interaction.UITextField;
 import net.malisis.core.client.gui.component.interaction.button.builder.UIButtonBuilder;
 import net.malisis.core.renderer.font.FontOptions;
 import net.malisis.core.util.FontColors;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -61,14 +63,14 @@ public class GateAddressAccessEntryScreen extends BasicScreen {
         titleLabel.setPosition(0, -15, Anchor.CENTER | Anchor.TOP);
 
         if (function == 1) {
-            titleLabel.setText("Add Gate Address");
+            titleLabel.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.addGateAddress"));
         } else if (function == 2) {
-            titleLabel.setText("Edit Gate Address");
+            titleLabel.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.editGateAddress"));
         } else if (function == 3) {
-            titleLabel.setText("Delete Gate Address");
+            titleLabel.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.deleteGateAddress"));
         }
 
-        final UILabel addressLabel = new UILabel(this, "Address:");
+        final UILabel addressLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.address")+":");
         addressLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
         addressLabel.setPosition(15, 10, Anchor.LEFT | Anchor.TOP);
 
@@ -82,7 +84,7 @@ public class GateAddressAccessEntryScreen extends BasicScreen {
         this.addressTextField.setPosition(addressLabel.getX() + addressLabel.getWidth() + 10, addressLabel.getY() - 1, Anchor.LEFT | Anchor.TOP);
         this.addressTextField.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(false).build());
 
-        final UILabel addressFormatLabel = new UILabel(this, "Format: XXXX-XXX-XX");
+        final UILabel addressFormatLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.format")+": XXXX-XXX-XX");
         addressFormatLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).italic(true).shadow(true).scale(0.9F).build());
         addressFormatLabel.setPosition(0, 25, Anchor.CENTER | Anchor.TOP);
 
@@ -94,7 +96,7 @@ public class GateAddressAccessEntryScreen extends BasicScreen {
                 .position(-50, 0)
                 .visible(function == 3)
                 .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-                .text("Delete")
+                .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.delete"))
                 .onClick(() -> {
                     ConfiguratorNetworkHandler.sendGAAEntryUpdateToServer(localGate, this.oldAddress, this.addressTextField.getText().trim(), function);
                     this.close();
@@ -108,7 +110,7 @@ public class GateAddressAccessEntryScreen extends BasicScreen {
                 .position(-50, 0)
                 .visible(!(function == 3))
                 .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-                .text("Save")
+                .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
                 .onClick(() -> {
                     if (this.addressTextField.getText().length() == 11 && this.addressTextField.getText().substring(4,5).equalsIgnoreCase("-") && this.addressTextField.getText().substring(8,9).equalsIgnoreCase("-")) {
                         ConfiguratorNetworkHandler.sendGAAEntryUpdateToServer(localGate, this.oldAddress, this.addressTextField.getText().trim().toUpperCase(), function);

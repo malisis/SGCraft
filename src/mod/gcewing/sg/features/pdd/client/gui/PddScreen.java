@@ -1,5 +1,6 @@
 package gcewing.sg.features.pdd.client.gui;
 
+import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
 import static org.lwjgl.opengl.GL11.GL_LINEAR;
 import static org.lwjgl.opengl.GL11.GL_QUADS;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
@@ -31,10 +32,12 @@ import net.malisis.core.client.gui.component.container.BasicForm;
 import net.malisis.core.client.gui.component.container.BasicList;
 import net.malisis.core.client.gui.component.decoration.UILabel;
 import net.malisis.core.client.gui.component.decoration.UISeparator;
+import net.malisis.core.client.gui.component.decoration.UITooltip;
 import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.client.gui.component.interaction.button.builder.UIButtonBuilder;
 import net.malisis.core.renderer.font.FontOptions;
 import net.malisis.core.util.FontColors;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -103,7 +106,7 @@ public class PddScreen extends BasicScreen {
         }
 
         // Master Panel
-        this.form = new BasicForm(this, 300, 225, "Personal Dialer Device");
+        this.form = new BasicForm(this, 300, 225, TextFormatting.WHITE + I18n.format("sgcraft.gui.pdd.label.personalDialerDevice"));
         this.form.setMovable(true);
         this.form.setBackgroundAlpha(255);
 
@@ -116,14 +119,14 @@ public class PddScreen extends BasicScreen {
         this.addressContainer.setPadding(0, 3);
         this.addressContainer.setBackgroundAlpha(0);
 
-        availableAddressesLabel = new UILabel(this, TextFormatting.WHITE + "Available Addresses:");
+        availableAddressesLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.pdd.label.availableAddresses")+":");
         availableAddressesLabel.setPosition(5, 1, Anchor.LEFT | Anchor.TOP);
 
         localGateAddressLabel = new UILabel(this, "gateAddress");
         localGateAddressLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.0F).build());
         localGateAddressLabel.setPosition(-5, 1, Anchor.RIGHT | Anchor.TOP);
 
-        gateStatusLabel = new UILabel(this, "... Dialling ...");
+        gateStatusLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.pdd.label.dialling"));
         gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
         gateStatusLabel.setPosition(-5, 50, Anchor.CENTER | Anchor.TOP);
         gateStatusLabel.setVisible(true);
@@ -182,7 +185,7 @@ public class PddScreen extends BasicScreen {
         buttonDial = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.CENTER)
-            .text("Dial Selected Address")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.dialSelectedAddress"))
             .visible(false)
             .onClick(() -> {
                 dial();
@@ -192,7 +195,7 @@ public class PddScreen extends BasicScreen {
         buttonReset = new UIButtonBuilder(this)
                 .width(40)
                 .anchor(Anchor.BOTTOM | Anchor.CENTER)
-                .text("Reset")
+                .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.reset"))
                 .visible(false)
                 .onClick(() -> {
                     resetGui();
@@ -202,7 +205,7 @@ public class PddScreen extends BasicScreen {
         buttonDisconnect = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.CENTER)
-            .text("Disconnect")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.disconnect"))
             .visible(false)
             .onClick(() -> {
                 final TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, false);
@@ -218,11 +221,11 @@ public class PddScreen extends BasicScreen {
         final UIButton buttonClose = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text("Close")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.close"))
             .onClick(this::close)
             .build("button.close");
 
-        userFeedbackLabel = new UILabel(this, TextFormatting.ITALIC + "Don't close PDD until wormhole connects...");
+        userFeedbackLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.pdd.label.warning"));
         userFeedbackLabel.setPosition(-15, -3, Anchor.CENTER | Anchor.BOTTOM);
 
         this.form.add(this.addressContainer, addAddressButton, editAddressButton, deleteAddressButton, buttonDial, buttonReset, buttonDisconnect, userFeedbackLabel, buttonClose);
@@ -270,7 +273,7 @@ public class PddScreen extends BasicScreen {
             if (localGate.isMerged) {
                 this.localGateAddressLabel.setText(SGAddressing.formatAddress(localGate.homeAddress, "-", "-"));
             } else {
-                this.localGateAddressLabel.setText("No Local Stargate Found");
+                this.localGateAddressLabel.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.pdd.label.noLocalStargateFound"));
             }
             if (localGate != null) {
 
@@ -280,7 +283,7 @@ public class PddScreen extends BasicScreen {
                     this.availableAddressesLabel.setVisible(false);
                     this.localGateAddressLabel.setVisible(false);
                     if (localGate.state == SGState.SyncAwait || localGate.state == SGState.Transient) {
-                        this.gateStatusLabel.setText("... Establishing ...");
+                        this.gateStatusLabel.setText(I18n.format("sgcraft.gui.pdd.label.establishing"));
                         gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.GREEN_FO).shadow(true).scale(1.8F).build());
                         if (this.enteredAddress.isEmpty()) {
                             this.enteredAddress = localGate.dialledAddress;
@@ -307,14 +310,14 @@ public class PddScreen extends BasicScreen {
                         this.addressList.setVisible(false);
                         this.buttonDisconnect.setVisible(true);
                         this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
-                        this.gateStatusLabel.setText(" ... Dialling ...");
+                        this.gateStatusLabel.setText(I18n.format("sgcraft.gui.pdd.label.dialling"));
                         this.buttonReset.setVisible(true);
                     }
 
                     if (localGate.state == SGState.Disconnecting) {
                         this.addressList.setVisible(false);
                         this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.YELLOW_FO).shadow(true).scale(1.8F).build());
-                        this.gateStatusLabel.setText(" ... Disconnecting ...");
+                        this.gateStatusLabel.setText(I18n.format("sgcraft.gui.pdd.label.disconnecting"));
 
                     }
                     if (localGate.state == SGState.Connected) {
@@ -327,7 +330,7 @@ public class PddScreen extends BasicScreen {
 
                         this.addressList.setVisible(false);
                         this.buttonDisconnect.setVisible(true);
-                        this.gateStatusLabel.setText(" ... Connected ...");
+                        this.gateStatusLabel.setText(I18n.format("sgcraft.gui.pdd.label.connected"));
                         this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
                     }
                 }
@@ -336,7 +339,7 @@ public class PddScreen extends BasicScreen {
                     this.addressList.setVisible(false);
                     this.buttonDisconnect.setVisible(true);
                     this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.RED_FO).shadow(true).scale(1.8F).build());
-                    this.gateStatusLabel.setText("... Error ...");
+                    this.gateStatusLabel.setText(I18n.format("sgcraft.gui.pdd.label.error"));
                     this.diallingAddress = localGate.dialledAddress; // Account for someone opening the GUI to a connected gate.
                     dialling = false;
                     this.buttonDial.setVisible(false);
@@ -479,7 +482,7 @@ public class PddScreen extends BasicScreen {
         if (localGate != null) {
             this.enteredAddress = "";
             this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
-            this.gateStatusLabel.setText("... Dialling ...");
+            this.gateStatusLabel.setText(I18n.format("sgcraft.gui.pdd.label.dialling"));
             this.dialling = true; // Allows checkDiallingStatus method to execute.
             this.digit = 0;
         }
@@ -496,13 +499,15 @@ public class PddScreen extends BasicScreen {
                 }
 
                 if (diallingAddress.length() != 7 && diallingAddress.length() != 9) {
-                    SGBaseTE.sendGenericErrorMsg(player, "Invalid Address Specified.");
+                    //SGBaseTE.sendGenericErrorMsg(player, "Invalid Address Specified.");
+                    sendErrorMsg(player, "malformedAddress");
                     dialling = false;
                     return;
                 }
 
                 if (diallingAddress.length()  > localGate.getNumChevrons()) {
-                    SGBaseTE.sendGenericErrorMsg(player, "Gate does not have Chevron Upgrade.");
+                    sendErrorMsg(player, "targetLackChevrons");
+                    //SGBaseTE.sendGenericErrorMsg(player, "Gate does not have Chevron Upgrade.");
                     dialling = false;
                     return;
                 }

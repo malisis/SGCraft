@@ -23,6 +23,7 @@ import net.malisis.core.client.gui.component.interaction.button.builder.UIButton
 import net.malisis.core.client.gui.event.ComponentEvent;
 import net.malisis.core.renderer.font.FontOptions;
 import net.malisis.core.util.FontColors;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
@@ -71,7 +72,7 @@ public class PlayerAccessScreen extends BasicScreen {
         }
 
         // Master Panel
-        this.form = new BasicForm(this, 350, 225, "Player Access List");
+        this.form = new BasicForm(this, 350, 225, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.playerAccessList"));
         this.form.setMovable(true);
         this.form.setBackgroundAlpha(255);
 
@@ -84,7 +85,7 @@ public class PlayerAccessScreen extends BasicScreen {
         this.playerContainer.setPadding(0, 3);
         this.playerContainer.setBackgroundAlpha(0);
 
-        this.addressListLabel = new UILabel(this, "Player List");
+        this.addressListLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.playerList"));
         this.addressListLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
         this.addressListLabel.setPosition(0, 0, Anchor.CENTER | Anchor.TOP);
 
@@ -102,7 +103,7 @@ public class PlayerAccessScreen extends BasicScreen {
 
         // ****************************************************************************************************************************
 
-        this.optionsLabel = new UILabel(this, "Options");
+        this.optionsLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.options"));
         this.optionsLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
         this.optionsLabel.setPosition(0, 0, Anchor.CENTER | Anchor.TOP);
 
@@ -116,62 +117,62 @@ public class PlayerAccessScreen extends BasicScreen {
         this.optionsContainer.setPadding(0, 3);
         this.optionsContainer.setBackgroundAlpha(0);
 
-        this.accessLabel = new UILabel(this, "Access:");
+        this.accessLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.access")+":");
         this.accessLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
         this.accessLabel.setPosition(5, 20, Anchor.TOP| Anchor.LEFT);
 
         this.allowAccessCheckbox = new UICheckBox(this);
-        this.allowAccessCheckbox.setText(TextFormatting.WHITE + "Allow");
+        this.allowAccessCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.allow"));
         this.allowAccessCheckbox.setPosition(this.accessLabel.getX() + this.accessLabel.getWidth() + 10, this.accessLabel.getY(), Anchor.LEFT | Anchor.TOP);
         this.allowAccessCheckbox.setName("checkbox.allowincoming");
         this.allowAccessCheckbox.setChecked(localGate.defaultAllowIncoming);
         this.allowAccessCheckbox.register(this);
 
         this.denyAccessCheckbox = new UICheckBox(this);
-        this.denyAccessCheckbox.setText(TextFormatting.WHITE + "Deny");
+        this.denyAccessCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.deny"));
         this.denyAccessCheckbox.setPosition(this.accessLabel.getX() + this.accessLabel.getWidth() + 10 + this.allowAccessCheckbox.getWidth() + 10, this.accessLabel.getY(), Anchor.LEFT | Anchor.TOP);
         this.denyAccessCheckbox.setName("checkbox.denyincoming");
         this.denyAccessCheckbox.setChecked(!localGate.defaultAllowIncoming);
         this.denyAccessCheckbox.register(this);
 
-        this.irisControllerLabel = new UILabel(this, "Iris:");
+        this.irisControllerLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.iris")+":");
         this.irisControllerLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
         this.irisControllerLabel.setPosition(5, this.accessLabel.getY() + 15, Anchor.TOP | Anchor.LEFT);
 
         this.allowIrisControllerCheckbox = new UICheckBox(this);
-        this.allowIrisControllerCheckbox.setText(TextFormatting.WHITE + "Allow");
+        this.allowIrisControllerCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.allow"));
         this.allowIrisControllerCheckbox.setPosition(this.accessLabel.getX() + this.accessLabel.getWidth() + 10, this.irisControllerLabel.getY(), Anchor.LEFT | Anchor.TOP);
         this.allowIrisControllerCheckbox.setName("checkbox.allowoutgoing");
         this.allowIrisControllerCheckbox.setChecked(localGate.defaultAllowOutgoing);
         this.allowIrisControllerCheckbox.register(this);
 
         this.denyIrisControllerCheckbox = new UICheckBox(this);
-        this.denyIrisControllerCheckbox.setText(TextFormatting.WHITE + "Deny");
+        this.denyIrisControllerCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.deny"));
         this.denyIrisControllerCheckbox.setPosition(this.irisControllerLabel.getX() + this.accessLabel.getWidth() + 10 + this.allowAccessCheckbox.getWidth() + 10, this.irisControllerLabel.getY(), Anchor.LEFT | Anchor.TOP);
         this.denyIrisControllerCheckbox.setName("checkbox.denyoutgoing");
         this.denyIrisControllerCheckbox.setChecked(!localGate.defaultAllowOutgoing);
         this.denyIrisControllerCheckbox.register(this);
 
-        this.adminLabel = new UILabel(this, "Admin:");
+        this.adminLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.admin")+":");
         this.adminLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
         this.adminLabel.setPosition(5, this.irisControllerLabel.getY() + 15, Anchor.TOP | Anchor.LEFT);
 
         this.allowAdminCheckbox = new UICheckBox(this);
-        this.allowAdminCheckbox.setText(TextFormatting.WHITE + "Allow");
+        this.allowAdminCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.allow"));
         this.allowAdminCheckbox.setPosition(this.accessLabel.getX() + this.accessLabel.getWidth() + 10, this.adminLabel.getY(), Anchor.LEFT | Anchor.TOP);
         this.allowAdminCheckbox.setName("checkbox.allowadmin");
         this.allowAdminCheckbox.setChecked(localGate.defaultAllowOutgoing);
         this.allowAdminCheckbox.register(this);
 
         this.denyAdminCheckbox = new UICheckBox(this);
-        this.denyAdminCheckbox.setText(TextFormatting.WHITE + "Deny");
+        this.denyAdminCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.deny"));
         this.denyAdminCheckbox.setPosition(this.irisControllerLabel.getX() + this.accessLabel.getWidth() + 10 + this.allowAccessCheckbox.getWidth() + 10, this.adminLabel.getY(), Anchor.LEFT | Anchor.TOP);
         this.denyAdminCheckbox.setName("checkbox.denyadmin");
         this.denyAdminCheckbox.setChecked(!localGate.defaultAllowOutgoing);
         this.denyAdminCheckbox.register(this);
 
         this.saveOptionsButton = new UIButtonBuilder(this)
-            .text("Save")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
             .onClick(() -> {
                 if (this.playerAccessList.getSize() > 0 && this.playerAccessList.getSelectedItem() != null) {
                     if (!this.playerAccessList.getSelectedItem().getPlayerName().isEmpty()) {
@@ -191,8 +192,6 @@ public class PlayerAccessScreen extends BasicScreen {
         this.addPlayerButton = new UIButtonBuilder(this)
             .text(TextFormatting.GREEN + "+")
             .onClick(() -> {
-                System.out.println("Player: " + player);
-                System.out.println("List: " + this.playerAccessList);
                 if (this.playerAccessList.getSize() == 0) {
                     new PlayerAccessEntryScreen(this, player, localGate, "", "", 1).display();
                 } else {
@@ -227,62 +226,62 @@ public class PlayerAccessScreen extends BasicScreen {
         defaultsSeparator.setSize(this.form.getWidth() - 15, 1);
         defaultsSeparator.setPosition(0, -50, Anchor.BOTTOM | Anchor.CENTER);
 
-        this.gateDefaultAccessLabel = new UILabel(this, "Default Access:");
+        this.gateDefaultAccessLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.defaultAccess")+":");
         this.gateDefaultAccessLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
         this.gateDefaultAccessLabel.setPosition(5, -35, Anchor.BOTTOM | Anchor.LEFT);
 
         this.defaultAllowAccessCheckbox = new UICheckBox(this);
-        this.defaultAllowAccessCheckbox.setText(TextFormatting.WHITE + "Allow");
+        this.defaultAllowAccessCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.allow"));
         this.defaultAllowAccessCheckbox.setPosition(this.gateDefaultAccessLabel.getX() + this.gateDefaultAccessLabel.getWidth() + 10, this.gateDefaultAccessLabel.getY(), Anchor.LEFT | Anchor.BOTTOM);
         this.defaultAllowAccessCheckbox.setName("checkbox.defaultallowaccess");
         this.defaultAllowAccessCheckbox.setChecked(localGate.defaultAllowGateAccess);
         this.defaultAllowAccessCheckbox.register(this);
 
         this.defaultDenyAccessCheckbox = new UICheckBox(this);
-        this.defaultDenyAccessCheckbox.setText(TextFormatting.WHITE + "Deny");
+        this.defaultDenyAccessCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.deny"));
         this.defaultDenyAccessCheckbox.setPosition(this.gateDefaultAccessLabel.getX() + this.gateDefaultAccessLabel.getWidth() + 10 + this.defaultAllowAccessCheckbox.getWidth() + 10, this.gateDefaultAccessLabel.getY(), Anchor.LEFT | Anchor.BOTTOM);
         this.defaultDenyAccessCheckbox.setName("checkbox.defaultdenyaccess");
         this.defaultDenyAccessCheckbox.setChecked(!localGate.defaultAllowGateAccess);
         this.defaultDenyAccessCheckbox.register(this);
 
-        this.gateDefaultIrisControllerLabel = new UILabel(this, "Default Iris:");
+        this.gateDefaultIrisControllerLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.defaultIris")+":");
         this.gateDefaultIrisControllerLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
         this.gateDefaultIrisControllerLabel.setPosition(5, -20, Anchor.BOTTOM | Anchor.LEFT);
 
         this.defaultAllowIrisCheckbox = new UICheckBox(this);
-        this.defaultAllowIrisCheckbox.setText(TextFormatting.WHITE + "Allow");
+        this.defaultAllowIrisCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.allow"));
         this.defaultAllowIrisCheckbox.setPosition(this.gateDefaultAccessLabel.getX() + this.gateDefaultAccessLabel.getWidth() + 10, this.gateDefaultIrisControllerLabel.getY(), Anchor.LEFT | Anchor.BOTTOM);
         this.defaultAllowIrisCheckbox.setName("checkbox.defaultallowiris");
         this.defaultAllowIrisCheckbox.setChecked(localGate.defaultAllowIrisAccess);
         this.defaultAllowIrisCheckbox.register(this);
 
         this.defaultDenyIrisCheckbox = new UICheckBox(this);
-        this.defaultDenyIrisCheckbox.setText(TextFormatting.WHITE + "Deny");
+        this.defaultDenyIrisCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.deny"));
         this.defaultDenyIrisCheckbox.setPosition(this.gateDefaultAccessLabel.getX() + this.gateDefaultAccessLabel.getWidth() + 10 + this.defaultAllowAccessCheckbox.getWidth() + 10, this.gateDefaultIrisControllerLabel.getY(), Anchor.LEFT | Anchor.BOTTOM);
         this.defaultDenyIrisCheckbox.setName("checkbox.defaultdenyiris");
         this.defaultDenyIrisCheckbox.setChecked(!localGate.defaultAllowIrisAccess);
         this.defaultDenyIrisCheckbox.register(this);
 
-        this.gateDefaultAdminLabel = new UILabel(this, "Default Admin:");
+        this.gateDefaultAdminLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.defaultAdmin")+":");
         this.gateDefaultAdminLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
         this.gateDefaultAdminLabel.setPosition(5, -5, Anchor.BOTTOM | Anchor.LEFT);
 
         this.defaultAllowAdminCheckbox = new UICheckBox(this);
-        this.defaultAllowAdminCheckbox.setText(TextFormatting.WHITE + "Allow");
+        this.defaultAllowAdminCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.allow"));
         this.defaultAllowAdminCheckbox.setPosition(this.gateDefaultAdminLabel.getX() + this.gateDefaultAccessLabel.getWidth() + 10, this.gateDefaultAdminLabel.getY(), Anchor.LEFT | Anchor.BOTTOM);
         this.defaultAllowAdminCheckbox.setName("checkbox.defaultallowadmin");
         this.defaultAllowAdminCheckbox.setChecked(localGate.defaultAllowAdminAccess);
         this.defaultAllowAdminCheckbox.register(this);
 
         this.defaultDenyAdminCheckbox = new UICheckBox(this);
-        this.defaultDenyAdminCheckbox.setText(TextFormatting.WHITE + "Deny");
+        this.defaultDenyAdminCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.deny"));
         this.defaultDenyAdminCheckbox.setPosition(this.gateDefaultAdminLabel.getX() + this.gateDefaultAccessLabel.getWidth() + 10 + this.defaultAllowAccessCheckbox.getWidth() + 10, this.gateDefaultAdminLabel.getY(), Anchor.LEFT | Anchor.BOTTOM);
         this.defaultDenyAdminCheckbox.setName("checkbox.defaultdenyadmin");
         this.defaultDenyAdminCheckbox.setChecked(!localGate.defaultAllowAdminAccess);
         this.defaultDenyAdminCheckbox.register(this);
 
         this.saveDefaultOptionsButton = new UIButtonBuilder(this)
-            .text("Save")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
             .onClick(() -> {
                 ConfiguratorNetworkHandler.sendPlayerAccessInputToServer(localGate, "",this.defaultAllowAccessCheckbox.isChecked(), this.defaultAllowIrisCheckbox.isChecked(),  this.defaultAllowAdminCheckbox.isChecked(),this.allowAccessCheckbox.isChecked(), this.allowIrisControllerCheckbox.isChecked(), this.allowAdminCheckbox.isChecked());
                 sendBasicMsg(player, "changesSaved");
@@ -295,7 +294,7 @@ public class PlayerAccessScreen extends BasicScreen {
         buttonClose = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text("Close")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.close"))
             .onClick(this::close)
             .build("button.close");
 

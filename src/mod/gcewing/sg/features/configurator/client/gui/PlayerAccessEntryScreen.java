@@ -11,7 +11,9 @@ import net.malisis.core.client.gui.component.interaction.UITextField;
 import net.malisis.core.client.gui.component.interaction.button.builder.UIButtonBuilder;
 import net.malisis.core.renderer.font.FontOptions;
 import net.malisis.core.util.FontColors;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
@@ -57,14 +59,14 @@ public class PlayerAccessEntryScreen extends BasicScreen {
         titleLabel.setPosition(0, -15, Anchor.CENTER | Anchor.TOP);
 
         if (function == 1) {
-            titleLabel.setText("Add Player");
+            titleLabel.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.addPlayer"));
         } else if (function == 2) {
-            titleLabel.setText("Edit Player");
+            titleLabel.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.editPlayer"));
         } else if (function == 3) {
-            titleLabel.setText("Delete Player");
+            titleLabel.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.deletePlayer"));
         }
 
-        final UILabel addressLabel = new UILabel(this, "Player Name:");
+        final UILabel addressLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.playerName") + ":");
         addressLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
         addressLabel.setPosition(15, 10, Anchor.LEFT | Anchor.TOP);
 
@@ -84,7 +86,7 @@ public class PlayerAccessEntryScreen extends BasicScreen {
             .position(-50, 0)
             .visible(function == 3)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text("Delete")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.delete"))
             .onClick(() -> {
                 ConfiguratorNetworkHandler.sendPAEntryUpdateToServer(localGate, this.oldName, this.nameTextField.getText().trim(), function);
                 this.close();
@@ -98,7 +100,7 @@ public class PlayerAccessEntryScreen extends BasicScreen {
             .position(-50, 0)
             .visible(!(function == 3))
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text("Save")
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
             .onClick(() -> {
                 if (!this.nameTextField.getText().isEmpty()) {
                     ConfiguratorNetworkHandler.sendPAEntryUpdateToServer(localGate, "", this.nameTextField.getText().trim(), function);
