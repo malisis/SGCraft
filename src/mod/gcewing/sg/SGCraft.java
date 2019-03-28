@@ -379,7 +379,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         ItemStack orangeDye = new ItemStack(Items.DYE, 1, 14);
 
         if (config.getBoolean("recipes", "naquadah", false)) {
-            newShapelessRecipe("naquada", naquadah, 1, Ingredient.fromItems(Items.COAL, Items.SLIME_BALL, Items.BLAZE_POWDER));
+            newRecipe("naquadah", naquadah, 1, "aaa", "aaa", "bcd", 'a', Blocks.AIR, 'b', Items.COAL, 'c', Items.SLIME_BALL, 'd', Items.BLAZE_POWDER);
         }
 
         if (config.getBoolean("recipes", "naquadahIngot", true)) {
