@@ -246,7 +246,7 @@ public class DHDScreen extends SGScreen {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glDisable(GL_ALPHA_TEST);
         drawBackgroundImage();
-        drawOrangeButton();
+        drawButton();
         if (te != null) {
             if (te.state == SGState.Idle) {
                 drawEnteredSymbols();
@@ -263,19 +263,30 @@ public class DHDScreen extends SGScreen {
         drawTexturedRect((width - dhdWidth) / 2, height - dhdHeight, dhdWidth, dhdHeight);
     }
     
-    private void drawOrangeButton() {
-        bindTexture(SGCraft.mod.resourceLocation("textures/gui/dhd_centre.png"), 128, 64);
+    private void drawButton() {
         SGBaseTE te = getStargateTE();
         boolean connected = te != null && te.isActive();
+        if (te.gateType == 2) {
+            bindTexture(SGCraft.mod.resourceLocation("textures/gui/pegasus_dhd_centre.png"), 128, 64);
+        } else {
+            bindTexture(SGCraft.mod.resourceLocation("textures/gui/milkyway_dhd_centre.png"), 128, 64);
+        }
         if (te == null || !te.isMerged)
-            setColor(0.2, 0.2, 0.2);
+            setColor(0.2, 0.2, 0.2); // grey
         else if (connected)
-            setColor(1.0, 0.5, 0.0);
+            if (te.gateType == 2) {
+                setColor(0.0, 0.45, 1.0);
+            } else {
+                setColor(1.0, 0.5, 0.0);
+            }
         else
-            setColor(0.5, 0.25, 0.0);
+            if (te.gateType == 2) {
+                setColor(0.0, 0.45, 0.8);
+            } else {
+                setColor(0.5, 0.25, 0.0);
+            }
         double rx = this.dhdWidth * 48 / 512.0;
         double ry = this.dhdHeight * 48 / 256.0;
-//         Tessellator.instance.disableColor();
         drawTexturedRect(this.dhdCentreX - rx, this.dhdCentreY - ry - 6, 2 * rx, 1.5 * ry,
             64, 0, 64, 48);
         resetColor();
@@ -286,7 +297,7 @@ public class DHDScreen extends SGScreen {
                 0, 0, 64, 32);
             drawTexturedRect(this.dhdCentreX - rx - d, this.dhdCentreY - 6, 2 * (rx + d), 0.5 * ry + d,
                 0, 32, 64, 32);
-            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+           GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         }
     }
     

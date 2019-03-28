@@ -24,7 +24,7 @@ public class DHDTERenderer extends BaseTileEntityRenderer {
 
     IModel model;
     ITexture mainTexture;
-    ITexture[] buttonTextures;
+    ITexture[] milkywayButtonTextures, pegasusButtonTextures;
     ITexture[] textures;
     
     final static int buttonTextureIndex = 3;
@@ -42,10 +42,15 @@ public class DHDTERenderer extends BaseTileEntityRenderer {
             null, // button texture inserted here
         };
         ITexture button = detail.tile(0, 0);
-        buttonTextures = new ITexture[] {
+        milkywayButtonTextures = new ITexture[] {
             button.colored(0.5, 0.5,  0.5),
             button.colored(0.5, 0.25, 0.0),
             button.colored(1.0, 0.5, 0.0).emissive(),
+        };
+        pegasusButtonTextures = new ITexture[] {
+            button.colored(0.0, 0.5,  0.5),
+            button.colored(0.0, 0.25, 0.75),
+            button.colored(0.0, 0.5, 1.0).emissive(),
         };
         model = BaseModel.fromResource(mod.resourceLocation("models/block/dhd.smeg"));
         DHDTE.bounds = model.getBounds();
@@ -61,7 +66,11 @@ public class DHDTERenderer extends BaseTileEntityRenderer {
             i = 2;
         else
             i = 1;
-        textures[buttonTextureIndex] = buttonTextures[i];
+        if (gte.gateType == 2) {
+            textures[buttonTextureIndex] = pegasusButtonTextures[i];
+        } else {
+            textures[buttonTextureIndex] = milkywayButtonTextures[i];
+        }
         model.render(t.translate(0, -0.5, 0), target, textures);
     }
 
