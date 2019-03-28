@@ -156,7 +156,7 @@ public class PddScreen extends BasicScreen {
 
         this.addAddressButton = new UIButtonBuilder(this)
             .text(TextFormatting.GREEN + "+")
-            .onClick(() -> new PddEntryScreen(this, player, "Name Here", "Address Here", 10, 0, false, false).display())
+            .onClick(() -> new PddEntryScreen(this, player, "Name Here", "Address Here", 10, 0, false, false, 1).display())
             .anchor(Anchor.BOTTOM | Anchor.LEFT)
             .position(0, 0)
             //.visible(this.canAdd)
@@ -166,7 +166,7 @@ public class PddScreen extends BasicScreen {
             .text(TextFormatting.RED + "-")
             .onClick(() -> {
                 if (addressList.getSelectedItem() != null && !addressList.getSelectedItem().isLocked()) {
-                    new PddEntryScreen(this, player, addressList.getSelectedItem().getName(), addressList.getSelectedItem().getAddress(), addressList.getSelectedItem().getIndex(), addressList.getSelectedItem().getUnid(), addressList.getSelectedItem().isLocked(), true).display();
+                    new PddEntryScreen(this, player, addressList.getSelectedItem().getName(), addressList.getSelectedItem().getAddress(), addressList.getSelectedItem().getIndex(), addressList.getSelectedItem().getUnid(), addressList.getSelectedItem().isLocked(), true,3).display();
                 }
             })
             .anchor(Anchor.BOTTOM | Anchor.LEFT)
@@ -176,7 +176,7 @@ public class PddScreen extends BasicScreen {
 
         this.editAddressButton = new UIButtonBuilder(this)
             .text(TextFormatting.YELLOW + "?")
-            .onClick(() -> new PddEntryScreen(this, player, addressList.getSelectedItem().getName(), addressList.getSelectedItem().getAddress(), addressList.getSelectedItem().getIndex(), addressList.getSelectedItem().getUnid(), addressList.getSelectedItem().isLocked(), false).display())
+            .onClick(() -> new PddEntryScreen(this, player, addressList.getSelectedItem().getName(), addressList.getSelectedItem().getAddress(), addressList.getSelectedItem().getIndex(), addressList.getSelectedItem().getUnid(), addressList.getSelectedItem().isLocked(), false,2).display())
             .anchor(Anchor.BOTTOM | Anchor.LEFT)
             .position(BasicScreen.getPaddedX(this.deleteAddressButton, 2), 0)
             //.visible(this.canModify)

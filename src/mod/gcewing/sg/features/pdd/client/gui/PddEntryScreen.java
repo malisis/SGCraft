@@ -28,9 +28,9 @@ public class PddEntryScreen extends BasicScreen {
     public boolean isLocked, delete;
     public String name;
     public String address;
-    public int index, unid;
+    public int index, unid, type;
 
-    public PddEntryScreen(BasicScreen parent, EntityPlayer player, String name, String address, int index, int unid, boolean isLocked, boolean delete) {
+    public PddEntryScreen(BasicScreen parent, EntityPlayer player, String name, String address, int index, int unid, boolean isLocked, boolean delete, int type) {
         super(parent, true);
         this.player = player;
         this.name = name;
@@ -39,6 +39,7 @@ public class PddEntryScreen extends BasicScreen {
         this.unid = unid;
         this.isLocked = isLocked;
         this.delete = delete;
+        this.type = type;
     }
 
     @SuppressWarnings("unchecked")
@@ -62,7 +63,7 @@ public class PddEntryScreen extends BasicScreen {
         final UILabel titleLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.pdd.label.pddEntry"));
         titleLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
         titleLabel.setPosition(0, -15, Anchor.CENTER | Anchor.TOP);
-        if (this.name.equalsIgnoreCase("name here")) {
+        if (type == 1) {
             titleLabel.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.pdd.label.addPddEntry"));
         } else {
             if (!delete) {
