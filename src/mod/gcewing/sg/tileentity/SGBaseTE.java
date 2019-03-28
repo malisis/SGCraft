@@ -2326,7 +2326,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     List<EntityStargateIris> findIrisEntities() {
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
-        AxisAlignedBB box = new AxisAlignedBB(x, y, z, x + 1, y + 2, z + 1);
+        AxisAlignedBB box = new AxisAlignedBB(x-3, y-3, z-3, x + 3, y + 3, z + 3);
         //System.out.printf("SGBaseTE.findIrisEntities: in %s\n", box);
         return world.getEntitiesWithinAABB(EntityStargateIris.class, box);
     }
