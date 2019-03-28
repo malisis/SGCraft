@@ -137,7 +137,7 @@ public class GateAddressAccessScreen extends BasicScreen {
         this.denyIncomingCheckbox.setChecked(!localGate.defaultAllowIncoming);
         this.denyIncomingCheckbox.register(this);
 
-        this.gateOutgoingLabel = new UILabel(this, "Outgoing:");
+        this.gateOutgoingLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.outgoing")+":");
         this.gateOutgoingLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
         this.gateOutgoingLabel.setPosition(5, this.gateIncomingLabel.getY() + 15, Anchor.TOP | Anchor.LEFT);
 
