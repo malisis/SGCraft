@@ -353,6 +353,7 @@ public class PddScreen extends BasicScreen {
                 if (localGate.isConnected() && localGate.state == SGState.Connected) {
                     this.last = false;
                     this.buttonDial.setVisible(false);
+                    this.buttonReset.setVisible(false);
                     this.buttonDisconnect.setVisible(true);
                     this.buttonDisconnect.setEnabled(true);
                 } else {
