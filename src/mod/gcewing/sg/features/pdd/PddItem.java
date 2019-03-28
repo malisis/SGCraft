@@ -39,8 +39,8 @@ public class PddItem extends Item {
 
     @Override
     public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer player, EnumHand handIn) {
-        if (!worldIn.isRemote) {
-            final ItemStack stack = player.getHeldItem(handIn);
+        if (!worldIn.isRemote && player.getHeldItemMainhand().getItem() == SGCraft.pdd) {
+            final ItemStack stack = player.getHeldItemMainhand();
 
             NBTTagCompound compound = stack.getTagCompound();
             if (compound == null) {
