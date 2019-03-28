@@ -2096,11 +2096,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         Vector3 p = t1.ip(entity.posX, entity.posY, entity.posZ); // local position
         Vector3 v = t1.iv(entity.motionX, entity.motionY, entity.motionZ); // local velocity
+
         Vector3 r = t1.iv(yawVector(entity)); // local facing
         Vector3 q = t2.p(-p.x, p.y, -p.z); // new global position
         if (this.gateOrientation == 3) {
             q = t2.p(-p.x, -p.y, -p.z); // f
         }
+
         Vector3 u = t2.v(-v.x, v.y, -v.z); // new global velocity
         Vector3 s = t2.v(r.mul(-1)); // new global facing
 
@@ -2192,6 +2194,81 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return SGAddressing.getWorld(dimension);
     }
 
+    private void setVelocity(Entity entity, Vector3 v) {
+        if (this.gateOrientation == 1 && this.getConnectedStargateTE().gateOrientation == 1) {
+            entity.setVelocity(v.x, v.y, v.z);
+        }
+        if (this.gateOrientation == 1 && this.getConnectedStargateTE().gateOrientation == 2) {
+            entity.setVelocity(v.x, -v.z, v.y);
+        }
+        if (this.gateOrientation == 1 && this.getConnectedStargateTE().gateOrientation == 3) {
+            entity.setVelocity(v.x, v.z, v.y);
+        }
+
+        if (this.gateOrientation == 2 && this.getConnectedStargateTE().gateOrientation == 1) {
+            entity.setVelocity(v.x, v.z, -v.y);
+        }
+        if (this.gateOrientation == 2 && this.getConnectedStargateTE().gateOrientation == 2) {
+            entity.setVelocity(v.x, -v.z, v.y);
+        }
+        if (this.gateOrientation == 2 && this.getConnectedStargateTE().gateOrientation == 3) {
+            entity.setVelocity(v.x, v.z, v.y);
+        }
+
+        if (this.gateOrientation == 3 && this.getConnectedStargateTE().gateOrientation == 1) {
+            entity.setVelocity(v.x, v.z, -v.y);
+        }
+        if (this.gateOrientation == 3 && this.getConnectedStargateTE().gateOrientation == 2) {
+            entity.setVelocity(v.x, -v.z, v.y);
+        }
+        if (this.gateOrientation == 3 && this.getConnectedStargateTE().gateOrientation == 3) {
+            entity.setVelocity(v.x, v.z, v.y);
+        }
+
+    }
+
+    private void setEntityLocationAndPitch(Entity entity, Vector3 p, double yaw) {
+        float pitch = entity.rotationPitch;
+        if (this.getConnectedStargateTE().gateOrientation == 2) {
+            pitch = pitch - 90;
+        }
+        if (this.getConnectedStargateTE().gateOrientation == 3) {
+            pitch = pitch + 90;
+        }
+
+        double x = p.x;
+        double y = p.y;
+        double z = p.z;
+
+        if (this.getConnectedStargateTE().gateOrientation == 2 || this.getConnectedStargateTE().gateOrientation == 3) {
+            if (this.getConnectedStargateTE().facingDirectionOfBase == 0) { // North
+                z = z - 2;
+            }
+
+            if (this.getConnectedStargateTE().facingDirectionOfBase == 1) { // West
+                x = x - 2;
+            }
+
+            if (this.getConnectedStargateTE().facingDirectionOfBase == 2) { // South
+                z = z + 2;
+            }
+
+            if (this.getConnectedStargateTE().facingDirectionOfBase == 3) { // East
+                x = x + 2;
+            }
+        }
+
+        if (this.getConnectedStargateTE().gateOrientation == 3) {
+            y = y - 4;
+        }
+
+        if (entity instanceof EntityPlayerMP) {
+           ((EntityPlayerMP) entity).connection.setPlayerLocation(x, y, z, (float) yaw, pitch);
+        } else {
+            entity.setLocationAndAngles(x, y, z, (float)yaw, -pitch);
+        }
+    }
+
     Entity teleportWithinDimension(Entity entity, Vector3 p, Vector3 v, double a, boolean destBlocked) {
         if (entity instanceof EntityPlayerMP) {
             return teleportPlayerWithinDimension((EntityPlayerMP) entity, p, v, a);
@@ -2202,7 +2279,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     Entity teleportPlayerWithinDimension(EntityPlayerMP entity, Vector3 p, Vector3 v, double a) {
         entity.rotationYaw = (float)a;
-        entity.setPositionAndUpdate(p.x, p.y, p.z);
+        setEntityLocationAndPitch(entity, p, a);
         setVelocity(entity, v);
         entity.world.updateEntityWithOptionalForce(entity, false);
         entity.velocityChanged = true; // Have to mark entity velocity changed.
@@ -2217,19 +2294,17 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             transferPlayerToDimension(player, dimension, q, v, a);
             return player;
         } else {
-            setVelocity(entity,v); // Make sure riding entity exits at the same speed they entered otherwise event horizon will kill them.
+            setVelocity(entity, v);
             return teleportEntityToDimension(entity, p, v, a, dimension, destBlocked);
         }
     }
 
     void transferPlayerToDimension(EntityPlayerMP player, int newDimension, Vector3 p, Vector3 v, double a) {
         FakeTeleporter fakeTeleporter = new FakeTeleporter();
-        double x = player.motionX;
-        double y = player.motionY;
-        double z = player.motionZ;
         player.changeDimension(newDimension, fakeTeleporter);
         // Now check to see if the player made it through the above server method, if it did, then update their location.
         if (player.dimension == newDimension) {
+            setEntityLocationAndPitch(player, p, a);
             player.connection.setPlayerLocation(p.x, p.y, p.z, (float) a, player.rotationPitch);
             setVelocity(player, v);
             player.velocityChanged = true;
@@ -2250,18 +2325,20 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         if (this.world == newWorld) {
             entity.rotationYaw = (float) a;
-            entity.setPositionAndUpdate(p.x, p.y, p.z);
-            setVelocity(entity, v);
+            //entity.setPositionAndUpdate(p.x, p.y, p.z);
+            setEntityLocationAndPitch(entity, p, a);
             entity.world.updateEntityWithOptionalForce(entity, false);
-            entity.velocityChanged = true; // Have to mark entity velocity changed.
+            setVelocity(entity, v);
+            entity.velocityChanged = true;
             return entity;
         } else {
             //Todo: the following was modified because the below should only fire if changing permissions, else an "entity already exists" is thrown.
             FakeTeleporter fakeTeleporter = new FakeTeleporter();
             Entity newEntity = entity.changeDimension(newWorld.provider.getDimension(), fakeTeleporter);
             if (newEntity.dimension == newWorld.provider.getDimension()) {
-                newEntity.setLocationAndAngles(p.x, p.y, p.z, (float) a, entity.rotationPitch);
-                setVelocity(newEntity, v); //Set velocity so that items exist at the same rate they did when they entered the event horizon.
+                setEntityLocationAndPitch(newEntity, p, a);
+                //newEntity.setLocationAndAngles(p.x, p.y, p.z, (float) a, entity.rotationPitch);
+                setVelocity(newEntity, v);
                 newEntity.velocityChanged = true;
             }
 
@@ -2299,12 +2376,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         float s = oldEntity.getAIMoveSpeed();
         if (s != 0)
             newEntity.setAIMoveSpeed(s);
-    }
-
-    static void setVelocity(Entity entity, Vector3 v) {
-        entity.motionX = v.x;
-        entity.motionY = v.y;
-        entity.motionZ = v.z;
     }
 
     public void updateIrisEntity() {
