@@ -299,7 +299,6 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         }
 
         zpm = addItem(new ZPMItem(), "zpm");
-
         tollan_phase_shift_device = newItem("tollan_phase_shift_device");
 
         if (isModLoaded("malisiscore")) {
