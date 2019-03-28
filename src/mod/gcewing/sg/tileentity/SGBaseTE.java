@@ -2260,6 +2260,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         if (this.getConnectedStargateTE().gateOrientation == 3) {
             y = y - 4;
+        } else {
+            y = y + 1;
         }
 
         if (entity instanceof EntityPlayerMP) {
