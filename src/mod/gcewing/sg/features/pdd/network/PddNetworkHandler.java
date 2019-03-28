@@ -37,7 +37,7 @@ public class PddNetworkHandler extends SGChannel {
     public void handlePddAddAddressRequest(EntityPlayer player, ChannelInput data) {
         String address = data.readUTF();
         address = SGAddressing.formatAddress(address, "-", "-");
-        new PddEntryScreen(null, player, "Name Here", address, 10, 0, false, false).display();
+        new PddEntryScreen(null, player, "Name Here", address, 10, 0, false, false, 1).display();
     }
 
     public static void updatePdd(EntityPlayer player, boolean value, int status) {
