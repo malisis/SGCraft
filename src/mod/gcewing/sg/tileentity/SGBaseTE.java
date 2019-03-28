@@ -2206,23 +2206,23 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
 
         if (this.gateOrientation == 2 && this.getConnectedStargateTE().gateOrientation == 1) {
-            entity.setVelocity(v.x, v.z, -v.y);
+            entity.setVelocity(v.x, 0, -v.y);
         }
         if (this.gateOrientation == 2 && this.getConnectedStargateTE().gateOrientation == 2) {
-            entity.setVelocity(v.x, -v.z, v.y);
+            entity.setVelocity(v.x, -v.y, v.z);
         }
         if (this.gateOrientation == 2 && this.getConnectedStargateTE().gateOrientation == 3) {
-            entity.setVelocity(v.x, v.z, v.y);
+            entity.setVelocity(v.x, v.y, v.z);
         }
 
         if (this.gateOrientation == 3 && this.getConnectedStargateTE().gateOrientation == 1) {
-            entity.setVelocity(v.x, v.z, -v.y);
+            entity.setVelocity(v.x, 0, v.y);
         }
         if (this.gateOrientation == 3 && this.getConnectedStargateTE().gateOrientation == 2) {
-            entity.setVelocity(v.x, -v.z, v.y);
+            entity.setVelocity(v.x, v.y, v.z);
         }
         if (this.gateOrientation == 3 && this.getConnectedStargateTE().gateOrientation == 3) {
-            entity.setVelocity(v.x, v.z, v.y);
+            entity.setVelocity(v.x, -v.y, v.z);
         }
 
     }
