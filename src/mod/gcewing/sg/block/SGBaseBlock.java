@@ -237,7 +237,6 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
                     if (!(x == 0 && z == 0)) {
                         BlockPos rp = t.p(x, 0, z).blockPos();
                         Block block = world.getBlockState(rp).getBlock();
-                        block.set
                         if (block instanceof SGRingBlock) {
                             ((SGRingBlock) block).mergeWith(world, rp, pos);
                         }
