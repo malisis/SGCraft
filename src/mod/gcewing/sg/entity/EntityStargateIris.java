@@ -35,16 +35,25 @@ public class EntityStargateIris extends Entity implements IEntityAdditionalSpawn
         this(te.getWorld());
         double radius = 2;
         double thickness = SGBaseTE.irisThickness;
-        double cx = 0;
-        double cy = 2;
-        double cz = SGBaseTE.irisZPosition;
-        double hx = radius;
-        double hy = radius;
-        double hz = thickness;
-        AxisAlignedBB localBox = new AxisAlignedBB(
-            cx - hx, cy - hy, cz - hz,
-            cx + hx, cy + hy, cz + hz
-        );
+        AxisAlignedBB localBox;
+        if (te.gateOrientation == 1) { // Vertical
+            double cx = 0;
+            double cy = 2;
+            double cz = SGBaseTE.irisZPosition;
+            double hx = radius;
+            double hy = radius;
+            double hz = thickness;
+            localBox = new AxisAlignedBB(cx - hx, cy - hy, cz - hz, cx + hx, cy + hy, cz + hz);
+        } else {
+            double cx = 0;
+            double cy = SGBaseTE.irisZPosition;
+            double cz = -2;
+            double hx = radius;
+            double hy = thickness;
+            double hz = radius;
+            localBox = new AxisAlignedBB(cx - hx, cy - hy, cz - hz, cx + hx, cy + hy, cz + hz);
+        }
+
         Trans3 t = te.localToGlobalTransformation();
         AxisAlignedBB globalBox = t.t(localBox);
         //System.out.printf("EntityStargateIris.init: local %s\n", localBox);
