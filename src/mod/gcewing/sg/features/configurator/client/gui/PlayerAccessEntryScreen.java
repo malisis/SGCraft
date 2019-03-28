@@ -80,10 +80,21 @@ public class PlayerAccessEntryScreen extends BasicScreen {
 
         // ****************************************************************************************************************************
 
+        // Close button
+        final UIButton buttonClose = new UIButtonBuilder(this)
+                .width(40)
+                .anchor(Anchor.BOTTOM | Anchor.RIGHT)
+                .text("Close")
+                .onClick(() -> {
+                    this.close();
+                })
+                .listener(this)
+                .build("button.close");
+
         // Delete Feature button
         final UIButton buttonDelete = new UIButtonBuilder(this)
             .width(40)
-            .position(-50, 0)
+            .position(-(buttonClose.getX() + buttonClose.getWidth() + 5), 0)
             .visible(function == 3)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.delete"))
@@ -97,7 +108,7 @@ public class PlayerAccessEntryScreen extends BasicScreen {
         // Save Feature button
         final UIButton buttonSave = new UIButtonBuilder(this)
             .width(40)
-            .position(-50, 0)
+            .position(-(buttonClose.getX() + buttonClose.getWidth() + 5), 0)
             .visible(!(function == 3))
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
@@ -110,17 +121,6 @@ public class PlayerAccessEntryScreen extends BasicScreen {
             })
             .listener(this)
             .build("button.save");
-
-        // Close button
-        final UIButton buttonClose = new UIButtonBuilder(this)
-            .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text("Close")
-            .onClick(() -> {
-                this.close();
-            })
-            .listener(this)
-            .build("button.close");
 
         this.form.add(titleLabel, addressLabel, nameTextField, buttonDelete, buttonSave, buttonClose);
         addToScreen(this.form);

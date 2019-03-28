@@ -280,6 +280,13 @@ public class PlayerAccessScreen extends BasicScreen {
         this.defaultDenyAdminCheckbox.setChecked(!localGate.defaultAllowAdminAccess);
         this.defaultDenyAdminCheckbox.register(this);
 
+        buttonClose = new UIButtonBuilder(this)
+                .width(40)
+                .anchor(Anchor.BOTTOM | Anchor.RIGHT)
+                .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.close"))
+                .onClick(this::close)
+                .build("button.close");
+
         this.saveDefaultOptionsButton = new UIButtonBuilder(this)
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
             .onClick(() -> {
@@ -288,15 +295,8 @@ public class PlayerAccessScreen extends BasicScreen {
                 this.close();
             })
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .position(-45,0)
+            .position(-(buttonClose.getX() + buttonClose.getWidth() + 5),0)
             .build("button.savedefaults");
-
-        buttonClose = new UIButtonBuilder(this)
-            .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.close"))
-            .onClick(this::close)
-            .build("button.close");
 
         this.form.add(this.playerContainer, defaultsSeparator, this.addPlayerButton, this.editPlayerButton, this.deletePlayerButton, this.gateDefaultAccessLabel, this.gateDefaultIrisControllerLabel, buttonClose);
         this.form.add(this.optionsContainer, saveDefaultOptionsButton);

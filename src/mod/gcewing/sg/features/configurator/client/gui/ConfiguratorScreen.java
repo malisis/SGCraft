@@ -455,11 +455,22 @@ public class ConfiguratorScreen extends BasicScreen {
             .listener(this)
             .build("button.defaults");
 
+        // Close button
+        final UIButton buttonClose = new UIButtonBuilder(this)
+                .width(40)
+                .anchor(Anchor.BOTTOM | Anchor.RIGHT)
+                .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.close"))
+                .onClick(() -> {
+                    this.close();
+                })
+                .listener(this)
+                .build("button.close");
+
         // Save button
         final UIButton buttonSave = new UIButtonBuilder(this)
             .width(40)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .position(-40, 0)
+            .position(-(buttonClose.getX() + buttonClose.getWidth() + 5), 0)
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
             .onClick(() -> {
                 int gateType = 1; // Default
@@ -492,17 +503,6 @@ public class ConfiguratorScreen extends BasicScreen {
         this.gateAddressLabel = new UILabel(this, "");
         this.gateAddressLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.1F).build());
         this.gateAddressLabel.setPosition(40, -2, Anchor.CENTER | Anchor.BOTTOM);
-
-        // Close button
-        final UIButton buttonClose = new UIButtonBuilder(this)
-            .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.close"))
-            .onClick(() -> {
-                this.close();
-            })
-            .listener(this)
-            .build("button.close");
 
         this.form.add(titleLabel, this.numericOptionsArea, this.checkboxOptionsArea, buttonDefaults, buttonSave, addressLabel, this.gateAddressLabel, buttonClose);
         addToScreen(this.form);

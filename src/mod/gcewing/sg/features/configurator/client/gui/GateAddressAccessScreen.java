@@ -210,11 +210,11 @@ public class GateAddressAccessScreen extends BasicScreen {
 
         final UISeparator defaultsSeparator = new UISeparator(this);
         defaultsSeparator.setSize(this.form.getWidth() - 10, 1);
-        defaultsSeparator.setPosition(0, -43, Anchor.BOTTOM | Anchor.CENTER);
+        defaultsSeparator.setPosition(0, -50, Anchor.BOTTOM | Anchor.CENTER);
 
         this.gateDefaultIncomingLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.defaultIncoming"));
         this.gateDefaultIncomingLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
-        this.gateDefaultIncomingLabel.setPosition(5, -25, Anchor.BOTTOM | Anchor.LEFT);
+        this.gateDefaultIncomingLabel.setPosition(5, -35, Anchor.BOTTOM | Anchor.LEFT);
 
         this.defaultAllowIncomingCheckbox = new UICheckBox(this);
         this.defaultAllowIncomingCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.allow"));
@@ -232,7 +232,7 @@ public class GateAddressAccessScreen extends BasicScreen {
 
         this.gateDefaultOutgoingLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.defaultOutgoing"));
         this.gateDefaultOutgoingLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.0F).build());
-        this.gateDefaultOutgoingLabel.setPosition(5, -5, Anchor.BOTTOM | Anchor.LEFT);
+        this.gateDefaultOutgoingLabel.setPosition(5, -20, Anchor.BOTTOM | Anchor.LEFT);
 
         this.defaultAllowOutgoingCheckbox = new UICheckBox(this);
         this.defaultAllowOutgoingCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.allow"));
@@ -248,6 +248,13 @@ public class GateAddressAccessScreen extends BasicScreen {
         this.defaultDenyOutgoingCheckbox.setChecked(!localGate.defaultAllowOutgoing);
         this.defaultDenyOutgoingCheckbox.register(this);
 
+        buttonClose = new UIButtonBuilder(this)
+                .width(40)
+                .anchor(Anchor.BOTTOM | Anchor.RIGHT)
+                .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.close"))
+                .onClick(this::close)
+                .build("button.close");
+
         this.saveDefaultOptionsButton = new UIButtonBuilder(this)
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
             .onClick(() -> {
@@ -256,15 +263,8 @@ public class GateAddressAccessScreen extends BasicScreen {
                 this.close();
             })
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .position(-45,0)
+            .position(-(buttonClose.getX() + buttonClose.getWidth() + 5),0)
             .build("button.savedefaults");
-
-        buttonClose = new UIButtonBuilder(this)
-            .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
-            .onClick(this::close)
-            .build("button.close");
 
         this.form.add(this.addressContainer, defaultsSeparator, this.addAddressButton, this.editAddressButton, this.deleteAddressButton, this.gateDefaultIncomingLabel, this.gateDefaultOutgoingLabel, buttonClose);
         this.form.add(this.addressOptionsContainer, saveDefaultOptionsButton);

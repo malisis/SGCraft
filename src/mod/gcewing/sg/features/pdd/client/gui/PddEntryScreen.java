@@ -107,10 +107,21 @@ public class PddEntryScreen extends BasicScreen {
 
         // ****************************************************************************************************************************
 
+        // Close button
+        final UIButton buttonClose = new UIButtonBuilder(this)
+                .width(40)
+                .anchor(Anchor.BOTTOM | Anchor.RIGHT)
+                .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.close"))
+                .onClick(() -> {
+                    this.close();
+                })
+                .listener(this)
+                .build("button.close");
+
         // Delete Feature button
         final UIButton buttonDelete = new UIButtonBuilder(this)
             .width(40)
-            .position(-50, 0)
+            .position(-(buttonClose.getX() + buttonClose.getWidth() + 5), 0)
             .visible(this.delete)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.delete"))
@@ -125,7 +136,7 @@ public class PddEntryScreen extends BasicScreen {
         // Save Feature button
         final UIButton buttonSave = new UIButtonBuilder(this)
             .width(40)
-            .position(-50, 0)
+            .position(-(buttonClose.getX() + buttonClose.getWidth() + 5), 0)
             .visible(!this.delete)
             .anchor(Anchor.BOTTOM | Anchor.RIGHT)
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
@@ -139,17 +150,6 @@ public class PddEntryScreen extends BasicScreen {
             })
             .listener(this)
             .build("button.save");
-
-        // Close button
-        final UIButton buttonClose = new UIButtonBuilder(this)
-            .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.close"))
-            .onClick(() -> {
-                this.close();
-            })
-            .listener(this)
-            .build("button.close");
 
         this.form.add(titleLabel, nameLabel, nameTextField, addressLabel, addressTextField, indexLabel, indexTextField, buttonDelete, buttonSave, buttonClose);
         addToScreen(this.form);
