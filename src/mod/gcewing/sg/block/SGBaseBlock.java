@@ -140,9 +140,7 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
-        EnumHand hand, EnumFacing side, float cx, float cy, float cz)
-    {
+    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float cx, float cy, float cz) {
         String Side = world.isRemote ? "Client" : "Server";
         SGBaseTE te = getTileEntity(world, pos);
         //System.out.printf("SGBaseBlock.onBlockActivated: %s: Tile entity = %s\n", Side, te);
@@ -152,6 +150,10 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
             }
 
             if (te.isMerged && !world.isRemote)  {
+
+                if (player.getHeldItemMainhand().getItem() == SGCraft.pdd || player.getHeldItemMainhand().getItem() == SGCraft.configurator || player.getHeldItemMainhand().getItem() == SGCraft.gdo) {
+                    return false;
+                }
                 SGCraft.mod.openGui(player, SGGui.SGBase, world, pos);
                 return true;
             }
@@ -235,6 +237,7 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
                     if (!(x == 0 && z == 0)) {
                         BlockPos rp = t.p(x, 0, z).blockPos();
                         Block block = world.getBlockState(rp).getBlock();
+                        block.set
                         if (block instanceof SGRingBlock) {
                             ((SGRingBlock) block).mergeWith(world, rp, pos);
                         }
