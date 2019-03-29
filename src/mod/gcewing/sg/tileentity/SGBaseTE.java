@@ -2094,13 +2094,14 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                     entity.rotationPitch, entity.rotationYaw);
         }
 
-        Vector3 p = t1.ip(entity.posX, entity.posY, entity.posZ); // local position
-        Vector3 v = t1.iv(entity.motionX, entity.motionY, entity.motionZ); // local velocity
-
+        Vector3 p = t1.ip(entity.posX, entity.posY, entity.posZ); // local position // Seems to be center of CenterPos + 0.5Y
+        Vector3 v = t1.iv(entity.motionX, entity.motionY, entity.motionZ); // local velocity // Creates an inverse of the original input velocity.
         Vector3 r = t1.iv(yawVector(entity)); // local facing
-        Vector3 q = t2.p(-p.x, p.y, -p.z); // new global position
+
+        Vector3 q = t2.p(-p.x, p.y, -p.z); // new global position, while inverting x and z for some reason?
+
         if (this.gateOrientation == 3) {
-            q = t2.p(-p.x, -p.y, -p.z); // f
+            //q = t2.p(-p.x, -p.y, -p.z); // f
         }
 
         Vector3 u = t2.v(-v.x, v.y, -v.z); // new global velocity
@@ -2194,83 +2195,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return SGAddressing.getWorld(dimension);
     }
 
-    private void setVelocity(Entity entity, Vector3 v) {
-        if (this.gateOrientation == 1 && this.getConnectedStargateTE().gateOrientation == 1) {
-            entity.setVelocity(v.x, v.y, v.z);
-        }
-        if (this.gateOrientation == 1 && this.getConnectedStargateTE().gateOrientation == 2) {
-            entity.setVelocity(v.x, -v.z, v.y);
-        }
-        if (this.gateOrientation == 1 && this.getConnectedStargateTE().gateOrientation == 3) {
-            entity.setVelocity(v.x, v.z, v.y);
-        }
-
-        if (this.gateOrientation == 2 && this.getConnectedStargateTE().gateOrientation == 1) {
-            entity.setVelocity(v.x, 0, -v.y);
-        }
-        if (this.gateOrientation == 2 && this.getConnectedStargateTE().gateOrientation == 2) {
-            entity.setVelocity(v.x, -v.y, v.z);
-        }
-        if (this.gateOrientation == 2 && this.getConnectedStargateTE().gateOrientation == 3) {
-            entity.setVelocity(v.x, v.y, v.z);
-        }
-
-        if (this.gateOrientation == 3 && this.getConnectedStargateTE().gateOrientation == 1) {
-            entity.setVelocity(v.x, 0, v.y);
-        }
-        if (this.gateOrientation == 3 && this.getConnectedStargateTE().gateOrientation == 2) {
-            entity.setVelocity(v.x, v.y, v.z);
-        }
-        if (this.gateOrientation == 3 && this.getConnectedStargateTE().gateOrientation == 3) {
-            entity.setVelocity(v.x, -v.y, v.z);
-        }
-
-    }
-
-    private void setEntityLocationAndPitch(Entity entity, Vector3 p, double yaw) {
-        float pitch = entity.rotationPitch;
-        if (this.getConnectedStargateTE().gateOrientation == 2) {
-            pitch = pitch - 90;
-        }
-        if (this.getConnectedStargateTE().gateOrientation == 3) {
-            pitch = pitch + 90;
-        }
-
-        double x = p.x;
-        double y = p.y;
-        double z = p.z;
-
-        if (this.getConnectedStargateTE().gateOrientation == 2 || this.getConnectedStargateTE().gateOrientation == 3) {
-            if (this.getConnectedStargateTE().facingDirectionOfBase == 0) { // North
-                z = z - 2;
-            }
-
-            if (this.getConnectedStargateTE().facingDirectionOfBase == 1) { // West
-                x = x - 2;
-            }
-
-            if (this.getConnectedStargateTE().facingDirectionOfBase == 2) { // South
-                z = z + 2;
-            }
-
-            if (this.getConnectedStargateTE().facingDirectionOfBase == 3) { // East
-                x = x + 2;
-            }
-        }
-
-        if (this.getConnectedStargateTE().gateOrientation == 3) {
-            y = y - 4;
-        } else {
-            y = y + 1;
-        }
-
-        if (entity instanceof EntityPlayerMP) {
-           ((EntityPlayerMP) entity).connection.setPlayerLocation(x, y, z, (float) yaw, pitch);
-        } else {
-            entity.setLocationAndAngles(x, y, z, (float)yaw, -pitch);
-        }
-    }
-
     Entity teleportWithinDimension(Entity entity, Vector3 p, Vector3 v, double a, boolean destBlocked) {
         if (entity instanceof EntityPlayerMP) {
             return teleportPlayerWithinDimension((EntityPlayerMP) entity, p, v, a);
@@ -2281,7 +2205,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     Entity teleportPlayerWithinDimension(EntityPlayerMP entity, Vector3 p, Vector3 v, double a) {
         entity.rotationYaw = (float)a;
-        setEntityLocationAndPitch(entity, p, a);
+        entity.setPositionAndUpdate(p.x, p.y, p.z);
         setVelocity(entity, v);
         entity.world.updateEntityWithOptionalForce(entity, false);
         entity.velocityChanged = true; // Have to mark entity velocity changed.
@@ -2306,7 +2230,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         player.changeDimension(newDimension, fakeTeleporter);
         // Now check to see if the player made it through the above server method, if it did, then update their location.
         if (player.dimension == newDimension) {
-            setEntityLocationAndPitch(player, p, a);
             player.connection.setPlayerLocation(p.x, p.y, p.z, (float) a, player.rotationPitch);
             setVelocity(player, v);
             player.velocityChanged = true;
@@ -2327,25 +2250,29 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         if (this.world == newWorld) {
             entity.rotationYaw = (float) a;
-            //entity.setPositionAndUpdate(p.x, p.y, p.z);
-            setEntityLocationAndPitch(entity, p, a);
-            entity.world.updateEntityWithOptionalForce(entity, false);
+            entity.setPositionAndUpdate(p.x, p.y, p.z);
             setVelocity(entity, v);
-            entity.velocityChanged = true;
+            entity.world.updateEntityWithOptionalForce(entity, false);
+            entity.velocityChanged = true; // Have to mark entity velocity changed.
             return entity;
         } else {
             //Todo: the following was modified because the below should only fire if changing permissions, else an "entity already exists" is thrown.
             FakeTeleporter fakeTeleporter = new FakeTeleporter();
             Entity newEntity = entity.changeDimension(newWorld.provider.getDimension(), fakeTeleporter);
             if (newEntity.dimension == newWorld.provider.getDimension()) {
-                setEntityLocationAndPitch(newEntity, p, a);
-                //newEntity.setLocationAndAngles(p.x, p.y, p.z, (float) a, entity.rotationPitch);
-                setVelocity(newEntity, v);
+                newEntity.setLocationAndAngles(p.x, p.y, p.z, (float) a, entity.rotationPitch);
+                setVelocity(newEntity, v); //Set velocity so that items exist at the same rate they did when they entered the event horizon.
                 newEntity.velocityChanged = true;
             }
 
             return newEntity;
         }
+    }
+
+    static void setVelocity(Entity entity, Vector3 v) {
+        entity.motionX = v.x;
+        entity.motionY = v.y;
+        entity.motionZ = v.z;
     }
 
     protected static int yawSign(Entity entity) {
