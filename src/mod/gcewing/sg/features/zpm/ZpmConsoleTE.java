@@ -320,7 +320,9 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     @Nullable
     public <T> T getCapability(Capability<T> capability, @Nullable EnumFacing facing) {
         if (capability == CapabilityEnergy.ENERGY) {
-            return (T) this.storage;
+            if (this.storage != null) {
+                return (T) this.storage;
+            }
         }
         return null;
     }
