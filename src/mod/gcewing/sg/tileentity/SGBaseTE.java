@@ -2098,14 +2098,45 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         Vector3 v = t1.iv(entity.motionX, entity.motionY, entity.motionZ); // local velocity // Creates an inverse of the original input velocity.
         Vector3 r = t1.iv(yawVector(entity)); // local facing
 
-        Vector3 q = t2.p(-p.x, p.y, -p.z); // new global position, while inverting x and z for some reason?
+        Vector3 q = t2.p(-p.x, p.y, -p.z); // new global position, while inverting x and z for some reason and adding the local Position values to this so u come out in the reletive same position IN the gate.
 
-        if (this.gateOrientation == 3) {
-            //q = t2.p(-p.x, -p.y, -p.z); // f
-        }
-
+        Vector3 original = t2.p(0,0,0);
         Vector3 u = t2.v(-v.x, v.y, -v.z); // new global velocity
         Vector3 s = t2.v(r.mul(-1)); // new global facing
+
+        //System.out.println("Original: " + original.x + " | " + original.y + " | " + original.z + " Face: " + this.getConnectedStargateTE().facingDirectionOfBase);
+
+        // Todo:  why isn't the result of this changed based on the facing direction of the gate/baseblock.
+        if (this.getConnectedStargateTE().gateOrientation == 2) {
+            q = t2.p(0, 0, -2); // This for some reason will put the player in the middle of the horizontal gate with no incoming gate correction.
+            if (this.gateOrientation == 1) {
+                u = t2.v(0, -v.z, 0); // new velocity  - 3/28/2019 - working.
+            } else if (this.gateOrientation == 2) {
+                u = t2.v(0, -v.y, 0); // new velocity  - 3/28/2019 - working.
+            } else if (this.gateOrientation == 3) {
+                u = t2.v(0, -v.z, 0); // new velocity  - 3/28/2019 - working.
+            }
+        }
+
+        if (this.getConnectedStargateTE().gateOrientation == 3) {
+            q = t2.p(0, 0, -2); // This for some reason will put the player in the middle of the horizontal gate with no incoming gate correction.
+            u = t2.v(0, v.y, 0); // new velocity  - 3/28/2019 - working.
+            // 3/28/2019 - working.
+            // Todo:  why isn't the result of this changed based on the facing direction of the gate/baseblock.
+        }
+
+        // If entering gate from Horizontal and going to a vertical, reset all incoming x/y/z and assume new.  Keep velocity
+        if (this.gateOrientation >= 2 && this.getConnectedStargateTE().gateOrientation == 1) {
+            q = t2.p(0, 0.5, 0); // new position - 3/28/2019 - working.
+            if (this.gateOrientation == 2) {
+                u = t2.v(0, 0, -v.y); // new velocity  - 3/28/2019 - working.
+            } else if (this.gateOrientation == 3) {
+                u = t2.v(0, 0, v.y); // new velocity  - not tested
+            }
+            // Todo: I don't know why this seems to work 100% regardless of gates facing direction.
+        }
+
+        //System.out.println("New Velocity: " + u.x + " | " + u.y + " | " + u.z);
 
         if (debugTeleport) {
             System.out.printf("SGBaseTE.teleportEntity: Facing old %s new %s\n", r, s);
@@ -2205,7 +2236,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     Entity teleportPlayerWithinDimension(EntityPlayerMP entity, Vector3 p, Vector3 v, double a) {
         entity.rotationYaw = (float)a;
-        entity.setPositionAndUpdate(p.x, p.y, p.z);
+        //entity.setPositionAndUpdate(p.x, p.y, p.z);
+        // Todo:
+        setEntityLocationAndPitch(entity, p, a);
         setVelocity(entity, v);
         entity.world.updateEntityWithOptionalForce(entity, false);
         entity.velocityChanged = true; // Have to mark entity velocity changed.
@@ -2230,7 +2263,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         player.changeDimension(newDimension, fakeTeleporter);
         // Now check to see if the player made it through the above server method, if it did, then update their location.
         if (player.dimension == newDimension) {
-            player.connection.setPlayerLocation(p.x, p.y, p.z, (float) a, player.rotationPitch);
+            //player.connection.setPlayerLocation(p.x, p.y, p.z, (float) a, player.rotationPitch);
+            // Todo:
+            setEntityLocationAndPitch(player, p, a);
             setVelocity(player, v);
             player.velocityChanged = true;
         }
@@ -2250,7 +2285,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         if (this.world == newWorld) {
             entity.rotationYaw = (float) a;
-            entity.setPositionAndUpdate(p.x, p.y, p.z);
+            //entity.setPositionAndUpdate(p.x, p.y, p.z);
+            // Todo:
+            setEntityLocationAndPitch(entity, p, a);
             setVelocity(entity, v);
             entity.world.updateEntityWithOptionalForce(entity, false);
             entity.velocityChanged = true; // Have to mark entity velocity changed.
@@ -2260,12 +2297,39 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             FakeTeleporter fakeTeleporter = new FakeTeleporter();
             Entity newEntity = entity.changeDimension(newWorld.provider.getDimension(), fakeTeleporter);
             if (newEntity.dimension == newWorld.provider.getDimension()) {
-                newEntity.setLocationAndAngles(p.x, p.y, p.z, (float) a, entity.rotationPitch);
+                //newEntity.setLocationAndAngles(p.x, p.y, p.z, (float) a, entity.rotationPitch);
+                // Todo:
+                setEntityLocationAndPitch(newEntity, p, a);
                 setVelocity(newEntity, v); //Set velocity so that items exist at the same rate they did when they entered the event horizon.
                 newEntity.velocityChanged = true;
             }
 
             return newEntity;
+        }
+    }
+
+    // Todo: not all transport methods are set to us ethis.
+    private void setEntityLocationAndPitch(Entity entity, Vector3 p, double yaw) {
+        float pitch = entity.rotationPitch;
+        if (this.getConnectedStargateTE().gateOrientation == 2) {
+            pitch = pitch - 90;
+        }
+        if (this.getConnectedStargateTE().gateOrientation == 3) {
+            pitch = pitch + 90;
+        }
+
+        double x = p.x;
+        double y = p.y;
+        double z = p.z;
+
+        if (this.getConnectedStargateTE().gateOrientation == 3) {
+            y = y - 4;
+        }
+
+        if (entity instanceof EntityPlayerMP) {
+            ((EntityPlayerMP) entity).connection.setPlayerLocation(x, y, z, (float) yaw, pitch);
+        } else {
+            entity.setLocationAndAngles(x, y, z, (float)yaw, -pitch);
         }
     }
 
