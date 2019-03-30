@@ -156,6 +156,10 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
                 SGCraft.mod.openGui(player, SGGui.SGBase, world, pos);
                 return true;
             }
+
+            if (world.isRemote) {
+                return true; //Client needs to be told too.
+            }
         }
         return false;
     }
