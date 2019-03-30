@@ -1297,6 +1297,15 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             PlayerAccessData playerAccessEntry = this.playerAccessData.stream().filter(g -> g.getPlayerName().equalsIgnoreCase(playerName)).findFirst().get();
             value = playerAccessEntry.hasIrisAccess();
         }
+
+        EntityPlayer player = world.getPlayerEntityByName(playerName);
+        if (player != null) {
+            boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+            if (isPermissionsAdmin) {
+                return true;
+            }
+        }
+
         return value;
     }
 
@@ -1318,6 +1327,14 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             value = playerAccessEntry.hasGateAccess();
         }
 
+        EntityPlayer player = world.getPlayerEntityByName(playerName);
+        if (player != null) {
+            boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+            if (isPermissionsAdmin) {
+                return true;
+            }
+        }
+
         return value;
     }
 
@@ -1337,6 +1354,14 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         if (this.playerAccessData != null && this.playerAccessData.stream().filter(g -> g.getPlayerName().equalsIgnoreCase(playerName)).findFirst().isPresent()) {
             PlayerAccessData playerAccessEntry = this.playerAccessData.stream().filter(g -> g.getPlayerName().equalsIgnoreCase(playerName)).findFirst().get();
             value = playerAccessEntry.isAdmin();
+        }
+
+        EntityPlayer player = world.getPlayerEntityByName(playerName);
+        if (player != null) {
+            boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+            if (isPermissionsAdmin) {
+                return true;
+            }
         }
 
         return value;
