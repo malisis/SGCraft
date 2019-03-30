@@ -211,6 +211,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public String immediateDialAddress = "";
     public boolean errorState = false;
     public boolean checkForMalfunction = false;
+    private boolean performBlockDamage = true;
 
     public SGLocation connectedLocation;
     public boolean isInitiator, redstoneInput, loaded;
@@ -1165,6 +1166,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             checkForMalfunction = true;
         }
 
+        // Transient Block Damage
+        this.performBlockDamage = true;
+        targetGate.performBlockDamage = true;
+
         return null;
     }
 
@@ -1396,6 +1401,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             connectedLocation = null;
             numEngagedChevrons = 0;
             isInitiator = false;
+            performBlockDamage = false;
             this.checkForMalfunction = false;
             markChanged();
         }
@@ -1409,6 +1415,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             enteredAddress = "";
             connectedLocation = null;
             checkForMalfunction = false;
+            performBlockDamage = false;
             markChanged();
             if (state == SGState.Connected) {
                 enterState(SGState.Disconnecting, disconnectTime);
@@ -1813,36 +1820,56 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     private void performTransientDamage() {
-        Trans3 t = localToGlobalTransformation();
-        Vector3 p0 = t.p(-1.5, 0.5, 0.5);
-        Vector3 p1 = t.p(1.5, 3.5, 5.5);
-        Vector3 q0 = p0.min(p1);
-        Vector3 q1 = p0.max(p1);
-        AxisAlignedBB box = new AxisAlignedBB(q0.x, q0.y, q0.z, q1.x, q1.y, q1.z);
-        if (debugTransientDamage) {
-            System.out.print("SGBaseTE.performTransientDamage: players in world:\n");
-            for (Entity ent : world.loadedEntityList)
-                if (ent instanceof EntityPlayer) {
-                    System.out.printf("--- %s\n", ent);
+        // Todo: not setup to be done on horizontal gates.
+        if (this.gateOrientation == 1) {
+            Trans3 t = localToGlobalTransformation();
+            Vector3 p0 = t.p(-1.5, 0.5, 0.5);
+            Vector3 p1 = t.p(1.5, 3.5, 5.5);
+            Vector3 q0 = p0.min(p1);
+            Vector3 q1 = p0.max(p1);
+            AxisAlignedBB box = new AxisAlignedBB(q0.x, q0.y, q0.z, q1.x, q1.y, q1.z);
+            if (debugTransientDamage) {
+                System.out.print("SGBaseTE.performTransientDamage: players in world:\n");
+                for (Entity ent : world.loadedEntityList)
+                    if (ent instanceof EntityPlayer) {
+                        System.out.printf("--- %s\n", ent);
+                    }
+                System.out.printf("SGBaseTE.performTransientDamage: box = %s\n", box);
+            }
+
+            List<EntityLivingBase> ents = world.getEntitiesWithinAABB(EntityLivingBase.class, box);
+            for (EntityLivingBase ent : ents) {
+                Vector3 ep = new Vector3(ent.posX, ent.posY, ent.posZ);
+                Vector3 gp = t.p(0, 2, 0.5);
+                double dist = ep.distance(gp);
+                if (debugTransientDamage) {
+                    System.out.printf("SGBaseTE.performTransientDamage: found %s\n", ent);
                 }
-            System.out.printf("SGBaseTE.performTransientDamage: box = %s\n", box);
-        }
-        List<EntityLivingBase> ents = world.getEntitiesWithinAABB(EntityLivingBase.class, box);
-        for (EntityLivingBase ent : ents) {
-            Vector3 ep = new Vector3(ent.posX, ent.posY, ent.posZ);
-            Vector3 gp = t.p(0, 2, 0.5);
-            double dist = ep.distance(gp);
-            if (debugTransientDamage) {
-                System.out.printf("SGBaseTE.performTransientDamage: found %s\n", ent);
+                if (dist > 1.0) {
+                    dist = 1.0;
+                }
+                int damage = (int) Math.ceil(dist * transientDamageRate);
+                if (debugTransientDamage) {
+                    System.out.printf("SGBaseTE.performTransientDamage: distance = %s, damage = %s\n", dist, damage);
+                }
+                ent.attackEntityFrom(transientDamageSource, damage);
             }
-            if (dist > 1.0) {
-                dist = 1.0;
+
+            // Block Damage Area
+            t = localToGlobalTransformation();
+            p0 = t.p(-1.0, 0.5, 0.5);
+            p1 = t.p(1.0, 2.5, 2.5);
+
+            if (performBlockDamage && !this.irisIsClosed()) {
+                BlockPos startPos = new BlockPos(p0.x, p0.y, p0.z);
+                BlockPos endPos = new BlockPos(p1.x, p1.y, p1.z);
+
+                for (final BlockPos nearPos : BlockPos.getAllInBox(startPos, endPos)) {
+                    world.setBlockState(nearPos, Blocks.AIR.getDefaultState());
+                }
+
+                performBlockDamage = false;
             }
-            int damage = (int)Math.ceil(dist * transientDamageRate);
-            if (debugTransientDamage) {
-                System.out.printf("SGBaseTE.performTransientDamage: distance = %s, damage = %s\n", dist, damage);
-            }
-            ent.attackEntityFrom(transientDamageSource, damage);
         }
     }
 
