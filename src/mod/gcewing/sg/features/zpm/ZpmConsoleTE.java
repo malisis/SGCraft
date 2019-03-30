@@ -48,7 +48,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     private double maxEnergyBufferSize = Integer.MAX_VALUE;
     private double energyPerSGEnergyUnit = 0;
 
-    private int maxInput = Integer.MAX_VALUE;
+    private int maxInput = 0;
     private int maxOutput = 10000;
 
     private static final int firstZpmSlot = 0;
@@ -230,8 +230,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
                     tag.setDouble(ZPMItem.ENERGY, Integer.MAX_VALUE);
                     item.setTagCompound(tag);
                 }
-
-                this.storage.receiveEnergy((int) tag.getDouble(ZPMItem.ENERGY), false);
+                this.storage =  new EnergyStorage((int)maxEnergyBufferSize, maxInput, maxOutput, (int) tag.getDouble(ZPMItem.ENERGY));
             }
 
             IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, isValidFuelItem(item));
