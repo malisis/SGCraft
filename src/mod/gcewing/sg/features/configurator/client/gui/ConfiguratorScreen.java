@@ -67,7 +67,7 @@ public class ConfiguratorScreen extends BasicScreen {
         SGBaseTE localGate = (SGBaseTE) localGateTE;
 
         // Master Panel
-        this.form = new BasicForm(this, 500, 275, "");
+        this.form = new BasicForm(this, 500, 300, "");
         this.form.setAnchor(Anchor.CENTER | Anchor.MIDDLE);
         this.form.setMovable(true);
         this.form.setClosable(true);
@@ -84,7 +84,7 @@ public class ConfiguratorScreen extends BasicScreen {
 
         // ****************************************************************************************************************************
 
-        this.numericOptionsArea = new BasicForm(this, 245, 235, "");
+        this.numericOptionsArea = new BasicForm(this, 245, 260, "");
         this.numericOptionsArea.setPosition(0, 0, Anchor.LEFT | Anchor.MIDDLE);
         this.numericOptionsArea.setMovable(false);
         this.numericOptionsArea.setClosable(false);
@@ -271,7 +271,7 @@ public class ConfiguratorScreen extends BasicScreen {
 
         // ****************************************************************************************************************************
 
-        this.checkboxOptionsArea = new BasicForm(this, 245, 235, "");
+        this.checkboxOptionsArea = new BasicForm(this, 245, 260, "");
         this.checkboxOptionsArea.setPosition(0, 0, Anchor.RIGHT | Anchor.MIDDLE);
         this.checkboxOptionsArea.setMovable(false);
         this.checkboxOptionsArea.setClosable(false);
@@ -392,7 +392,7 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.horizontalFaceUpCheckbox = new UICheckBox(this);
         this.horizontalFaceUpCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.renderFaceUp"));
-        this.horizontalFaceUpCheckbox.setPosition(-55, -2, Anchor.CENTER | Anchor.BOTTOM);
+        this.horizontalFaceUpCheckbox.setPosition(70, -15, Anchor.LEFT | Anchor.BOTTOM);
         this.horizontalFaceUpCheckbox.setEnabled(true);
         this.horizontalFaceUpCheckbox.setChecked(localGate.gateOrientation == 2);
         this.horizontalFaceUpCheckbox.setName("checkbox.horizontalup");
@@ -400,7 +400,7 @@ public class ConfiguratorScreen extends BasicScreen {
 
         this.horizontalFaceDownCheckbox = new UICheckBox(this);
         this.horizontalFaceDownCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.renderFaceDown"));
-        this.horizontalFaceDownCheckbox.setPosition(55, -2, Anchor.CENTER | Anchor.BOTTOM);
+        this.horizontalFaceDownCheckbox.setPosition(70, -2, Anchor.LEFT | Anchor.BOTTOM);
         this.horizontalFaceDownCheckbox.setEnabled(true);
         this.horizontalFaceDownCheckbox.setChecked(localGate.gateOrientation == 3);
         this.horizontalFaceDownCheckbox.setName("checkbox.horizontaldown");
@@ -408,11 +408,15 @@ public class ConfiguratorScreen extends BasicScreen {
 
         final UILabel horizontalGateLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.horizontalGate"));
         horizontalGateLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
-        horizontalGateLabel.setPosition(0, this.horizontalFaceUpCheckbox.getY() - 12, Anchor.CENTER | Anchor.BOTTOM);
+        horizontalGateLabel.setPosition(0, this.horizontalFaceUpCheckbox.getY() - 16, Anchor.CENTER | Anchor.BOTTOM);
 
         final UISeparator checkbox2Separator = new UISeparator(this);
         checkbox2Separator.setSize(this.checkboxOptionsArea.getWidth() - 15, 1);
         checkbox2Separator.setPosition(0, horizontalGateLabel.getY() - 12, Anchor.CENTER | Anchor.BOTTOM);
+
+        final UISeparator checkbox3Separator = new UISeparator(this);
+        checkbox3Separator.setSize(this.checkboxOptionsArea.getWidth() - 15, 1);
+        checkbox3Separator.setPosition(0, horizontalGateLabel.getY() + 2, Anchor.CENTER | Anchor.BOTTOM);
 
         this.checkboxOptionsArea.add(booleanValuesLabel, checkboxSeparator, this.oneWayTravelCheckbox, this.irisUpgradeCheckbox, this.chevronUpgradeCheckbox, this.gateTypeCheckbox);
         this.checkboxOptionsArea.add(this.reverseWormholeKillsCheckbox, this.closeFromEitherEndCheckbox, this.preserveInventoryCheckbox, this.noPowerRequiredCheckbox);
@@ -420,7 +424,7 @@ public class ConfiguratorScreen extends BasicScreen {
         this.checkboxOptionsArea.add(this.allowRedstoneOutputCheckbox, this.allowRedstoneInputCheckbox);
 
         if (localGate.gateOrientation == 2 || localGate.gateOrientation == 3) {
-            this.checkboxOptionsArea.add(checkbox2Separator, horizontalGateLabel, this.horizontalFaceUpCheckbox, this.horizontalFaceDownCheckbox);
+            this.checkboxOptionsArea.add(checkbox2Separator, checkbox3Separator, horizontalGateLabel, this.horizontalFaceUpCheckbox, this.horizontalFaceDownCheckbox);
         }
 
         // Load Defaults button
