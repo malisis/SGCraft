@@ -55,9 +55,9 @@ public class BaseTileEntity extends TileEntity
         return localToGlobalTransformation(Vector3.blockCenter(pos));
     }
 
-//  public Trans3 localToGlobalTransformation(double x, double y, double z) {
-//      return localToGlobalTransformation(new Vector3(x + 0.5, y + 0.5, z + 0.5);
-//  }
+     public Trans3 localToGlobalTransformation(double x, double y, double z) {
+          return localToGlobalTransformation(new Vector3(x + 0.5, y + 0.5, z + 0.5));
+    }
     
     public Trans3 localToGlobalTransformation(Vector3 origin) {
         IBlockState state = world.getBlockState(pos);
