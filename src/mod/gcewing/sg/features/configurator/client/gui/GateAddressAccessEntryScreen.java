@@ -94,7 +94,7 @@ public class GateAddressAccessEntryScreen extends BasicScreen {
         final UIButton buttonClose = new UIButtonBuilder(this)
                 .width(40)
                 .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-                .text("Close")
+                .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.close"))
                 .onClick(() -> {
                     this.close();
                 })
