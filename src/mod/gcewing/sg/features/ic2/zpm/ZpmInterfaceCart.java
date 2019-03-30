@@ -35,7 +35,6 @@ public class ZpmInterfaceCart extends BlockContainer {
     public ZpmInterfaceCart() {
         super(Material.ROCK);
         setHardness(1.5f);
-
     }
 
     @Override
@@ -91,16 +90,16 @@ public class ZpmInterfaceCart extends BlockContainer {
     @Deprecated
     @Override
     public IBlockState getStateFromMeta(final int meta) {
-        return this.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.byHorizontalIndex(meta));
+        return this.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.byHorizontalIndex(meta)).withProperty(ZPM_LOADED, false);
     }
 
     @Override
     public int getMetaFromState(final IBlockState state) {
         boolean zpmLoaded = state.getValue(ZpmInterfaceCart.ZPM_LOADED);
         if (zpmLoaded) {
-            return state.getValue(BlockHorizontal.FACING).getHorizontalIndex() + 4;
-        } else {
             return state.getValue(BlockHorizontal.FACING).getHorizontalIndex();
+        } else {
+            return state.getValue(BlockHorizontal.FACING).getHorizontalIndex() + 4;
         }
     }
 

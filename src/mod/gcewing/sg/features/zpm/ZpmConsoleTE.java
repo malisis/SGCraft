@@ -174,8 +174,10 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
         }
         this.loaded = false;
 
-        IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
-        world.setBlockState(pos, other, 3);
+        if (world != null) {
+            IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
+            world.setBlockState(pos, other, world.isRemote ? 11 : 3);
+        }
 
         return ItemStackHelper.getAndRemove(this.items, 0);
     }
@@ -202,8 +204,10 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
         }
         this.loaded = false;
 
-        IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
-        world.setBlockState(pos, other, 3);
+        if (world != null) {
+            IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
+            world.setBlockState(pos, other,  world.isRemote ? 11 : 3);
+        }
 
         return item;
     }
@@ -211,7 +215,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     @Override
     public void setInventorySlotContents(final int index, final ItemStack item) {
         this.items.set(0, item);
-        if (isValidFuelItem(item)) {
+        if (world != null && isValidFuelItem(item) && !this.loaded) {
             if (this.getEnergyStored() == 0) {
                 NBTTagCompound tag = item.getTagCompound();
 
@@ -230,12 +234,9 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
                 this.storage.receiveEnergy((int) tag.getDouble(ZPMItem.ENERGY), false);
             }
 
-            if (world != null && !world.isRemote) {
-                this.markChanged();
-                IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, true);
-                world.setBlockState(pos, other, 3);
-
-            }
+            IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, isValidFuelItem(item));
+            world.setBlockState(pos, other, world.isRemote ? 11 : 3);
+            this.loaded = true;
         }
     }
 

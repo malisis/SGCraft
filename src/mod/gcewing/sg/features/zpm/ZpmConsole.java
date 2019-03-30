@@ -1,5 +1,6 @@
 package gcewing.sg.features.zpm;
 
+import static gcewing.sg.client.gui.SGGui.PowerUnit;
 import static gcewing.sg.client.gui.SGGui.ZPMConsole;
 
 import gcewing.sg.SGCraft;
@@ -90,16 +91,16 @@ public class ZpmConsole extends BlockContainer {
     @Deprecated
     @Override
     public IBlockState getStateFromMeta(final int meta) {
-        return this.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.byHorizontalIndex(meta));
+        return this.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.byHorizontalIndex(meta)).withProperty(ZPM_LOADED, false);
     }
 
     @Override
     public int getMetaFromState(final IBlockState state) {
         boolean zpmLoaded = state.getValue(ZpmConsole.ZPM_LOADED);
         if (zpmLoaded) {
-            return state.getValue(BlockHorizontal.FACING).getHorizontalIndex() + 4;
-        } else {
             return state.getValue(BlockHorizontal.FACING).getHorizontalIndex();
+        } else {
+            return state.getValue(BlockHorizontal.FACING).getHorizontalIndex() + 4;
         }
     }
 
