@@ -66,7 +66,7 @@ public class SGInterfaceTE extends BaseTileEntity {
                 return "Incoming";
             }
         } else {
-            return "No Connected";
+            return "Not Connected";
         }
     }
     
