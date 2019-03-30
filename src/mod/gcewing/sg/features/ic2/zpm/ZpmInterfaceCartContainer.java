@@ -9,6 +9,7 @@ package gcewing.sg.features.ic2.zpm;
 import gcewing.sg.BaseContainer;
 import gcewing.sg.tileentity.DHDTE;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -51,12 +52,35 @@ public class ZpmInterfaceCartContainer extends BaseContainer {
         }
     }
 
+    @Override // Shift-Click Inventory
+    public ItemStack transferStackInSlot(EntityPlayer player, int index) {
+        ItemStack result = ItemStack.EMPTY;
+        Slot slot = inventorySlots.get(index);
+        ItemStack stack = slot.getStack();
+        if (slot != null && slot.getHasStack()) {
+            BaseContainer.SlotRange destRange = transferSlotRange(index, stack);
+            if (destRange != null) {
+                if (index >= destRange.numSlots) {
+                    result = stack.copy();
+                    if (!mergeItemStackIntoRange(stack, destRange))
+                        return ItemStack.EMPTY;
+                    if (stack.getCount() == 0)
+                        slot.putStack(ItemStack.EMPTY);
+                    else
+                        slot.onSlotChanged();
+                } else {
+                    player.inventory.addItemStackToInventory(te.decrStackSize(0, 1));
+                }
+            }
+        }
+        return result;
+    }
 
     @Override
     protected SlotRange transferSlotRange(int srcSlotIndex, ItemStack stack) {
         SlotRange range = new SlotRange();
-        range.firstSlot = DHDTE.firstFuelSlot;
-        range.numSlots = DHDTE.numFuelSlots;
+        range.firstSlot = 0;
+        range.numSlots = 1;
 
         return range;
     }
