@@ -358,7 +358,7 @@ public class ConfiguratorScreen extends BasicScreen {
         this.transientDamageCheckbox = new UICheckBox(this);
         this.transientDamageCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.transientDamage"));
         this.transientDamageCheckbox.setPosition(checkboxIndentPadding, this.returnIrisToPreviousStateCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
-        this.transientDamageCheckbox.setEnabled(true);
+        this.transientDamageCheckbox.setEnabled(localGate.gateOrientation==1);
         this.transientDamageCheckbox.setName("checkbox.transientDamage");
         this.transientDamageCheckbox.register(this);
 
@@ -455,6 +455,10 @@ public class ConfiguratorScreen extends BasicScreen {
                 this.useDHDFuelSourceCheckbox.setChecked(SGBaseTE.cfg.getBoolean("dhd", "useDHDFuelSource", true));
                 this.allowRedstoneOutputCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "allowRedstoneOutput", true));
                 this.allowRedstoneInputCheckbox.setChecked(SGBaseTE.cfg.getBoolean("iris", "allowRedstoneInput", true));
+
+                if (localGate.gateOrientation == 1) {
+                    this.transientDamageCheckbox.setChecked(false);
+                }
             })
             .listener(this)
             .build("button.defaults");
@@ -596,7 +600,11 @@ public class ConfiguratorScreen extends BasicScreen {
             this.noPowerRequiredCheckbox.setChecked(localGate.requiresNoPower);
             this.chevronsLockOnDialCheckbox.setChecked(localGate.chevronsLockOnDial);
             this.returnIrisToPreviousStateCheckbox.setChecked(localGate.returnToPreviousIrisState);
-            this.transientDamageCheckbox.setChecked(localGate.transientDamage);
+            if (localGate.gateOrientation == 1) {
+                this.transientDamageCheckbox.setChecked(localGate.transientDamage);
+            } else {
+                this.transientDamageCheckbox.setChecked(false);
+            }
             this.transparencyCheckbox.setChecked(localGate.transparency);
             this.useDHDFuelSourceCheckbox.setChecked(localGate.useDHDFuelSource);
             this.allowRedstoneOutputCheckbox.setChecked(localGate.allowRedstoneOutput);
