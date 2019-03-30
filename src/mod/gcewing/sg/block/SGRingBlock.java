@@ -104,19 +104,14 @@ public class SGRingBlock extends SGBlock<SGRingTE> {
     }
 
     @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player,
-         EnumHand hand, EnumFacing side, float cx, float cy, float cz)
-    {
-        //System.out.printf("SGRingBlock.onBlockActivated at (%d, %d, %d)\n", x, y, z);
+    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float cx, float cy, float cz) {
         SGRingTE te = getTileEntity(world, pos);
         if (te.isMerged) {
-            //System.out.printf("SGRingBlock.onBlockActivated: base at %s\n", te.basePos);
             IBlockState baseState = world.getBlockState(te.basePos);
             Block block = baseState.getBlock();
-            if (block instanceof SGBaseBlock)
-                block.onBlockActivated(world, te.basePos, baseState, player, hand, side,
-                    cx, cy, cz);
-            return true;
+            if (block instanceof SGBaseBlock) {
+                return block.onBlockActivated(world, te.basePos, baseState, player, hand, side, cx, cy, cz);
+            }
         }
         return false;
     }
@@ -136,7 +131,6 @@ public class SGRingBlock extends SGBlock<SGRingTE> {
             ItemStack item = new ItemStack(this,1,i);
             list.add(item);
         }
-            // Update: may be incorrect, needs testing.
     }
 
     @Override

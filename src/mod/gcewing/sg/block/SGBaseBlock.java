@@ -143,7 +143,6 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float cx, float cy, float cz) {
         String Side = world.isRemote ? "Client" : "Server";
         SGBaseTE te = getTileEntity(world, pos);
-        //System.out.printf("SGBaseBlock.onBlockActivated: %s: Tile entity = %s\n", Side, te);
         if (te != null) {
             if (debugMerge) {
                 System.out.printf("SGBaseBlock.onBlockActivated: %s: isMerged = %s\n", Side, te.isMerged);
