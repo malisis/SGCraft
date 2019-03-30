@@ -62,6 +62,11 @@ public class GdoItem extends Item {
 
                 boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
+                if (isPermissionsAdmin) {
+                    canAccessLocal = true;
+                    canAccessRemote = true;
+                }
+
                 if (SGCraft.hasPermission(player, "sgcraft.gui.gdo") && localGate.allowGateAccess(player.getName()) || isPermissionsAdmin) {
                     GuiNetworkHandler.openGuiAtClient(localGate, player, 2, isPermissionsAdmin, canAccessLocal, canAccessRemote);
                 } else {
