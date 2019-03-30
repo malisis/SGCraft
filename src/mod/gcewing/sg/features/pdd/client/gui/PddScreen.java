@@ -463,7 +463,7 @@ public class PddScreen extends BasicScreen {
         }
        if (localGate != null) {
             if (this.addressList.getSelectedItem() != null && !this.addressList.getSelectedItem().getAddress().isEmpty()) {
-                this.gateStatusLabel.setText("... Dialling ...");
+                this.gateStatusLabel.setText(I18n.format("sgcraft.gui.pdd.label.dialing"));
                 String destination = this.addressList.getSelectedItem().getAddress().toUpperCase().replaceAll("-", "");
                 if (SGAddressing.inSameDimension(localGate.homeAddress,destination)) {
                     this.enteredAddress = destination.substring(0,7);
@@ -483,7 +483,7 @@ public class PddScreen extends BasicScreen {
         if (localGate != null) {
             this.enteredAddress = "";
             this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
-            this.gateStatusLabel.setText(I18n.format("sgcraft.gui.pdd.label.dialling"));
+            this.gateStatusLabel.setText(I18n.format("sgcraft.gui.pdd.label.dialing"));
             this.dialling = true; // Allows checkDiallingStatus method to execute.
             this.digit = 0;
         }
