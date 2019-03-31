@@ -1,23 +1,16 @@
 package gcewing.sg.features.zpm;
 
-import static gcewing.sg.BaseOrientation.Orient4WaysByState.FACING;
-import static gcewing.sg.BaseUtils.max;
 import static gcewing.sg.BaseUtils.min;
 import static gcewing.sg.features.zpm.ZpmConsole.ZPM_LOADED;
 
-import gcewing.sg.BaseContainer;
 import gcewing.sg.BaseTileInventory;
 import gcewing.sg.SGCraft;
-import gcewing.sg.Vector3;
-import gcewing.sg.block.SGBaseBlock;
 import gcewing.sg.interfaces.ISGEnergySource;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.ItemStackHelper;
-import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -93,7 +86,6 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
         return compound;
     }
 
-
     @Override
     public void invalidate() {
         super.invalidate(); // this is important for mc!
@@ -109,7 +101,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     @Override
     @Nonnull
     public SPacketUpdateTileEntity getUpdatePacket() {
-        return new SPacketUpdateTileEntity(this.pos, 1, this.getUpdateTag());
+        return new SPacketUpdateTileEntity(this.pos, 0, this.getUpdateTag());
     }
 
     @Override
@@ -133,7 +125,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     }
 
     @Override
-    protected IInventory getInventory() {
+    public IInventory getInventory() {
         return this;
     }
 
@@ -176,15 +168,17 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
 
         if (world != null) {
             IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
-            world.setBlockState(pos, other, world.isRemote ? 11 : 3);
+            world.setBlockState(pos, other, 3);
         }
 
+        markChanged();
         return ItemStackHelper.getAndRemove(this.items, 0);
     }
 
     @Override
     public ItemStack decrStackSize(final int index, final int quantity) {
         final ItemStack item = ItemStackHelper.getAndRemove(this.items, 0);
+        IInventory inventory = getInventory();
         if(!item.isEmpty()) {
             this.markDirty();
         }
@@ -206,9 +200,10 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
 
         if (world != null) {
             IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
-            world.setBlockState(pos, other,  world.isRemote ? 11 : 3);
+            world.setBlockState(pos, other,  3);
         }
 
+        markChanged();
         return item;
     }
 
@@ -234,9 +229,16 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
             }
 
             IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, isValidFuelItem(item));
-            world.setBlockState(pos, other, world.isRemote ? 11 : 3);
+            world.setBlockState(pos, other, 3);
+
             this.loaded = true;
+
         }
+        if (world != null){ // This will be null both on the server AND client at time, no idea why....
+            IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, isValidFuelItem(item));
+            world.setBlockState(pos, other, 3);
+        }
+        markChanged();
     }
 
     public static boolean isValidFuelItem(ItemStack stack) {
@@ -249,21 +251,10 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     }
 
     @Override
-    public void markDirty() {
-    }
-
-    @Override
     public boolean isUsableByPlayer(final EntityPlayer player) {
         return player.getDistanceSq((double) this.pos.getX() + 0.5D, (double) this.pos.getY() + 0.5D, (double) this.pos.getZ() + 0.5D) <= 64.0D;
     }
 
-    @Override
-    public void openInventory(final EntityPlayer player) {
-    }
-
-    @Override
-    public void closeInventory(final EntityPlayer player) {
-    }
 
     @Override
     public boolean isItemValidForSlot(final int index, final ItemStack item) {
@@ -273,10 +264,6 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     @Override
     public int getField(final int id) {
         return 0;
-    }
-
-    @Override
-    public void setField(final int id, final int value) {
     }
 
     @Override

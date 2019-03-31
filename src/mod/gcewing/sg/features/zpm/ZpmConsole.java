@@ -8,6 +8,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -98,9 +99,9 @@ public class ZpmConsole extends BlockContainer {
     public int getMetaFromState(final IBlockState state) {
         boolean zpmLoaded = state.getValue(ZpmConsole.ZPM_LOADED);
         if (zpmLoaded) {
-            return state.getValue(BlockHorizontal.FACING).getHorizontalIndex();
-        } else {
             return state.getValue(BlockHorizontal.FACING).getHorizontalIndex() + 4;
+        } else {
+            return state.getValue(BlockHorizontal.FACING).getHorizontalIndex();
         }
     }
 
@@ -111,7 +112,7 @@ public class ZpmConsole extends BlockContainer {
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, BlockHorizontal.FACING, ZPM_LOADED);
+        return new BlockStateContainer(this, new IProperty[] {BlockHorizontal.FACING, ZPM_LOADED});
     }
 
     @Override
@@ -124,6 +125,7 @@ public class ZpmConsole extends BlockContainer {
         world.notifyBlockUpdate(pos, state, state, 3);
         world.scheduleBlockUpdate(pos, state.getBlock(),0,0);
         ZpmConsoleTE.at(world, pos).markDirty();
+
         if (!world.isRemote) {
             SGCraft.mod.openGui(player, ZPMConsole, world, pos);
         }

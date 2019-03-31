@@ -83,7 +83,7 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
     @Override
     @Nonnull
     public SPacketUpdateTileEntity getUpdatePacket() {
-        return new SPacketUpdateTileEntity(this.pos, 1, this.getUpdateTag());
+        return new SPacketUpdateTileEntity(this.pos, 0, this.getUpdateTag());
     }
 
     @Override
@@ -203,15 +203,14 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
         IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
         world.setBlockState(pos, other, 3);
 
+        markChanged();
+
         return ItemStackHelper.getAndRemove(this.items, 0);
     }
 
     @Override
     public ItemStack decrStackSize(final int index, final int quantity) {
         final ItemStack item = ItemStackHelper.getAndRemove(this.items, 0);
-        if(!item.isEmpty()) {
-            this.markDirty();
-        }
 
         NBTTagCompound tag = item.getTagCompound();
 
@@ -228,6 +227,8 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
 
         IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
         world.setBlockState(pos, other, 3);
+
+        markChanged();
 
         return item;
     }
@@ -260,13 +261,12 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
 
             }
         }
+        markChanged();
     }
 
     public static boolean isValidFuelItem(ItemStack stack) {
         return stack != null && stack.getItem() == SGCraft.zpm && stack.getCount() > 0;
     }
-
-
 
     @Override
     public int getInventoryStackLimit() {
@@ -274,21 +274,10 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
     }
 
     @Override
-    public void markDirty() {
-    }
-
-    @Override
     public boolean isUsableByPlayer(final EntityPlayer player) {
         return player.getDistanceSq((double) this.pos.getX() + 0.5D, (double) this.pos.getY() + 0.5D, (double) this.pos.getZ() + 0.5D) <= 64.0D;
     }
 
-    @Override
-    public void openInventory(final EntityPlayer player) {
-    }
-
-    @Override
-    public void closeInventory(final EntityPlayer player) {
-    }
 
     @Override
     public boolean isItemValidForSlot(final int index, final ItemStack item) {

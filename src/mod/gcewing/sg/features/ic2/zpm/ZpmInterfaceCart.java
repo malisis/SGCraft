@@ -7,6 +7,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
@@ -97,9 +98,9 @@ public class ZpmInterfaceCart extends BlockContainer {
     public int getMetaFromState(final IBlockState state) {
         boolean zpmLoaded = state.getValue(ZpmInterfaceCart.ZPM_LOADED);
         if (zpmLoaded) {
-            return state.getValue(BlockHorizontal.FACING).getHorizontalIndex();
-        } else {
             return state.getValue(BlockHorizontal.FACING).getHorizontalIndex() + 4;
+        } else {
+            return state.getValue(BlockHorizontal.FACING).getHorizontalIndex();
         }
     }
 
@@ -110,7 +111,7 @@ public class ZpmInterfaceCart extends BlockContainer {
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, BlockHorizontal.FACING, ZPM_LOADED);
+        return new BlockStateContainer(this, new IProperty[] {BlockHorizontal.FACING, ZPM_LOADED});
     }
 
     @Override
