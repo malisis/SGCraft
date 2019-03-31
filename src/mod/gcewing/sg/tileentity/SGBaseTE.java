@@ -1298,11 +1298,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             value = playerAccessEntry.hasIrisAccess();
         }
 
-        EntityPlayer player = world.getPlayerEntityByName(playerName);
-        if (player != null) {
-            boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
-            if (isPermissionsAdmin) {
-                return true;
+        if (!this.world.isRemote && SGCraft.hasPermissionSystem()) {
+            EntityPlayer player = world.getPlayerEntityByName(playerName);
+            if (player != null) {
+                boolean isPermissionsAdmin = SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+                if (isPermissionsAdmin) {
+                    return true;
+                }
             }
         }
 
@@ -1327,11 +1329,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             value = playerAccessEntry.hasGateAccess();
         }
 
-        EntityPlayer player = world.getPlayerEntityByName(playerName);
-        if (player != null) {
-            boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
-            if (isPermissionsAdmin) {
-                return true;
+        if (!this.world.isRemote && SGCraft.hasPermissionSystem()) {
+            EntityPlayer player = world.getPlayerEntityByName(playerName);
+            if (player != null) {
+                boolean isPermissionsAdmin = SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+                if (isPermissionsAdmin) {
+                    return true;
+                }
             }
         }
 
@@ -1356,11 +1360,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             value = playerAccessEntry.isAdmin();
         }
 
-        EntityPlayer player = world.getPlayerEntityByName(playerName);
-        if (player != null) {
-            boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
-            if (isPermissionsAdmin) {
-                return true;
+        if (!this.world.isRemote && SGCraft.hasPermissionSystem()) {
+            EntityPlayer player = world.getPlayerEntityByName(playerName);
+            if (player != null) {
+                boolean isPermissionsAdmin = SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
+                if (isPermissionsAdmin) {
+                    return true;
+                }
             }
         }
 
@@ -2054,60 +2060,77 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
                 SGBaseTE dte = getConnectedStargateTE();
                 if (dte != null) {
-                    // Access Control System
-                    boolean allowTeleport = true;
-                    if (entity.getRidingEntity() != null) {
-                        Entity rider = entity.getRidingEntity();
-                        if (rider instanceof EntityPlayer) {
-                            if (!this.allowGateAccess(rider.getName()) || !dte.allowGateAccess(rider.getName())) {
-                                allowTeleport = false;
-                            }
-                        }
-                    } else {
-                        if (entity instanceof EntityPlayer) {
-                            if (!this.allowGateAccess(entity.getName()) || !dte.allowGateAccess(entity.getName())) {
-                                allowTeleport = false;
-                            }
-                        }
-                    }
-                    if (!allowTeleport) {
-                        if (entity instanceof EntityPlayer)
-                            entity.sendMessage(new TextComponentString("Transport Failed.  Gate Access Denied!"));
-                        if (entity.getRidingEntity()!= null && (entity.getRidingEntity() instanceof EntityPlayer))
-                            entity.sendMessage(new TextComponentString("Rider Transport failed.  Gate Access Denied!"));
-                        return;
-                    }
-
                     Trans3 dt = dte.localToGlobalTransformation();
+
                     while (entity.getRidingEntity() != null)
                         entity = entity.getRidingEntity();
                     teleportEntityAndRiders(entity, t, dt, connectedLocation.dimension, dte.irisIsClosed());
-
                 }
             }
         }
     }
 
+    private boolean playerHasTeleportAccess(Entity entity) {
+        // Access Control System
+        SGBaseTE dte = getConnectedStargateTE();
+        boolean allowTeleport = true;
+
+        if (entity instanceof EntityPlayer) {
+            if (!this.allowGateAccess(entity.getName()) || !dte.allowGateAccess(entity.getName())) {
+                allowTeleport = false;
+            }
+        }
+
+        if (!allowTeleport) {
+            if (entity instanceof EntityPlayer)
+                entity.sendMessage(new TextComponentString("Transport Failed.  Gate Access Denied!"));
+            if (entity.getRidingEntity()!= null && (entity.getRidingEntity() instanceof EntityPlayer))
+                entity.sendMessage(new TextComponentString("Rider Transport failed.  Gate Access Denied!"));
+            return false;
+        }
+        return true;
+    }
+
     Entity teleportEntityAndRiders(Entity entity, Trans3 t1, Trans3 t2, int dimension, boolean destBlocked) {
+        boolean canProceed = true;
         if (debugTeleport) {
             System.out.printf("SGBaseTE.teleportEntityAndRiders: destBlocked = %s\n", destBlocked);
         }
 
+        // Check if player is riding an entity.
         List<Entity> riders = entity.getPassengers();
         for (int i = 0; i < riders.size(); i++) {
             Entity rider = riders.get(i);
-            rider.dismountRidingEntity();
-            rider = teleportEntityAndRiders(rider, t1, t2, dimension, destBlocked);
-            riders.set(i, rider);
+            if (rider instanceof EntityPlayer) {
+                if (!playerHasTeleportAccess(rider)) {
+                    canProceed = false;
+                }
+            }
         }
 
-        unleashEntity(entity);
-        entity = teleportEntity(entity, t1, t2, dimension, destBlocked);
+        // Check if player has access
+        if (entity instanceof EntityPlayer) {
+            if (!playerHasTeleportAccess(entity)) {
+                canProceed = false;
+            }
+        }
 
-        if (entity != null && !entity.isDead) {
-            for (Entity rider : riders) {
-                if (rider != null && !rider.isDead) {
-                    rider.startRiding(entity, true);
+        if (canProceed) {
+            for (int i = 0; i < riders.size(); i++) {
+                Entity rider = riders.get(i);
+                rider.dismountRidingEntity();
+                rider = teleportEntityAndRiders(rider, t1, t2, dimension, destBlocked);
+                riders.set(i, rider);
+            }
+
+            unleashEntity(entity);
+            entity = teleportEntity(entity, t1, t2, dimension, destBlocked);
+
+            if (entity != null && !entity.isDead) {
+                for (Entity rider : riders) {
+                    if (rider != null && !rider.isDead) {
+                        rider.startRiding(entity, true);
+                    }
                 }
             }
         }
