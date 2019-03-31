@@ -310,7 +310,7 @@ public class PddScreen extends BasicScreen {
                         this.addressList.setVisible(false);
                         this.buttonDisconnect.setVisible(true);
                         this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
-                        this.gateStatusLabel.setText(I18n.format("sgcraft.gui.pdd.label.dialling"));
+                        this.gateStatusLabel.setText(I18n.format("sgcraft.gui.pdd.label.dialing"));
                         this.buttonReset.setVisible(true);
                     }
 
