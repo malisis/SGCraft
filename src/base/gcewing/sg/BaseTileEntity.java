@@ -116,7 +116,7 @@ public class BaseTileEntity extends TileEntity
         "changedSectionFilter", "field_187288_h");
 
     public void markForUpdate() {
-        if (!world.isRemote) {
+        if (world != null && !world.isRemote) {
             int x = pos.getX();
             int y = pos.getY();
             int z = pos.getZ();

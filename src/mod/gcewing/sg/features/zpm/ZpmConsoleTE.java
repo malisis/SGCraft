@@ -171,7 +171,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
             world.setBlockState(pos, other, 3);
         }
 
-        markChanged();
+        markDirty();
         return ItemStackHelper.getAndRemove(this.items, 0);
     }
 
@@ -203,13 +203,14 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
             world.setBlockState(pos, other,  3);
         }
 
-        markChanged();
+        markDirty();
         return item;
     }
 
     @Override
     public void setInventorySlotContents(final int index, final ItemStack item) {
         this.items.set(0, item);
+
         if (world != null && isValidFuelItem(item) && !this.loaded) {
             if (this.getEnergyStored() == 0) {
                 NBTTagCompound tag = item.getTagCompound();
@@ -238,7 +239,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
             IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, isValidFuelItem(item));
             world.setBlockState(pos, other, 3);
         }
-        markChanged();
+        markDirty();
     }
 
     public static boolean isValidFuelItem(ItemStack stack) {
