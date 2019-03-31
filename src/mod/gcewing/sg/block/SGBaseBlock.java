@@ -149,15 +149,17 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
             }
 
             if (te.isMerged && !world.isRemote)  {
-
                 if (player.getHeldItemMainhand().getItem() == SGCraft.pdd || player.getHeldItemMainhand().getItem() == SGCraft.configurator || player.getHeldItemMainhand().getItem() == SGCraft.gdo) {
-                    return false;
+                    return false; // Return false here so the itemUse method fires
                 }
                 SGCraft.mod.openGui(player, SGGui.SGBase, world, pos);
                 return true;
             }
 
             if (world.isRemote) {
+                if (player.getHeldItemMainhand().getItem() == SGCraft.pdd || player.getHeldItemMainhand().getItem() == SGCraft.configurator || player.getHeldItemMainhand().getItem() == SGCraft.gdo) {
+                    return false; // Return false here so the itemUse method fires
+                }
                 return true; //Client needs to be told too.
             }
         }
