@@ -1507,7 +1507,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     public void malfunction() throws SGAddressing.AddressingError {
-        String randomAddress = GeneratorAddressRegistry.randomAddress(world, this.homeAddress, new Random()).toUpperCase();
+        String randomAddress = GeneratorAddressRegistry.randomAddress(world, this.homeAddress, new Random());
         if (randomAddress != null) {
             if (this.allowOutgoingAddress(randomAddress)) {
                 SGBaseTE malfunctionDestinationGate = SGAddressing.findAddressedStargate(randomAddress, world);

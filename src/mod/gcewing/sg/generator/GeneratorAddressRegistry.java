@@ -135,7 +135,7 @@ public final class GeneratorAddressRegistry {
         while (iter.hasNext()) {
             final String address = iter.next();
             if (rIndex == index) {
-                return Optional.of(address).get();
+                return Optional.of(address).get().toUpperCase();
             }
             index++;
         }
