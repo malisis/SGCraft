@@ -43,11 +43,49 @@ public class ConfiguratorScreen extends BasicScreen {
     private BlockPos location;
     private World world;
     private EntityPlayer player;
+    private boolean secondsToStayOpenPerm, gateRotationSpeedPerm, energyBufferSizePerm, energyPerNaquadahPerm, openingsPerNaquadahPerm, distanceFactorMultiplierPerm, interDimensionalMultiplierPerm;
+    private boolean oneWayTravelOnlyPerm, irisUpgradePerm, chevronUpgradePerm, pegasusGateTypePerm, reverseWormholeKillsPerm, closeFromEitherEndPerm, preserveInventoryOnIrisDeathPerm, noInputPowerRequiredPerm;
+    private boolean chevronsLockOnDialPerm, returnToPreviousIrisStatePerm, transientDamagePerm, transparencyPerm, dhdAsFuelSourcePerm, allowRedstoneOutputPerm, allowRedstoneInputPerm, gateAccessPerm, playerAccessPerm;
 
-    public ConfiguratorScreen(EntityPlayer player, World worldIn,  boolean isAdmin) {
+    //public ConfiguratorScreen(EntityPlayer player, World worldIn,  boolean isAdmin) {
+    //    this.player = player;
+    //    this.isAdmin = isAdmin;
+    //    this.world = worldIn;
+    //    this.location = new BlockPos(player.posX, player.posY, player.posZ);
+    //}
+
+    public ConfiguratorScreen(EntityPlayer player, World worldIn, boolean isAdmin, boolean secondsToStayOpenPerm, boolean gateRotationSpeedPerm, boolean energyBufferSizePerm, boolean energyPerNaquadahPerm, boolean openingsPerNaquadahPerm,
+        boolean distanceFactorMultiplierPerm, boolean interDimensionalMultiplierPerm, boolean oneWayTravelOnlyPerm, boolean irisUpgradePerm, boolean chevronUpgradePerm, boolean pegasusGateTypePerm, boolean reverseWormholeKillsPerm,
+        boolean closeFromEitherEndPerm, boolean preserveInventoryOnIrisDeathPerm, boolean noInputPowerRequiredPerm, boolean chevronsLockOnDialPerm, boolean returnToPreviousIrisStatePerm, boolean transientDamagePerm, boolean transparencyPerm,
+        boolean dhdAsFuelSourcePerm, boolean allowRedstoneOutputPerm, boolean allowRedstoneInputPerm, boolean gateAccessPerm, boolean playerAccessPerm) {
+
         this.player = player;
         this.isAdmin = isAdmin;
         this.world = worldIn;
+        this.secondsToStayOpenPerm = secondsToStayOpenPerm;
+        this.gateRotationSpeedPerm = gateRotationSpeedPerm;
+        this.energyBufferSizePerm = energyBufferSizePerm;
+        this.energyPerNaquadahPerm = energyPerNaquadahPerm;
+        this.openingsPerNaquadahPerm = openingsPerNaquadahPerm;
+        this.distanceFactorMultiplierPerm = distanceFactorMultiplierPerm;
+        this.interDimensionalMultiplierPerm = interDimensionalMultiplierPerm;
+        this.oneWayTravelOnlyPerm = oneWayTravelOnlyPerm;
+        this.irisUpgradePerm = irisUpgradePerm;
+        this.chevronUpgradePerm = chevronUpgradePerm;
+        this.pegasusGateTypePerm = pegasusGateTypePerm;
+        this.reverseWormholeKillsPerm = reverseWormholeKillsPerm;
+        this.closeFromEitherEndPerm = closeFromEitherEndPerm;
+        this.preserveInventoryOnIrisDeathPerm = preserveInventoryOnIrisDeathPerm;
+        this.noInputPowerRequiredPerm = noInputPowerRequiredPerm;
+        this.chevronsLockOnDialPerm = chevronsLockOnDialPerm;
+        this.returnToPreviousIrisStatePerm = returnToPreviousIrisStatePerm;
+        this.transientDamagePerm = transientDamagePerm;
+        this.transparencyPerm = transparencyPerm;
+        this.dhdAsFuelSourcePerm = dhdAsFuelSourcePerm;
+        this.allowRedstoneOutputPerm = allowRedstoneOutputPerm;
+        this.allowRedstoneInputPerm = allowRedstoneInputPerm;
+        this.gateAccessPerm = gateAccessPerm;
+        this.playerAccessPerm = playerAccessPerm;
         this.location = new BlockPos(player.posX, player.posY, player.posZ);
     }
 
@@ -578,37 +616,79 @@ public class ConfiguratorScreen extends BasicScreen {
 
             // Numeric Values
             this.secondsToStayOpen.setText(String.valueOf(localGate.secondsToStayOpen));
+            this.secondsToStayOpen.setEnabled(this.secondsToStayOpenPerm);
+
             this.gateRotationSpeed.setText(String.valueOf(localGate.ringRotationSpeed));
+            this.gateRotationSpeed.setEnabled(this.gateRotationSpeedPerm);
+
             this.energyBufferSize.setText(String.valueOf(localGate.maxEnergyBuffer));
+            this.energyBufferSize.setEnabled(this.energyBufferSizePerm);
+
             this.energyPerNaquadah.setText(String.valueOf(localGate.energyPerFuelItem));
+            this.energyPerNaquadah.setEnabled(this.energyPerNaquadahPerm);
+
             this.gateOpeningsPerNaquadah.setText(String.valueOf(localGate.gateOpeningsPerFuelItem));
+            this.gateOpeningsPerNaquadah.setEnabled(this.openingsPerNaquadahPerm);
+
             this.distanceMultiplier.setText(String.valueOf(localGate.distanceFactorMultiplier));
+            this.distanceMultiplier.setEnabled(this.distanceFactorMultiplierPerm);
+
             this.dimensionalMultiplier.setText(String.valueOf(localGate.interDimensionMultiplier));
+            this.dimensionalMultiplier.setEnabled(this.interDimensionalMultiplierPerm);
 
             // Boolean Values
             this.oneWayTravelCheckbox.setChecked(localGate.oneWayTravel);
+            this.oneWayTravelCheckbox.setEnabled(this.oneWayTravelOnlyPerm);
+
             this.irisUpgradeCheckbox.setChecked(localGate.hasIrisUpgrade);
+            this.irisUpgradeCheckbox.setEnabled(this.irisUpgradePerm);
+
             this.chevronUpgradeCheckbox.setChecked(localGate.hasChevronUpgrade);
+            this.chevronUpgradeCheckbox.setEnabled(this.chevronUpgradePerm);
+
             if (localGate.gateType == 0 || localGate.gateType == 1) {
                 this.gateTypeCheckbox.setChecked(false);
             } else {
                 this.gateTypeCheckbox.setChecked(true);
             }
+            this.gateTypeCheckbox.setEnabled(this.pegasusGateTypePerm);
+
             this.reverseWormholeKillsCheckbox.setChecked(localGate.reverseWormholeKills);
+            this.reverseWormholeKillsCheckbox.setEnabled(this.reverseWormholeKillsPerm);
+
             this.closeFromEitherEndCheckbox.setChecked(localGate.closeFromEitherEnd);
+            this.closeFromEitherEndCheckbox.setEnabled(this.closeFromEitherEndPerm);
+
             this.preserveInventoryCheckbox.setChecked(localGate.preserveInventory);
+            this.preserveInventoryCheckbox.setEnabled(this.preserveInventoryOnIrisDeathPerm);
+
             this.noPowerRequiredCheckbox.setChecked(localGate.requiresNoPower);
+            this.noPowerRequiredCheckbox.setEnabled(this.noInputPowerRequiredPerm);
+
             this.chevronsLockOnDialCheckbox.setChecked(localGate.chevronsLockOnDial);
+            this.chevronsLockOnDialCheckbox.setEnabled(this.chevronsLockOnDialPerm);
+
             this.returnIrisToPreviousStateCheckbox.setChecked(localGate.returnToPreviousIrisState);
+            this.returnIrisToPreviousStateCheckbox.setEnabled(this.returnToPreviousIrisStatePerm);
+
             if (localGate.gateOrientation == 1) {
                 this.transientDamageCheckbox.setChecked(localGate.transientDamage);
             } else {
                 this.transientDamageCheckbox.setChecked(false);
             }
+            this.transientDamageCheckbox.setEnabled(this.transientDamagePerm);
+
             this.transparencyCheckbox.setChecked(localGate.transparency);
+            this.transparencyCheckbox.setEnabled(this.transparencyPerm);
+
             this.useDHDFuelSourceCheckbox.setChecked(localGate.useDHDFuelSource);
+            this.useDHDFuelSourceCheckbox.setEnabled(dhdAsFuelSourcePerm);
+
             this.allowRedstoneOutputCheckbox.setChecked(localGate.allowRedstoneOutput);
+            this.allowRedstoneOutputCheckbox.setEnabled(this.allowRedstoneOutputPerm);
+
             this.allowRedstoneInputCheckbox.setChecked(localGate.allowRedstoneInput);
+            this.allowRedstoneInputCheckbox.setEnabled(this.allowRedstoneInputPerm);
 
             if (localGate.gateOrientation == 2) {
                 this.horizontalFaceUpCheckbox.setChecked(true);

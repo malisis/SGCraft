@@ -5,10 +5,16 @@ import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
 
 import gcewing.sg.BaseDataChannel;
 import gcewing.sg.SGCraft;
+import gcewing.sg.features.configurator.client.gui.ConfiguratorScreen;
+import gcewing.sg.features.gdo.client.gui.GdoScreen;
+import gcewing.sg.features.pdd.client.gui.PddScreen;
 import gcewing.sg.network.SGChannel;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.tileentity.data.GateAccessData;
 import gcewing.sg.tileentity.data.PlayerAccessData;
+import gcewing.sg.util.SGAddressing;
+import gcewing.sg.util.SGState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
@@ -89,7 +95,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
 
         boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
-        if (SGCraft.hasPermission(player, "sgcraft.configurator") && te.allowAdminAccess(playerName) || isPermissionsAdmin) {
+        if (SGCraft.hasPermission(player, "sgcraft.gui.configurator") && te.allowAdminAccess(playerName) || isPermissionsAdmin) {
             if (SGCraft.hasPermission(player, "sgcraft.configurator.secondsToStayOpen") || isPermissionsAdmin) {
                 te.secondsToStayOpen = secondsToStayOpen;
                 te.ticksToStayOpen = te.secondsToStayOpen * 20;
@@ -152,7 +158,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
 
         boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
-        if (SGCraft.hasPermission(player, "sgcraft.configurator") && te.allowAdminAccess(playerName) || isPermissionsAdmin) {
+        if (SGCraft.hasPermission(player, "sgcraft.gui.configurator") && te.allowAdminAccess(playerName) || isPermissionsAdmin) {
             if (address.isEmpty()) { // indicates the user clicked the bottom save button
                 te.defaultAllowIncoming = defaultAllowIncoming;
                 te.defaultAllowOutgoing = defaultAllowOutgoing;
@@ -200,7 +206,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
 
         boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
-        if (SGCraft.hasPermission(player, "sgcraft.configurator") && te.allowAdminAccess(playerName) || isPermissionsAdmin) {
+        if (SGCraft.hasPermission(player, "sgcraft.gui.configurator") && te.allowAdminAccess(playerName) || isPermissionsAdmin) {
             if (playerName.isEmpty()) {
                 te.defaultAllowGateAccess = defaultAllowAccess;
                 te.defaultAllowIrisAccess = defaultAllowIris;
@@ -239,7 +245,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         }
         boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
-        if (SGCraft.hasPermission(player, "sgcraft.configurator") && localGate.allowAdminAccess(playerName) || isPermissionsAdmin) {
+        if (SGCraft.hasPermission(player, "sgcraft.gui.configurator") && localGate.allowAdminAccess(playerName) || isPermissionsAdmin) {
             if (localGate.getGateAccessData() != null) {
                 if (oldAddress.isEmpty() && function == 1) {
                     localGate.getGateAccessData().add(new GateAccessData(newAddress, true, true));
@@ -291,7 +297,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
 
         boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
-        if (SGCraft.hasPermission(player, "sgcraft.configurator") && localGate.allowAdminAccess(playerName) || isPermissionsAdmin) {
+        if (SGCraft.hasPermission(player, "sgcraft.gui.configurator") && localGate.allowAdminAccess(playerName) || isPermissionsAdmin) {
             if (localGate.getPlayerAccessData() != null) {
                 if (oldName.isEmpty() && function == 1) {
                     localGate.getPlayerAccessData().add(new PlayerAccessData(newName, true, true, player.getName().equalsIgnoreCase(newName)));
@@ -313,6 +319,82 @@ public class ConfiguratorNetworkHandler extends SGChannel {
 
                 localGate.markChanged();
             }
+        }
+    }
+
+    public static void openGuiAtClient(SGBaseTE te, EntityPlayer player, int guiType, boolean isAdmin,  boolean secondsToStayOpenPerm, boolean gateRotationSpeedPerm, boolean energyBufferSizePerm, boolean energyPerNaquadahPerm, boolean openingsPerNaquadahPerm,
+        boolean distanceFactorMultiplierPerm, boolean interDimensionalMultiplierPerm, boolean oneWayTravelOnlyPerm, boolean irisUpgradePerm, boolean chevronUpgradePerm, boolean pegasusGateTypePerm, boolean reverseWormholeKillsPerm,
+        boolean closeFromEitherEndPerm, boolean preserveInventoryOnIrisDeathPerm, boolean noInputPowerRequiredPerm, boolean chevronsLockOnDialPerm, boolean returnToPreviousIrisStatePerm, boolean transientDamagePerm, boolean transparencyPerm,
+        boolean dhdAsFuelSourcePerm, boolean allowRedstoneOutputPerm, boolean allowRedstoneInputPerm, boolean gateAccessPerm, boolean playerAccessPerm) {
+
+        ChannelOutput data = configuratorChannel.openPlayer(player,"OpenConfiguratorGUI");
+        // Type is always 1 here. *for now*
+        writeCoords(data, te);
+        data.writeInt(guiType);
+        data.writeBoolean(isAdmin);
+        data.writeBoolean(secondsToStayOpenPerm);
+        data.writeBoolean(gateRotationSpeedPerm);
+        data.writeBoolean(energyBufferSizePerm);
+        data.writeBoolean(energyPerNaquadahPerm);
+        data.writeBoolean(openingsPerNaquadahPerm);
+        data.writeBoolean(distanceFactorMultiplierPerm);
+        data.writeBoolean(interDimensionalMultiplierPerm);
+        data.writeBoolean(oneWayTravelOnlyPerm);
+        data.writeBoolean(irisUpgradePerm);
+        data.writeBoolean(chevronUpgradePerm);
+        data.writeBoolean(pegasusGateTypePerm);
+        data.writeBoolean(reverseWormholeKillsPerm);
+        data.writeBoolean(closeFromEitherEndPerm);
+        data.writeBoolean(preserveInventoryOnIrisDeathPerm);
+        data.writeBoolean(noInputPowerRequiredPerm);
+        data.writeBoolean(chevronsLockOnDialPerm);
+        data.writeBoolean(returnToPreviousIrisStatePerm);
+        data.writeBoolean(transientDamagePerm);
+        data.writeBoolean(transparencyPerm);
+        data.writeBoolean(dhdAsFuelSourcePerm);
+        data.writeBoolean(allowRedstoneOutputPerm);
+        data.writeBoolean(allowRedstoneInputPerm);
+        data.writeBoolean(gateAccessPerm);
+        data.writeBoolean(playerAccessPerm);
+
+        data.close();
+    }
+
+    @ClientMessageHandler("OpenConfiguratorGUI")
+    public void handleGuiOpenRequest(EntityPlayer player, ChannelInput data) {
+
+        BlockPos pos = readCoords(data);
+        int guiType = data.readInt();
+        boolean isAdmin = data.readBoolean();
+        boolean secondsToStayOpenPerm = data.readBoolean();
+        boolean gateRotationSpeedPerm  = data.readBoolean();
+        boolean energyBufferSizePerm  = data.readBoolean();
+        boolean energyPerNaquadahPerm  = data.readBoolean();
+        boolean openingsPerNaquadahPerm = data.readBoolean();
+        boolean distanceFactoryMultiplierPerm  = data.readBoolean();
+        boolean interDimensionalMultiplierPerm  = data.readBoolean();
+        boolean oneWayTravelOnlyPerm  = data.readBoolean();
+        boolean irisUpgradePerm  = data.readBoolean();
+        boolean chevronUpgradePerm  = data.readBoolean();
+        boolean pegasusGateTypePerm  = data.readBoolean();
+        boolean reverseWormholeKillsPerm  = data.readBoolean();
+        boolean closeFromEitherEndPerm  = data.readBoolean();
+        boolean preserveInventoryOnIrisDeathPerm  = data.readBoolean();
+        boolean noInputPowerRequiredPerm  = data.readBoolean();
+        boolean chevronsLockOnDialPerm  = data.readBoolean();
+        boolean returnToPreviousIrisStatePerm  = data.readBoolean();
+        boolean transientDamagePerm  = data.readBoolean();
+        boolean transparencyPerm  = data.readBoolean();
+        boolean dhdAsFuelSourcePerm  = data.readBoolean();
+        boolean allowRedstoneOutputPerm  = data.readBoolean();
+        boolean allowRedstoneInputPerm  = data.readBoolean();
+        boolean gateAccessPerm = data.readBoolean();
+        boolean playerAccessPerm = data.readBoolean();
+
+        if (guiType == 1) {
+            new ConfiguratorScreen(player, player.world, isAdmin, secondsToStayOpenPerm, gateRotationSpeedPerm, energyBufferSizePerm, energyPerNaquadahPerm, openingsPerNaquadahPerm, distanceFactoryMultiplierPerm, interDimensionalMultiplierPerm,
+                oneWayTravelOnlyPerm, irisUpgradePerm, chevronUpgradePerm, pegasusGateTypePerm, reverseWormholeKillsPerm, closeFromEitherEndPerm, preserveInventoryOnIrisDeathPerm, noInputPowerRequiredPerm, chevronsLockOnDialPerm,
+                returnToPreviousIrisStatePerm, transientDamagePerm, transparencyPerm, dhdAsFuelSourcePerm, allowRedstoneOutputPerm, allowRedstoneInputPerm, gateAccessPerm, playerAccessPerm).display();
         }
     }
 }

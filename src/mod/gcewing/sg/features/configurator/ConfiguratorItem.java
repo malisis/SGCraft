@@ -4,11 +4,10 @@ import static gcewing.sg.tileentity.SGBaseTE.sendBasicMsg;
 import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
 
 import gcewing.sg.SGCraft;
-import gcewing.sg.network.GuiNetworkHandler;
+import gcewing.sg.features.configurator.network.ConfiguratorNetworkHandler;
 import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.GateUtil;
-import gcewing.sg.util.SGState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -68,18 +67,34 @@ public class ConfiguratorItem extends Item {
           if (localGateTE instanceof SGBaseTE) {
               SGBaseTE localGate = (SGBaseTE) localGateTE;
 
-              boolean canEditLocal = false;
-              boolean canEditRemote = false;
-
-              if (localGate.isConnected() && localGate.state == SGState.Connected) {
-                  SGBaseTE remoteGate = localGate.getConnectedStargateTE();
-                  canEditRemote = remoteGate.getWorld().isBlockModifiable(player, remoteGate.getPos());
-              }
-
               boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
               if (SGCraft.hasPermission(player, "sgcraft.gui.configurator") && localGate.allowAdminAccess(player.getName()) || isPermissionsAdmin) {
-                  GuiNetworkHandler.openGuiAtClient(localGate, player, 1, isPermissionsAdmin, canEditLocal, canEditRemote);
+                  ConfiguratorNetworkHandler.openGuiAtClient(localGate, player, 1, isPermissionsAdmin,
+                      SGCraft.hasPermission(player, "sgcraft.configurator.secondsToStayOpen"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.ringRotationSpeed"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.maxEnergyBuffer"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.energyPerFuelItem"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.gateOpeningsPerFuelItem"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.distanceFactorMultiplier"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.interDimensionalMultiplier"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.oneWayTravel"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.hasIrisUpgrade"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.hasChevronUpgrade"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.gateType"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.reverseWormholeKills"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.closeFromEitherEnd"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.preserveInventory"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.noPowerRequired"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.chevronsLockOnDial"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.returnToPreviousIrisState"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.transientDamage"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.transparency"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.useDHDFuelSource"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.allowRedstoneOutput"),
+                      SGCraft.hasPermission(player, "sgcraft.configurator.allowRedstoneInput"),
+                      SGCraft.hasPermission(player, "sgcraft.gui.configurator") && localGate.allowAdminAccess(player.getName()),
+                      SGCraft.hasPermission(player, "sgcraft.gui.configurator") && localGate.allowAdminAccess(player.getName()));
               } else {
                   if (!SGCraft.hasPermission(player, "sgcraft.gui.configurator"))
                       sendErrorMsg(player, "configuratorPermission");

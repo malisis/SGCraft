@@ -79,7 +79,7 @@ public class GuiNetworkHandler extends SGChannel {
                 data.writeBoolean(remoteGate.hasChevronUpgrade);
                 data.writeBoolean(remoteGate.irisIsClosed());
                 data.writeInt(remoteGate.gateType);
-                data.writeUTF(SGAddressing.formatAddress(((SGBaseTE) remoteGate).homeAddress, "-", "-"));
+                data.writeUTF(SGAddressing.formatAddress(remoteGate.homeAddress, "-", "-"));
             }
         }
         data.close();
@@ -95,7 +95,8 @@ public class GuiNetworkHandler extends SGChannel {
         boolean canAccessRemote = data.readBoolean();
 
         if (guiType == 1) {
-            new ConfiguratorScreen(player, player.world, isAdmin).display();
+            // Todo: this is abandoned because it was moved.
+            //new ConfiguratorScreen(player, player.world, isAdmin).display();
         }
         if (guiType == 2) {
             boolean r_connected = data.readBoolean();
