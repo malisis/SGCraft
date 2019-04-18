@@ -168,7 +168,15 @@ public class FeatureUnderDesertPyramid extends StructureComponent {
             te.getInventory().setInventorySlotContents(3, sandStoneSlab.copy());
             te.getInventory().setInventorySlotContents(4, sandStoneSlab.copy());
             te.markChanged();
-            GeneratorAddressRegistry.addAddress(te.getWorld(), te.homeAddress);
+            if (te.homeAddress == null) {
+                // Attempt to fix TE?
+                te.setMerged(true);
+            }
+            if (te.homeAddress != null) {
+                GeneratorAddressRegistry.addAddress(te.getWorld(), te.homeAddress);
+            } else {
+                System.err.println("Something bad happened!!! please report to Dockter:  Error 1");
+            }
         }
 
         // DHD

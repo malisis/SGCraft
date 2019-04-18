@@ -1,5 +1,7 @@
 package gcewing.sg.features.zpm;
 
+import static gcewing.sg.BaseMod.isModLoaded;
+
 import gcewing.sg.features.ic2.zpm.ZpmInterfaceCartTE;
 import gcewing.sg.interfaces.ISGEnergySource;
 import net.minecraft.tileentity.TileEntity;
@@ -48,17 +50,19 @@ public class ZpmAddon {
         )) {
             TileEntity nte = world.getTileEntity(nearPos);
             if (nte != null) {
-                if (nte instanceof ZpmInterfaceCartTE) {
-                    if (debugAddon) {
-                        System.out.printf("SGBaseTE.zpmInterfaceCartNear: %s at %s\n", nte, nearPos);
-                    }
-                    if (((ZpmInterfaceCartTE) nte).isEmpty()) {
+                if (isModLoaded("ic2")) {
+                    if (nte instanceof ZpmInterfaceCartTE) {
                         if (debugAddon) {
-                            System.out.println("ZPM cart is empty");
+                            System.out.printf("SGBaseTE.zpmInterfaceCartNear: %s at %s\n", nte, nearPos);
                         }
-                        return 0;
+                        if (((ZpmInterfaceCartTE) nte).isEmpty()) {
+                            if (debugAddon) {
+                                System.out.println("ZPM cart is empty");
+                            }
+                            return 0;
+                        }
+                        zpmPower += ((ISGEnergySource) nte).availableEnergy();
                     }
-                    zpmPower += ((ISGEnergySource) nte).availableEnergy();
                 }
                 if (nte instanceof ZpmConsoleTE) {
                     if (debugAddon) {
