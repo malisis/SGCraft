@@ -69,7 +69,7 @@ public class DHDFuelScreen extends SGScreen {
             if (this.baseTe != null) {
                 // DHD Buffer Available
                 drawRightAlignedString("Gate Buffer:", 125, 30);
-                drawString(dFormat.format(Math.min(Math.max(this.baseTe.energyInBuffer, 0), this.baseTe.maxEnergyBuffer)), 130, 30);
+                drawString(dFormat.format(Math.min(Math.max(this.baseTe.energyInBuffer, 0), this.baseTe.maxEnergyBuffer)) + " / " + this.baseTe.maxEnergyBuffer, 130, 30);
             }
 
             // DHD Buffer Available

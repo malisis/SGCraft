@@ -97,7 +97,6 @@ public class FeatureSwampHut extends StructureComponent {
         StructureBoundingBox box = getBoundingBox();
 
         BlockPos boxCenter = new BlockPos(box.minX + (box.maxX - box.minX + 1) / 2, box.minY + (box.maxY - box.minY + 1) / 2, box.minZ + (box.maxZ - box.minZ + 1) / 2);
-        System.out.println("New Y: " + world.getTopSolidOrLiquidBlock(boxCenter));
         BlockPos newYPos = world.getTopSolidOrLiquidBlock(boxCenter);
 
         clip.minY = newYPos.getY()-1;
