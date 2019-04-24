@@ -77,11 +77,17 @@ public class SGPowerTE extends PowerTE implements IEnergyStorage {
 
     @Override
     public int getEnergyStored() {
+        if (energyBuffer >= Integer.MAX_VALUE) {
+            return Integer.MAX_VALUE;
+        }
         return (int) energyBuffer;
     }
 
     @Override
     public int getMaxEnergyStored() {
+        if (energyMax >= Integer.MAX_VALUE) {
+            return Integer.MAX_VALUE;
+        }
         return (int) energyMax;
     }
 
