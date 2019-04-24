@@ -39,7 +39,7 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     // Todo: specify console buffer
     private EnergyStorage storage;
     private double maxEnergyBufferSize = Integer.MAX_VALUE;
-    private double energyPerSGEnergyUnit = 0;
+    private double energyPerSGEnergyUnit = 80;
 
     private int maxInput = 0;
     private int maxOutput = 10000;
@@ -392,6 +392,9 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
     @Override
     public double availableEnergy() {
         double available = this.storage.getEnergyStored() / energyPerSGEnergyUnit;
+
+        System.out.println("ZPM Console at: " + this.pos + " / " + this.world + " Power debug: " + this.storage.getEnergyStored() + " / " + energyPerSGEnergyUnit + " == " + (int)available);
+
         return available;
     }
 

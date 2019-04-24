@@ -1,5 +1,6 @@
 package gcewing.sg.features.ic2.zpm;
 
+import static gcewing.sg.BaseUtils.min;
 import static gcewing.sg.features.ic2.zpm.ZpmInterfaceCart.ZPM_LOADED;
 
 import gcewing.sg.BaseTileInventory;
@@ -37,6 +38,8 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
     public static final int firstZpmSlot = 0;
     public static final int numZpmSlots = 1;
     public static final int numSlots = numZpmSlots; // future usage > 1
+
+    private double energyPerSGEnergyUnit = 80;
     private int update = 0;
 
     public ZpmInterfaceCartTE() {
@@ -113,7 +116,10 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
 
     @Override
     public double drawEnergyDouble(double amount) {
-        this.source.drawEnergy(amount);
+        double available = this.source.getEnergyStored();
+        double supply = min(amount, available);
+        this.source.drawEnergy(supply * energyPerSGEnergyUnit);
+
         if (isTainted(this.getStackInSlot(0))) {
             world.newExplosion(null, this.pos.getX(), this.pos.getY(), this.pos.getZ(), (float)250, true, true);
         }

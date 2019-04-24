@@ -601,7 +601,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             this.defaultAllowIncoming = cfg.getBoolean("gate-access", "defaultAllowIncoming", this.defaultAllowIncoming);
         }
 
-        if (nbt.hasKey("defaultAllowOutdoing") && !SGCraft.forceGateAccessSystemReset) {
+        if (nbt.hasKey("defaultAllowOutgoing") && !SGCraft.forceGateAccessSystemReset) {
             this.defaultAllowOutgoing = nbt.getBoolean("defaultAllowOutgoing");
         } else {
             this.defaultAllowOutgoing = cfg.getBoolean("gate-access", "defaultAllowOutgoing", this.defaultAllowOutgoing);
@@ -986,7 +986,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public String connect(String address, EntityPlayer player, boolean ccInterface) {
         // Note:  if player is null when introduced to this method, then it usually indicates a CI attempting to dial.
         // Note:  ccInterface == true so it stops the immediate chevron lock if a ccInterface is the one doing the dialing.
-
+        debugEnergyUse = true;
         if (state != SGState.Idle) {
             return diallingFailure(player, "selfBusy");
         }
@@ -1041,14 +1041,16 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         boolean accessSystemDialDestination = true;
 
         if (this.defaultAllowOutgoing) {
-            if (!this.allowOutgoingAddress(address)) {
+            if (!this.allowOutgoingAddress(address, true)) {
                 accessSystemDialDestination = false;
             }
         } else {
-            if (!this.allowOutgoingAddress(address)) {
+            if (!this.allowOutgoingAddress(address, false)) {
                 accessSystemDialDestination = false;
             }
         }
+
+        System.out.println("accessSystemDialDestionation: " + accessSystemDialDestination);
 
         if (!accessSystemDialDestination) {
             if (!isPermissionsAdmin)
@@ -1058,11 +1060,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         boolean accessSystemAcceptIncoming = true;
 
         if (targetGate.defaultAllowIncoming) {
-            if (!targetGate.allowIncomingAddress(this.homeAddress)) {
+            if (!targetGate.allowIncomingAddress(this.homeAddress, true)) {
                 accessSystemAcceptIncoming = false;
             }
         } else {
-            if (!this.allowIncomingAddress(this.homeAddress)) {
+            if (!this.allowIncomingAddress(this.homeAddress, false)) {
                 accessSystemAcceptIncoming = false;
             }
         }
@@ -1247,7 +1249,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     //return this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().map(GateAccessData::hasOutgoingAccess).orElse(false);
 
-    public boolean allowOutgoingAddress(String inputRawAddress) {
+    public boolean allowOutgoingAddress(String inputRawAddress, boolean defaultValue) {
         if (inputRawAddress.length() == 9) {
             inputRawAddress = SGAddressing.formatAddress(inputRawAddress, "-", "-");
         }
@@ -1256,7 +1258,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             GateAccessData gateAccessEntry = this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().get();
             return gateAccessEntry.hasOutgoingAccess();
         }
-        return true;
+        return defaultValue;
     }
 
     public void setAllowOutgoingAddress(String address, boolean value) {
@@ -1266,7 +1268,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
     }
 
-    public boolean allowIncomingAddress(String inputRawAddress) {
+    public boolean allowIncomingAddress(String inputRawAddress, boolean defaultValue) {
         if (inputRawAddress.length() == 9) {
             inputRawAddress = SGAddressing.formatAddress(inputRawAddress, "-", "-");
         }
@@ -1274,10 +1276,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         if (this.gateAccessData != null && this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().isPresent()) {
             GateAccessData gateAccessEntry = this.gateAccessData.stream().filter(g -> g.getAddress().equalsIgnoreCase(address)).findFirst().get();
-            System.out.println("Found address: " + address + " | " + gateAccessEntry.hasIncomingAccess());
             return gateAccessEntry.hasIncomingAccess();
         }
-        return true;
+        return defaultValue;
     }
 
     public void setAllowIncomingAddress(String address, boolean value) {
@@ -1509,10 +1510,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public void malfunction() throws SGAddressing.AddressingError {
         String randomAddress = GeneratorAddressRegistry.randomAddress(world, this.homeAddress, new Random());
         if (randomAddress != null) {
-            if (this.allowOutgoingAddress(randomAddress)) {
+            if (this.allowOutgoingAddress(randomAddress, this.defaultAllowOutgoing)) {
                 SGBaseTE malfunctionDestinationGate = SGAddressing.findAddressedStargate(randomAddress, world);
                 if (malfunctionDestinationGate != null) {
-                    if (malfunctionDestinationGate.allowIncomingAddress(this.homeAddress)) {
+                    if (malfunctionDestinationGate.allowIncomingAddress(this.homeAddress, malfunctionDestinationGate.defaultAllowIncoming)) {
                         this.getConnectedStargateTE().clearConnection();
                         this.connectedLocation = new SGLocation(malfunctionDestinationGate);
                         malfunctionDestinationGate.numEngagedChevrons = 7;
@@ -1665,6 +1666,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     public boolean useEnergy(double amount) {
+        debugEnergyUse = false;
         if (this.requiresNoPower) {
             return true;
         }
@@ -1686,6 +1688,8 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         List<ISGEnergySource> sources = findEnergySources(this.destinationRequiresZPM);
         double energyAvailable = energyInBuffer + energyAvailableFrom(sources);
+
+        System.out.println("Energy from Sources: " + energyAvailableFrom(sources));
 
         if (debugEnergyUse) {
             System.out.printf("SGBaseTE.useEnergy: %s available\n", energyAvailable);
@@ -1753,7 +1757,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             }
 
             if (nte instanceof ISGEnergySource) { // Specifically exclude the ZPM Interface.
-
+                System.out.println("NTE: " + nte);
                 if (ic2Loaded && nte instanceof IC2PowerTE) {
                     result.add((ISGEnergySource) nte);
                     if (debugEnergyUse) {
@@ -1762,13 +1766,17 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 }
 
                 if(ic2Loaded && nte instanceof ZpmInterfaceCartTE) {
-                    result.add((ISGEnergySource) nte);
+                    if (!((ZpmInterfaceCartTE) nte).isEmpty()){
+                        result.add((ISGEnergySource) nte);
+                    }
                     if (debugEnergyUse)
                         System.out.println("Found ZpmInterfaceCartTE at: " + nte.getPos());
                 }
 
                 if (nte instanceof ZpmConsoleTE) {
-                    result.add((ISGEnergySource) nte);
+                    if (!((ZpmConsoleTE) nte).isEmpty()) {
+                        result.add((ISGEnergySource) nte);
+                    }
                     if (debugEnergyUse)
                         System.out.println("Added the ZpmConsoleTE to a Source");
                 }
@@ -1820,6 +1828,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             }
             energy += e;
         }
+
+        System.out.println("Energy from Sources: " + energy);
+
         return energy;
     }
 
