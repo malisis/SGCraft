@@ -59,7 +59,7 @@ public class SGPowerTE extends PowerTE implements IEnergyStorage {
 
     @Override
     public int receiveEnergy(int maxReceive, boolean simulate) {
-        int energyReceived = Math.min((int)(energyMax - energyBuffer),maxReceive);
+        int energyReceived = Math.min((int)Math.floor(energyMax - energyBuffer),maxReceive);
         if (!simulate)
             energyBuffer += energyReceived;
         markChanged();
@@ -68,32 +68,22 @@ public class SGPowerTE extends PowerTE implements IEnergyStorage {
 
     @Override
     public int extractEnergy(int maxExtract, boolean simulate) {
-        int energyExtracted = Math.min((int) energyBuffer, maxExtract);
-        if (!simulate)
-            energyBuffer -= energyExtracted;
-        markChanged();
-        return energyExtracted;
+        return 0;
     }
 
     @Override
     public int getEnergyStored() {
-        if (energyBuffer >= Integer.MAX_VALUE) {
-            return Integer.MAX_VALUE;
-        }
-        return (int) energyBuffer;
+        return (int) Math.floor(energyBuffer);
     }
 
     @Override
     public int getMaxEnergyStored() {
-        if (energyMax >= Integer.MAX_VALUE) {
-            return Integer.MAX_VALUE;
-        }
-        return (int) energyMax;
+        return (int) Math.floor(energyMax);
     }
 
     @Override
     public boolean canExtract() {
-        return true;
+        return false;
     }
 
     @Override
