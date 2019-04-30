@@ -11,16 +11,11 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.energy.CapabilityEnergy;
-import net.minecraftforge.energy.EnergyStorage;
 import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nullable;
 
 public class SGPowerTE extends PowerTE implements IEnergyStorage {
-
-    private int maxInput = 10000;
-    private int maxOutput = 10000;
-    private EnergyStorage storage = new EnergyStorage(SGCraft.FPMaxEnergyBuffer, maxInput, maxOutput);
 
     public SGPowerTE() {
         super(SGCraft.FPMaxEnergyBuffer, SGCraft.FPPerSGEnergyUnit);
@@ -39,24 +34,10 @@ public class SGPowerTE extends PowerTE implements IEnergyStorage {
     @Override
     public void readContentsFromNBT(NBTTagCompound nbttagcompound) {
         super.readContentsFromNBT(nbttagcompound);
-        if (nbttagcompound.hasKey("capacity")) {
-            int capacity = nbttagcompound.getInteger("capacity");
-            int energy = nbttagcompound.getInteger("energy");
-            storage = new EnergyStorage(capacity, this.maxInput, this.maxOutput, energy);
-        }
-
         if (SGCraft.forceFPCfgUpdate) {
             energyMax = SGCraft.FPMaxEnergyBuffer;
             energyPerSGEnergyUnit = SGCraft.FPPerSGEnergyUnit;
-            storage = new EnergyStorage((int)energyMax, this.maxInput, maxOutput );
         }
-    }
-
-    @Override
-    public void writeContentsToNBT(NBTTagCompound nbttagcompound) {
-        super.writeContentsToNBT(nbttagcompound);
-        nbttagcompound.setInteger("capacity", storage.getMaxEnergyStored());
-        nbttagcompound.setInteger("energy", storage.getEnergyStored());
     }
 
     @Override
@@ -78,43 +59,40 @@ public class SGPowerTE extends PowerTE implements IEnergyStorage {
 
     @Override
     public int receiveEnergy(int maxReceive, boolean simulate) {
-        int result = storage.receiveEnergy(maxReceive, simulate);
-        energyBuffer = storage.getEnergyStored();
+        int energyReceived = Math.min((int)Math.floor(energyMax - energyBuffer),maxReceive);
+        if (!simulate)
+            energyBuffer += energyReceived;
         markChanged();
-
-        return result;
+        return energyReceived;
     }
 
     @Override
     public int extractEnergy(int maxExtract, boolean simulate) {
-        int result = storage.extractEnergy(maxExtract, simulate);
-        energyBuffer = storage.getEnergyStored();
-        markChanged();
-
-        return result;
+        return 0;
     }
 
     @Override
     public int getEnergyStored() {
-        return storage.getEnergyStored();
+        return (int) Math.floor(energyBuffer);
     }
 
     @Override
     public int getMaxEnergyStored() {
-        return storage.getMaxEnergyStored();
+        return (int) Math.floor(energyMax);
     }
 
     @Override
     public boolean canExtract() {
-        return storage.canExtract();
+        return false;
     }
 
     @Override
     public boolean canReceive() {
-        return storage.canReceive();
+        return true;
     }
 
-    @Override public double totalAvailableEnergy() {
+    @Override
+    public double totalAvailableEnergy() {
         return energyBuffer;
     }
 }
