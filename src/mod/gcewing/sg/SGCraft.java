@@ -294,7 +294,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         sgControllerCrystal = newItem("sgControllerCrystal"); //, "Stargate Controller Crystal");
         sgChevronUpgrade = addItem(new SGChevronUpgradeItem(), "sgChevronUpgrade");
         sgIrisUpgrade = addItem(new SGIrisUpgradeItem(), "sgIrisUpgrade");
-        sgPegasusUpgrade = addItem(new SGPegasusUpgradeItem(), "sgPegasusUpgrade");
+        sgPegasusUpgrade = addItem(new SGPegasusUpgradeItem(), "pegasus_upgrade");
         sgIrisBlade = newItem("sgIrisBlade");
         if (isModLoaded("ic2")) {
             ic2Capacitor = newItem("ic2Capacitor");
