@@ -46,6 +46,7 @@ import gcewing.sg.interfaces.IIntegration;
 import gcewing.sg.interfaces.SoundSource;
 import gcewing.sg.item.SGChevronUpgradeItem;
 import gcewing.sg.item.SGIrisUpgradeItem;
+import gcewing.sg.item.SGPegasusUpgradeItem;
 import gcewing.sg.item.SGRingItem;
 import gcewing.sg.network.GuiNetworkHandler;
 import gcewing.sg.network.SGChannel;
@@ -119,7 +120,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static Block naquadahBlock, naquadahOre;
     public static SGPowerBlock sgPowerUnit;
 
-    public static Item naquadah, naquadahIngot, sgCoreCrystal, sgControllerCrystal, sgChevronUpgrade, sgIrisUpgrade, sgIrisBlade;
+    public static Item naquadah, naquadahIngot, sgCoreCrystal, sgControllerCrystal, sgChevronUpgrade, sgIrisUpgrade, sgIrisBlade, sgPegasusUpgrade;
     public static Item tollan_phase_shift_device;
 
     public static Block ic2PowerUnit;
@@ -293,6 +294,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         sgControllerCrystal = newItem("sgControllerCrystal"); //, "Stargate Controller Crystal");
         sgChevronUpgrade = addItem(new SGChevronUpgradeItem(), "sgChevronUpgrade");
         sgIrisUpgrade = addItem(new SGIrisUpgradeItem(), "sgIrisUpgrade");
+        sgPegasusUpgrade = addItem(new SGPegasusUpgradeItem(), "sgPegasusUpgrade");
         sgIrisBlade = newItem("sgIrisBlade");
         if (isModLoaded("ic2")) {
             ic2Capacitor = newItem("ic2Capacitor");

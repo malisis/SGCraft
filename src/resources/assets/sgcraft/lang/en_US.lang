@@ -16,6 +16,7 @@ item.sgcraft:sgControllerCrystal.name=Stargate Controller Crystal
 item.sgcraft:sgChevronUpgrade.name=Stargate Chevron Upgrade
 item.sgcraft:sgIrisUpgrade.name=Stargate Iris Upgrade
 item.sgcraft:sgIrisBlade.name=Stargate Iris Blade
+item.sgcraft:sgPegasusUpgrade.name=Stargate Pegasus Type Upgrade
 item.sgcraft:ic2Capacitor.name=Ridiculously Large Capacitor
 death.attack.sgcraft:transient=%1$s was torn apart by an event horizon
 death.attack.sgcraft:iris=%1$s got splattered against a stargate iris
