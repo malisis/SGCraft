@@ -26,7 +26,7 @@ public class SGPegasusUpgradeItem extends Item {
             return EnumActionResult.FAIL;
 
         if(sgTileEntity.gateType == 2) //Case: already pegasus gate
-            return EnumActionResult.FAIL;
+            return EnumActionResult.SUCCESS;
 
         sgTileEntity.gateType = 2; //Set type to pegasus style
         sgTileEntity.ringRotationSpeed = 6.0D; //Set rotation speed to 6 as per configurator default
