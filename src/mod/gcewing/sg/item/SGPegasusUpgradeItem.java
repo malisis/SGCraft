@@ -25,8 +25,12 @@ public class SGPegasusUpgradeItem extends Item {
         if(sgTileEntity == null) //Case: Gate has no base block
             return EnumActionResult.FAIL;
 
+        if(sgTileEntity.gateType == 2) //Case: already pegasus gate
+            return EnumActionResult.FAIL;
+
         sgTileEntity.gateType = 2; //Set type to pegasus style
         sgTileEntity.ringRotationSpeed = 6.0D; //Set rotation speed to 6 as per configurator default
+        player.getHeldItemMainhand().shrink(1); //Remove item from inventory
         return EnumActionResult.SUCCESS;
     }
 }
