@@ -120,7 +120,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static Block naquadahBlock, naquadahOre;
     public static SGPowerBlock sgPowerUnit;
 
-    public static Item naquadah, naquadahIngot, sgCoreCrystal, sgControllerCrystal, sgChevronUpgrade, sgIrisUpgrade, sgIrisBlade, sgPegasusUpgrade;
+    public static Item naquadah, naquadahIngot, sgCoreCrystal, sgControllerCrystal, sgChevronUpgrade, sgIrisUpgrade, sgIrisBlade, pegasus_upgrade;
     public static Item tollan_phase_shift_device;
 
     public static Block ic2PowerUnit;
@@ -294,7 +294,6 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         sgControllerCrystal = newItem("sgControllerCrystal"); //, "Stargate Controller Crystal");
         sgChevronUpgrade = addItem(new SGChevronUpgradeItem(), "sgChevronUpgrade");
         sgIrisUpgrade = addItem(new SGIrisUpgradeItem(), "sgIrisUpgrade");
-        sgPegasusUpgrade = addItem(new SGPegasusUpgradeItem(), "pegasus_upgrade");
         sgIrisBlade = newItem("sgIrisBlade");
         if (isModLoaded("ic2")) {
             ic2Capacitor = newItem("ic2Capacitor");
@@ -302,6 +301,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 
         zpm = addItem(new ZPMItem(), "zpm");
         tollan_phase_shift_device = newItem("tollan_phase_shift_device");
+
+        pegasus_upgrade = addItem(new SGPegasusUpgradeItem(), "pegasus_upgrade");
 
         if (isModLoaded("malisiscore")) {
             new GuiNetworkHandler(Info.modID+"-GUI");
@@ -432,6 +433,11 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         }
         if (config.getBoolean("recipes", "sgPowerUnit", true)) {
             newRecipe("sgPowerUnit", sgPowerUnit, 1, "rgr", "zIz", "InI", 'n', Blocks.EMERALD_BLOCK, 'z', sgCoreCrystal, 'r', Items.EMERALD, 'g', Blocks.GLASS_PANE, 'I', Blocks.IRON_BLOCK);
+        }
+
+        if(config.getBoolean("recipes","pegasus_upgrade",true)) {
+            newRecipe("pegasus_upgrade_0", pegasus_upgrade,1,"glg","rnr","glg",'g',Items.GLOWSTONE_DUST,'l',Blocks.LAPIS_BLOCK,'r',Items.REDSTONE,'n',naquadahBlock);
+            newRecipe("pegasus_upgrade_1", pegasus_upgrade,1,"grg","lnl","grg",'g',Items.GLOWSTONE_DUST,'l',Blocks.LAPIS_BLOCK,'r',Items.REDSTONE,'n',naquadahBlock);
         }
 
         if (isModLoaded("malisiscore")) {
