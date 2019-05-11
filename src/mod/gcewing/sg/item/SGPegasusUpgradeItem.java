@@ -30,7 +30,7 @@ public class SGPegasusUpgradeItem extends Item {
 
         sgTileEntity.gateType = 2; //Set type to pegasus style
         sgTileEntity.ringRotationSpeed = 6.0D; //Set rotation speed to 6 as per configurator default
-        player.getHeldItemMainhand().shrink(1); //Remove item from inventory
+        player.getHeldItem(hand).shrink(1); //Remove item from inventory
         return EnumActionResult.SUCCESS;
     }
 }
