@@ -46,6 +46,7 @@ import gcewing.sg.interfaces.IIntegration;
 import gcewing.sg.interfaces.SoundSource;
 import gcewing.sg.item.SGChevronUpgradeItem;
 import gcewing.sg.item.SGIrisUpgradeItem;
+import gcewing.sg.item.SGPegasusUpgradeItem;
 import gcewing.sg.item.SGRingItem;
 import gcewing.sg.network.GuiNetworkHandler;
 import gcewing.sg.network.SGChannel;
@@ -119,7 +120,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static Block naquadahBlock, naquadahOre;
     public static SGPowerBlock sgPowerUnit;
 
-    public static Item naquadah, naquadahIngot, sgCoreCrystal, sgControllerCrystal, sgChevronUpgrade, sgIrisUpgrade, sgIrisBlade;
+    public static Item naquadah, naquadahIngot, sgCoreCrystal, sgControllerCrystal, sgChevronUpgrade, sgIrisUpgrade, sgIrisBlade, pegasus_upgrade;
     public static Item tollan_phase_shift_device;
 
     public static Block ic2PowerUnit;
@@ -301,6 +302,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         zpm = addItem(new ZPMItem(), "zpm");
         tollan_phase_shift_device = newItem("tollan_phase_shift_device");
 
+        pegasus_upgrade = addItem(new SGPegasusUpgradeItem(), "pegasus_upgrade");
+
         if (isModLoaded("malisiscore")) {
             new GuiNetworkHandler(Info.modID+"-GUI");
 
@@ -430,6 +433,26 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         }
         if (config.getBoolean("recipes", "sgPowerUnit", true)) {
             newRecipe("sgPowerUnit", sgPowerUnit, 1, "rgr", "zIz", "InI", 'n', Blocks.EMERALD_BLOCK, 'z', sgCoreCrystal, 'r', Items.EMERALD, 'g', Blocks.GLASS_PANE, 'I', Blocks.IRON_BLOCK);
+        }
+
+        if(config.getBoolean("recipes","pegasus_upgrade",true)) {
+            if(config.getBoolean("recipes","pegasus_upgrade_require_crystal", true))
+            {
+                //Core Crystal crafting
+                newRecipe("pegasus_upgrade_0", pegasus_upgrade, 1, "glg", "rnr", "glg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', sgCoreCrystal);
+                newRecipe("pegasus_upgrade_1", pegasus_upgrade, 1, "grg", "lnl", "grg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', sgCoreCrystal);
+                //Recraft upgrade
+                newRecipe("pegasus_upgrade_2", pegasus_upgrade, 2, "glg", "rnr", "glg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', pegasus_upgrade);
+                newRecipe("pegasus_upgrade_3", pegasus_upgrade, 2, "grg", "lnl", "grg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', pegasus_upgrade);
+
+
+            }
+            else
+            {
+                //Crafting via naquadah block
+                newRecipe("pegasus_upgrade_0", pegasus_upgrade, 1, "glg", "rnr", "glg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', naquadahBlock);
+                newRecipe("pegasus_upgrade_1", pegasus_upgrade, 1, "grg", "lnl", "grg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', naquadahBlock);
+            }
         }
 
         if (isModLoaded("malisiscore")) {

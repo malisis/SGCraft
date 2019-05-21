@@ -157,3 +157,5 @@ sgcraft.gui.gdo.label.localGateControl=Lokale Iriskontrolle
 sgcraft.gui.gdo.label.remoteGateControl=Entfernte Iriskontrolle
 
 sgcraft.gui.zpmConsole.label.availablePower=Verfügbare Energie
+
+item.sgcraft:pegasus_upgrade.name=Pegasus Typ Erweiterungskristall
