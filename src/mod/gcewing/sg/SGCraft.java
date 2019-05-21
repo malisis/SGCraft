@@ -436,19 +436,14 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         }
 
         if(config.getBoolean("recipes","pegasus_upgrade",true)) {
-            if(config.getBoolean("recipes","pegasus_upgrade_require_crystal", true))
-            {
+            if(config.getBoolean("recipes","pegasus_upgrade_require_crystal", true)) {
                 //Core Crystal crafting
                 newRecipe("pegasus_upgrade_0", pegasus_upgrade, 1, "glg", "rnr", "glg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', sgCoreCrystal);
                 newRecipe("pegasus_upgrade_1", pegasus_upgrade, 1, "grg", "lnl", "grg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', sgCoreCrystal);
                 //Recraft upgrade
                 newRecipe("pegasus_upgrade_2", pegasus_upgrade, 2, "glg", "rnr", "glg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', pegasus_upgrade);
                 newRecipe("pegasus_upgrade_3", pegasus_upgrade, 2, "grg", "lnl", "grg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', pegasus_upgrade);
-
-
-            }
-            else
-            {
+            } else {
                 //Crafting via naquadah block
                 newRecipe("pegasus_upgrade_0", pegasus_upgrade, 1, "glg", "rnr", "glg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', naquadahBlock);
                 newRecipe("pegasus_upgrade_1", pegasus_upgrade, 1, "grg", "lnl", "grg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', naquadahBlock);

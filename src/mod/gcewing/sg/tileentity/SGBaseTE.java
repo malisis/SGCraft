@@ -2764,15 +2764,13 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         return EnumActionResult.SUCCESS;
     }
 
-    public EnumActionResult applyPegasusUpgrade(ItemStack stack, EntityPlayer player)
-    {
-        if(this.gateType == 2) //Case: already pegasus gate
-            return EnumActionResult.SUCCESS;
-
-        this.gateType = 2; //Set type to pegasus style
-        this.ringRotationSpeed = 6.0D; //Set rotation speed to 6 as per configurator default
-        stack.shrink(1);
-        markChanged();
+    public EnumActionResult applyPegasusUpgrade(ItemStack stack, EntityPlayer player) {
+        if (!getWorld().isRemote && this.gateType != 2) {
+            this.gateType = 2; //Set type to pegasus style
+            this.ringRotationSpeed = 6.0D; //Set rotation speed to 6 as per configurator default
+            stack.shrink(1);
+            markChanged();
+        }
 
         return EnumActionResult.SUCCESS;
     }
