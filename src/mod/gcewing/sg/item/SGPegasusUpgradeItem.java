@@ -1,5 +1,6 @@
 package gcewing.sg.item;
 
+import gcewing.sg.SGCraft;
 import gcewing.sg.interfaces.ISGBlock;
 import gcewing.sg.tileentity.SGBaseTE;
 import net.minecraft.block.Block;
@@ -12,7 +13,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 public class SGPegasusUpgradeItem extends Item {
-
     @Override
     public EnumActionResult onItemUse(EntityPlayer player, World worldIn, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         Block block = worldIn.getBlockState(pos).getBlock();
