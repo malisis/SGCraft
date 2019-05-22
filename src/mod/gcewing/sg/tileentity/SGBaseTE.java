@@ -986,7 +986,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public String connect(String address, EntityPlayer player, boolean ccInterface) {
         // Note:  if player is null when introduced to this method, then it usually indicates a CI attempting to dial.
         // Note:  ccInterface == true so it stops the immediate chevron lock if a ccInterface is the one doing the dialing.
-        debugEnergyUse = true;
+        debugEnergyUse = false;
         if (state != SGState.Idle) {
             return diallingFailure(player, "selfBusy");
         }
@@ -1034,7 +1034,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
         // Player Access Control System
         if (player != null && !targetGate.allowGateAccess(player.getName())) {
-            if (!isPermissionsAdmin) return diallingFailure(player, "accessToDenied");
+            if (!isPermissionsAdmin) return diallingFailure(player, "playerAccessToDenied");
         }
 
         // Gate Address Control System
@@ -1049,8 +1049,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 accessSystemDialDestination = false;
             }
         }
-
-        System.out.println("accessSystemDialDestionation: " + accessSystemDialDestination);
 
         if (!accessSystemDialDestination) {
             if (!isPermissionsAdmin)
@@ -1689,8 +1687,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         List<ISGEnergySource> sources = findEnergySources(this.destinationRequiresZPM);
         double energyAvailable = energyInBuffer + energyAvailableFrom(sources);
 
-        System.out.println("Energy from Sources: " + energyAvailableFrom(sources));
-
         if (debugEnergyUse) {
             System.out.printf("SGBaseTE.useEnergy: %s available\n", energyAvailable);
         }
@@ -1757,7 +1753,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             }
 
             if (nte instanceof ISGEnergySource) { // Specifically exclude the ZPM Interface.
-                System.out.println("NTE: " + nte);
                 if (ic2Loaded && nte instanceof IC2PowerTE) {
                     result.add((ISGEnergySource) nte);
                     if (debugEnergyUse) {
@@ -1829,7 +1824,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
             energy += e;
         }
 
-        System.out.println("Energy from Sources: " + energy);
+        if (debugEnergyUse) {
+            System.out.println("Energy from Sources: " + energy);
+        }
 
         return energy;
     }

@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public class ZpmAddon {
 
-    final static boolean debugAddon = true;
+    final static boolean debugAddon = false;
     final static DecimalFormat dFormat = new DecimalFormat("###,###,###,##0");
 
     public static boolean routeRequiresZPM(World origin, World destination) {
