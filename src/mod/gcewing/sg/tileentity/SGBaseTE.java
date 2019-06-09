@@ -1516,7 +1516,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                         this.connectedLocation = new SGLocation(malfunctionDestinationGate);
                         malfunctionDestinationGate.numEngagedChevrons = 7;
                         malfunctionDestinationGate.connectedLocation = new SGLocation(this);
-                        SGCraft.playSound(this, malfunctionSound);
+                        playSGSoundEffect(malfunctionSound, 1F, 1F);
                         malfunctionDestinationGate.enterState(SGState.Connected, 0);
                     }
                 }
