@@ -139,7 +139,7 @@ public class NaquadahOreWorldGen implements IWorldGenerator {
                 }
             }
         }
-        if (odds(genIsolatedOdds)) {
+        if (genIsolatedOdds > 0 && odds(genIsolatedOdds)) {
             int n = random.nextInt(maxIsolatedNodes) + 1;
             for (int i = 0; i < n; i++) {
                 int x = random.nextInt(16);
@@ -153,5 +153,4 @@ public class NaquadahOreWorldGen implements IWorldGenerator {
             }
         }
     }
-    
 }
