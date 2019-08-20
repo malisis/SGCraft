@@ -322,7 +322,8 @@ public final class ZpmConsoleTE extends BaseTileInventory implements ISGEnergySo
                 if (side == EnumFacing.UP)
                     continue;
                 TileEntity tile = this.world.getTileEntity(this.pos.offset(side));
-                if (tile != null) {
+                // Note: make sure the neighbor isn't also a ZpmConsoleTE otherwise a loopback is created.  This only applies to forge based power with this update method.
+                if (tile != null && (!(tile instanceof ZpmConsoleTE))) {
                     if (tile.hasCapability(CapabilityEnergy.ENERGY, side)) {
                         if (tile.getCapability(CapabilityEnergy.ENERGY, side).getEnergyStored() < tile.getCapability(CapabilityEnergy.ENERGY, side).getMaxEnergyStored()) {
                             int max = tile.getCapability(CapabilityEnergy.ENERGY, side).receiveEnergy(this.extractEnergy(50000, true), true); // Prevent the draw of what ever the entery is going to > than capability.
