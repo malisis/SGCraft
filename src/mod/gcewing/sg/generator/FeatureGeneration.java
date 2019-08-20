@@ -155,7 +155,7 @@ class SGStructureMap extends Long2ObjectOpenHashMap {
                 newComponents.add(newComp);
             }
 
-            if (comp instanceof ComponentScatteredFeaturePieces.SwampHut) {
+            if (comp instanceof ComponentScatteredFeaturePieces.SwampHut && FeatureGeneration.swampAddon) {
                 StructureBoundingBox box = ((StructureComponent)comp).getBoundingBox();
                 if (FeatureGeneration.debugStructures) {
                     BlockPos boxCenter = new BlockPos(box.minX + (box.maxX - box.minX + 1) / 2, box.minY + (box.maxY - box.minY + 1) / 2, box.minZ + (box.maxZ - box.minZ + 1) / 2);
@@ -167,7 +167,7 @@ class SGStructureMap extends Long2ObjectOpenHashMap {
                 newComponents.add(newComp);
             }
 
-            if (comp instanceof ComponentScatteredFeaturePieces.Igloo) {
+            if (comp instanceof ComponentScatteredFeaturePieces.Igloo && FeatureGeneration.iglooAddon) {
                 StructureBoundingBox box = ((StructureComponent)comp).getBoundingBox();
                 if (FeatureGeneration.debugStructures) {
                     BlockPos boxCenter = new BlockPos(box.minX + (box.maxX - box.minX + 1) / 2, box.minY + (box.maxY - box.minY + 1) / 2, box.minZ + (box.maxZ - box.minZ + 1) / 2);
@@ -179,7 +179,7 @@ class SGStructureMap extends Long2ObjectOpenHashMap {
                 newComponents.add(newComp);
             }
 
-            if (comp instanceof ComponentScatteredFeaturePieces.JunglePyramid) {
+            if (comp instanceof ComponentScatteredFeaturePieces.JunglePyramid && FeatureGeneration.jungleAddon) {
                 StructureBoundingBox box = ((StructureComponent)comp).getBoundingBox();
                 if (FeatureGeneration.debugStructures) {
                     BlockPos boxCenter = new BlockPos(box.minX + (box.maxX - box.minX + 1) / 2, box.minY + (box.maxY - box.minY + 1) / 2, box.minZ + (box.maxZ - box.minZ + 1) / 2);
