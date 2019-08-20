@@ -159,12 +159,12 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     // ZPM Console Block Options
     public static double ZPMEnergyPerSGEnergyUnit = 10.0;
 
-    //Client Options
+    // Client Options
     public static boolean useHDEventHorizionTexture = true;
     public static boolean saveAddressToClipboard = false;
     public static boolean displayGuiPowerDebug = true;
 
-    //World data fixes
+    // World data fixes
     public static boolean forceSGBaseTEUpdate = false;
     public static boolean forceDHDCfgUpdate = false;
     public static boolean forceIC2CfgUpdate = false;
@@ -172,6 +172,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static boolean forceZPMCfgUpdate = false;
     public static boolean forceGateAccessSystemReset = false;
     public static boolean forcePlayerAccessSystemReset = false;
+
+    // Unbreakable Block Option
+    public static boolean wormholeCanDestroyUnbreakableBlocks = false;
 
     public static PermissionsUtil permissionsUtil;
 
@@ -609,6 +612,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         // Access System Resets
         forceGateAccessSystemReset = config.getBoolean("gate-access", "force-reset-on-load", forceGateAccessSystemReset);
         forcePlayerAccessSystemReset = config.getBoolean("player-access", "force-reset-on-load", forcePlayerAccessSystemReset);
+
+        // Transient Damage - Unbreakable Blocks
+        wormholeCanDestroyUnbreakableBlocks = config.getBoolean("stargate", "wormholeCanDestroyUnbreakableBlocks", wormholeCanDestroyUnbreakableBlocks);
     }
 
     public static boolean hasPermission(EntityPlayer player, String permission) {

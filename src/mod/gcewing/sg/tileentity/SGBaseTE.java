@@ -1904,7 +1904,11 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
                 BlockPos endPos = new BlockPos(p1.x, p1.y, p1.z);
 
                 for (final BlockPos nearPos : BlockPos.getAllInBox(startPos, endPos)) {
-                    world.setBlockState(nearPos, Blocks.AIR.getDefaultState());
+                    if (SGCraft.wormholeCanDestroyUnbreakableBlocks) {
+                        world.setBlockState(nearPos, Blocks.AIR.getDefaultState());
+                    } else if (world.getBlockState(nearPos).getBlockHardness(world, nearPos) >= 0) {
+                        world.setBlockState(nearPos, Blocks.AIR.getDefaultState());
+                    }
                 }
 
                 performBlockDamage = false;
