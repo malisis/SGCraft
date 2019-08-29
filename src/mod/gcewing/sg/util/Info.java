@@ -5,8 +5,6 @@ package gcewing.sg.util;
 public class Info {
 	public static final String modName = "SG Craft";
 	public static final String modID = "sgcraft";
-	//static final String modPackage = "";
-	public static final String versionNumber = "1.13.2";
-	public static final String versionBounds = "[1.13,1.14)";
-	public static final String acceptedMinecraftVersions = "[1.10.2,1.10.2]";
+	public static final String versionNumber = "2.0.3";
+	public static final String versionBounds = "2.0.3";
 }
