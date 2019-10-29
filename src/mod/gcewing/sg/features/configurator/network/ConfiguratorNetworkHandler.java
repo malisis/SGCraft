@@ -33,7 +33,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
     public static void sendConfiguratorInputToServer(SGBaseTE te, int secondsToStayOpen, double ringRotationSpeed, double maxEnergyBuffer, double energyPerFuelItem, int gateOpeningsPerFuelItem,
         double distanceFactorMultiplier, double interDimensionalMultiplier, boolean oneWayTravel, boolean hasIrisUpgrade, boolean hasChevronUpgrade, int gateType, boolean reverseWormholeKills,
         boolean closeFromEitherEnd, boolean preserveInventory, boolean requiresNoPower, boolean chevronsLockOnDial, boolean returnToPreviousIrisState, boolean transientDamage,
-        boolean transparency, int orientation, boolean useDHDFuelSource, boolean allowRedstoneOutput, boolean allowRedstoneInput) {
+        boolean transparency, int orientation, boolean useDHDFuelSource, boolean allowRedstoneOutput, boolean allowRedstoneInput, boolean canPlayerBreakGate) {
 
         ChannelOutput data = configuratorChannel.openServer("ConfiguratorInput");
         writeCoords(data, te);
@@ -60,6 +60,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         data.writeBoolean(useDHDFuelSource);
         data.writeBoolean(allowRedstoneOutput);
         data.writeBoolean(allowRedstoneInput);
+        data.writeBoolean(canPlayerBreakGate);
         data.close();
     }
 
@@ -92,6 +93,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         boolean useDHDFuelSource = data.readBoolean();
         boolean allowRedstoneOutput = data.readBoolean();
         boolean allowRedstoneInput = data.readBoolean();
+        boolean canPlayerBreakGate = data.readBoolean();
 
         boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
 
@@ -122,6 +124,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
             if (SGCraft.hasPermission(player, "sgcraft.configurator.useDHDFuelSource") || isPermissionsAdmin) te.useDHDFuelSource = useDHDFuelSource;
             if (SGCraft.hasPermission(player, "sgcraft.configurator.allowRedstoneOutput") || isPermissionsAdmin) te.allowRedstoneOutput = allowRedstoneOutput;
             if (SGCraft.hasPermission(player, "sgcraft.configurator.allowRedstoneInput") || isPermissionsAdmin) te.allowRedstoneInput = allowRedstoneInput;
+            if (SGCraft.hasPermission(player, "sgcraft.configurator.canPlayerBreakGate") || isPermissionsAdmin) te.canPlayerBreakGate = canPlayerBreakGate;
             sendBasicMsg(player, "changesSaved");
             te.updateIrisEntity();
             te.markForUpdate();
@@ -325,7 +328,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
     public static void openGuiAtClient(SGBaseTE te, EntityPlayer player, int guiType, boolean isAdmin,  boolean secondsToStayOpenPerm, boolean gateRotationSpeedPerm, boolean energyBufferSizePerm, boolean energyPerNaquadahPerm, boolean openingsPerNaquadahPerm,
         boolean distanceFactorMultiplierPerm, boolean interDimensionalMultiplierPerm, boolean oneWayTravelOnlyPerm, boolean irisUpgradePerm, boolean chevronUpgradePerm, boolean pegasusGateTypePerm, boolean reverseWormholeKillsPerm,
         boolean closeFromEitherEndPerm, boolean preserveInventoryOnIrisDeathPerm, boolean noInputPowerRequiredPerm, boolean chevronsLockOnDialPerm, boolean returnToPreviousIrisStatePerm, boolean transientDamagePerm, boolean transparencyPerm,
-        boolean dhdAsFuelSourcePerm, boolean allowRedstoneOutputPerm, boolean allowRedstoneInputPerm, boolean gateAccessPerm, boolean playerAccessPerm) {
+        boolean dhdAsFuelSourcePerm, boolean allowRedstoneOutputPerm, boolean allowRedstoneInputPerm, boolean gateAccessPerm, boolean playerAccessPerm, boolean canPlayerBreakGatePerm) {
 
         ChannelOutput data = configuratorChannel.openPlayer(player,"OpenConfiguratorGUI");
         // Type is always 1 here. *for now*
@@ -356,7 +359,7 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         data.writeBoolean(allowRedstoneInputPerm);
         data.writeBoolean(gateAccessPerm);
         data.writeBoolean(playerAccessPerm);
-
+        data.writeBoolean(canPlayerBreakGatePerm);
         data.close();
     }
 
@@ -390,11 +393,12 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         boolean allowRedstoneInputPerm  = data.readBoolean();
         boolean gateAccessPerm = data.readBoolean();
         boolean playerAccessPerm = data.readBoolean();
+        boolean canPlayerBreakGatePerm = data.readBoolean();
 
         if (guiType == 1) {
             new ConfiguratorScreen(player, player.world, isAdmin, secondsToStayOpenPerm, gateRotationSpeedPerm, energyBufferSizePerm, energyPerNaquadahPerm, openingsPerNaquadahPerm, distanceFactoryMultiplierPerm, interDimensionalMultiplierPerm,
                 oneWayTravelOnlyPerm, irisUpgradePerm, chevronUpgradePerm, pegasusGateTypePerm, reverseWormholeKillsPerm, closeFromEitherEndPerm, preserveInventoryOnIrisDeathPerm, noInputPowerRequiredPerm, chevronsLockOnDialPerm,
-                returnToPreviousIrisStatePerm, transientDamagePerm, transparencyPerm, dhdAsFuelSourcePerm, allowRedstoneOutputPerm, allowRedstoneInputPerm, gateAccessPerm, playerAccessPerm).display();
+                returnToPreviousIrisStatePerm, transientDamagePerm, transparencyPerm, dhdAsFuelSourcePerm, allowRedstoneOutputPerm, allowRedstoneInputPerm, canPlayerBreakGatePerm, gateAccessPerm, playerAccessPerm).display();
         }
     }
 }

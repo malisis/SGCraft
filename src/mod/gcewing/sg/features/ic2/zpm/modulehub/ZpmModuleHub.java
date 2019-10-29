@@ -1,9 +1,8 @@
-package gcewing.sg.features.zpm;
-
-import static gcewing.sg.client.gui.SGGui.PowerUnit;
-import static gcewing.sg.client.gui.SGGui.ZPMConsole;
+package gcewing.sg.features.ic2.zpm.modulehub;
 
 import gcewing.sg.SGCraft;
+import gcewing.sg.client.gui.SGGui;
+import gcewing.sg.features.zpm.ZPMItem;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockContainer;
 import net.minecraft.block.BlockHorizontal;
@@ -30,11 +29,11 @@ import java.util.ArrayList;
 
 import javax.annotation.Nullable;
 
-public class ZpmConsole extends BlockContainer {
+public class ZpmModuleHub extends BlockContainer {
 
     public static final PropertyBool ZPM_LOADED = PropertyBool.create("zpm");
 
-    public ZpmConsole() {
+    public ZpmModuleHub() {
         super(Material.ROCK);
         setHardness(1.5f);
     }
@@ -46,31 +45,42 @@ public class ZpmConsole extends BlockContainer {
 
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        ZpmConsoleTE zpmConsole = ZpmConsoleTE.at(world, pos);
-        ItemStack zpm = zpmConsole.getStackInSlot(0);
-        NBTTagCompound tag = zpm.getTagCompound();
+        ZpmModuleHubTE zpmHub = ZpmModuleHubTE.at(world, pos);
+        for (int slot = 0; slot <=2;slot++) { // 3
+            ItemStack zpm = zpmHub.getStackInSlot(slot);
+            NBTTagCompound tag = zpm.getTagCompound();
 
-        if (zpmConsole != null) {
-            if (tag == null) {
-                tag = new NBTTagCompound();
-                zpm.setTagCompound(tag);
+            if (zpmHub != null) {
+                if (tag == null) {
+                    tag = new NBTTagCompound();
+                    zpm.setTagCompound(tag);
+                }
+
+                if (tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
+                    if (slot == 0) {
+                        tag.setDouble(ZPMItem.ENERGY, zpmHub.zpmSlot0Energy);
+                        tag.setBoolean(ZPMItem.LOADED, false);
+                        zpmHub.hubSource.setEnergyStored(zpmHub.hubSource.getEnergyStored() - zpmHub.zpmSlot0Energy);
+                    } else if (slot == 1) {
+                        tag.setDouble(ZPMItem.ENERGY, zpmHub.zpmSlot1Energy);
+                        tag.setBoolean(ZPMItem.LOADED, false);
+                        zpmHub.hubSource.setEnergyStored(zpmHub.hubSource.getEnergyStored() - zpmHub.zpmSlot1Energy);
+                    } else if (slot == 2) {
+                        tag.setDouble(ZPMItem.ENERGY, zpmHub.zpmSlot2Energy);
+                        tag.setBoolean(ZPMItem.LOADED, false);
+                        zpmHub.hubSource.setEnergyStored(zpmHub.hubSource.getEnergyStored() - zpmHub.zpmSlot2Energy);
+                    }
+                }
             }
-
-            if (tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
-                tag.setDouble(ZPMItem.ENERGY, zpmConsole.getEnergyStored());
-                tag.setBoolean(ZPMItem.LOADED, false);
-                zpmConsole.drawEnergyDouble(zpmConsole.getEnergyStored());
-            }
-
+            Block.spawnAsEntity(world, pos, zpm);
+            super.breakBlock(world, pos, state);
         }
-        Block.spawnAsEntity(world, pos, zpm);
-        super.breakBlock(world, pos, state);
     }
 
     @Nullable
     @Override
     public TileEntity createNewTileEntity(final World world, final int meta) {
-        return new ZpmConsoleTE(SGCraft.ZPMEnergyPerSGEnergyUnit);
+        return new ZpmModuleHubTE();
     }
 
     @Override
@@ -97,7 +107,7 @@ public class ZpmConsole extends BlockContainer {
 
     @Override
     public int getMetaFromState(final IBlockState state) {
-        boolean zpmLoaded = state.getValue(ZpmConsole.ZPM_LOADED);
+        boolean zpmLoaded = state.getValue(ZpmModuleHub.ZPM_LOADED);
         if (zpmLoaded) {
             return state.getValue(BlockHorizontal.FACING).getHorizontalIndex() + 4;
         } else {
@@ -124,10 +134,9 @@ public class ZpmConsole extends BlockContainer {
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float hx, float hy, float hz)  {
         world.notifyBlockUpdate(pos, state, state, 3);
         world.scheduleBlockUpdate(pos, state.getBlock(),0,0);
-        ZpmConsoleTE.at(world, pos).markDirty();
-
+        ZpmModuleHubTE.at(world, pos).markDirty();
         if (!world.isRemote) {
-            SGCraft.mod.openGui(player, ZPMConsole, world, pos);
+            SGCraft.mod.openGui(player, SGGui.ZPMInterfaceCart, world, pos);
         }
         return true;
     }
@@ -136,8 +145,10 @@ public class ZpmConsole extends BlockContainer {
     public ArrayList<ItemStack> getDrops(IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
         ArrayList<ItemStack> returnList = new ArrayList<ItemStack>();
         Item item = getItemDropped(state, ((World)world).rand, fortune);
-        ItemStack zpm_console = new ItemStack(item, 1);
-        returnList.add(zpm_console);
+        // Todo:
+
+        //ItemStack zpm_interface_cart = new ItemStack(item, 1);
+        //returnList.add(zpm_interface_cart);
 
         return returnList;
     }
@@ -145,10 +156,5 @@ public class ZpmConsole extends BlockContainer {
     @Override
     public boolean canDropFromExplosion(Explosion explosionIn) {
         return SGCraft.canHarvestSGBaseBlock;
-    }
-
-    @Override
-    public boolean shouldCheckWeakPower(IBlockState state, IBlockAccess world, BlockPos pos, EnumFacing side) {
-        return true;
     }
 }

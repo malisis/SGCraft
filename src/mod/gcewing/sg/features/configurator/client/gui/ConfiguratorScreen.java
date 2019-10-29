@@ -37,7 +37,7 @@ public class ConfiguratorScreen extends BasicScreen {
     private UILabel gateAddressLabel;
     private UICheckBox oneWayTravelCheckbox, irisUpgradeCheckbox, chevronUpgradeCheckbox, gateTypeCheckbox, reverseWormholeKillsCheckbox;
     private UICheckBox closeFromEitherEndCheckbox, preserveInventoryCheckbox, noPowerRequiredCheckbox, chevronsLockOnDialCheckbox, returnIrisToPreviousStateCheckbox;
-    private UICheckBox transientDamageCheckbox, transparencyCheckbox, horizontalFaceUpCheckbox, horizontalFaceDownCheckbox, useDHDFuelSourceCheckbox, allowRedstoneOutputCheckbox, allowRedstoneInputCheckbox;
+    private UICheckBox transientDamageCheckbox, transparencyCheckbox, horizontalFaceUpCheckbox, horizontalFaceDownCheckbox, useDHDFuelSourceCheckbox, allowRedstoneOutputCheckbox, allowRedstoneInputCheckbox, playerCanDestroyGateCheckbox;
     private UITextField secondsToStayOpen, gateRotationSpeed, energyBufferSize, energyPerNaquadah, gateOpeningsPerNaquadah, distanceMultiplier, dimensionalMultiplier;
     private UIButton gateAddressAccessListButton, playerAccessListButton;
     private BlockPos location;
@@ -46,6 +46,7 @@ public class ConfiguratorScreen extends BasicScreen {
     private boolean secondsToStayOpenPerm, gateRotationSpeedPerm, energyBufferSizePerm, energyPerNaquadahPerm, openingsPerNaquadahPerm, distanceFactorMultiplierPerm, interDimensionalMultiplierPerm;
     private boolean oneWayTravelOnlyPerm, irisUpgradePerm, chevronUpgradePerm, pegasusGateTypePerm, reverseWormholeKillsPerm, closeFromEitherEndPerm, preserveInventoryOnIrisDeathPerm, noInputPowerRequiredPerm;
     private boolean chevronsLockOnDialPerm, returnToPreviousIrisStatePerm, transientDamagePerm, transparencyPerm, dhdAsFuelSourcePerm, allowRedstoneOutputPerm, allowRedstoneInputPerm, gateAccessPerm, playerAccessPerm;
+    private boolean playerCanDestroyGatePerm;
 
     //public ConfiguratorScreen(EntityPlayer player, World worldIn,  boolean isAdmin) {
     //    this.player = player;
@@ -57,7 +58,7 @@ public class ConfiguratorScreen extends BasicScreen {
     public ConfiguratorScreen(EntityPlayer player, World worldIn, boolean isAdmin, boolean secondsToStayOpenPerm, boolean gateRotationSpeedPerm, boolean energyBufferSizePerm, boolean energyPerNaquadahPerm, boolean openingsPerNaquadahPerm,
         boolean distanceFactorMultiplierPerm, boolean interDimensionalMultiplierPerm, boolean oneWayTravelOnlyPerm, boolean irisUpgradePerm, boolean chevronUpgradePerm, boolean pegasusGateTypePerm, boolean reverseWormholeKillsPerm,
         boolean closeFromEitherEndPerm, boolean preserveInventoryOnIrisDeathPerm, boolean noInputPowerRequiredPerm, boolean chevronsLockOnDialPerm, boolean returnToPreviousIrisStatePerm, boolean transientDamagePerm, boolean transparencyPerm,
-        boolean dhdAsFuelSourcePerm, boolean allowRedstoneOutputPerm, boolean allowRedstoneInputPerm, boolean gateAccessPerm, boolean playerAccessPerm) {
+        boolean dhdAsFuelSourcePerm, boolean allowRedstoneOutputPerm, boolean allowRedstoneInputPerm, boolean playerCanDestroyGatePerm, boolean gateAccessPerm, boolean playerAccessPerm) {
 
         this.player = player;
         this.isAdmin = isAdmin;
@@ -84,6 +85,7 @@ public class ConfiguratorScreen extends BasicScreen {
         this.dhdAsFuelSourcePerm = dhdAsFuelSourcePerm;
         this.allowRedstoneOutputPerm = allowRedstoneOutputPerm;
         this.allowRedstoneInputPerm = allowRedstoneInputPerm;
+        this.playerCanDestroyGatePerm = playerCanDestroyGatePerm;
         this.gateAccessPerm = gateAccessPerm;
         this.playerAccessPerm = playerAccessPerm;
         this.location = new BlockPos(player.posX, player.posY, player.posZ);
@@ -428,6 +430,13 @@ public class ConfiguratorScreen extends BasicScreen {
         this.allowRedstoneInputCheckbox.setName("checkbox.redstoneinput");
         this.allowRedstoneInputCheckbox.register(this);
 
+        this.playerCanDestroyGateCheckbox = new UICheckBox(this);
+        this.playerCanDestroyGateCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.playerCanDestroyGate"));
+        this.playerCanDestroyGateCheckbox.setPosition(checkboxIndentPadding, this.allowRedstoneInputCheckbox.getY() + padding, Anchor.LEFT | Anchor.TOP);
+        this.playerCanDestroyGateCheckbox.setEnabled(true);
+        this.playerCanDestroyGateCheckbox.setName("checkbox.playercandestroygate");
+        this.playerCanDestroyGateCheckbox.register(this);
+
         this.horizontalFaceUpCheckbox = new UICheckBox(this);
         this.horizontalFaceUpCheckbox.setText(TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.renderFaceUp"));
         this.horizontalFaceUpCheckbox.setPosition(70, -15, Anchor.LEFT | Anchor.BOTTOM);
@@ -459,7 +468,7 @@ public class ConfiguratorScreen extends BasicScreen {
         this.checkboxOptionsArea.add(booleanValuesLabel, checkboxSeparator, this.oneWayTravelCheckbox, this.irisUpgradeCheckbox, this.chevronUpgradeCheckbox, this.gateTypeCheckbox);
         this.checkboxOptionsArea.add(this.reverseWormholeKillsCheckbox, this.closeFromEitherEndCheckbox, this.preserveInventoryCheckbox, this.noPowerRequiredCheckbox);
         this.checkboxOptionsArea.add(this.chevronsLockOnDialCheckbox, this.returnIrisToPreviousStateCheckbox, this.transientDamageCheckbox, this.transparencyCheckbox, this.useDHDFuelSourceCheckbox);
-        this.checkboxOptionsArea.add(this.allowRedstoneOutputCheckbox, this.allowRedstoneInputCheckbox);
+        this.checkboxOptionsArea.add(this.allowRedstoneOutputCheckbox, this.allowRedstoneInputCheckbox, this.playerCanDestroyGateCheckbox);
 
         if (localGate.gateOrientation == 2 || localGate.gateOrientation == 3) {
             this.checkboxOptionsArea.add(checkbox2Separator, checkbox3Separator, horizontalGateLabel, this.horizontalFaceUpCheckbox, this.horizontalFaceDownCheckbox);
@@ -493,6 +502,7 @@ public class ConfiguratorScreen extends BasicScreen {
                 this.useDHDFuelSourceCheckbox.setChecked(SGBaseTE.cfg.getBoolean("dhd", "useDHDFuelSource", true));
                 this.allowRedstoneOutputCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "allowRedstoneOutput", true));
                 this.allowRedstoneInputCheckbox.setChecked(SGBaseTE.cfg.getBoolean("iris", "allowRedstoneInput", true));
+                this.playerCanDestroyGateCheckbox.setChecked(SGBaseTE.cfg.getBoolean("gate", "canPlayerBreakGate", true));
 
                 if (localGate.gateOrientation == 1) {
                     this.transientDamageCheckbox.setChecked(false);
@@ -535,7 +545,7 @@ public class ConfiguratorScreen extends BasicScreen {
                     Double.valueOf(this.energyPerNaquadah.getText()), Integer.valueOf(this.gateOpeningsPerNaquadah.getText()), Double.valueOf(this.distanceMultiplier.getText()), Double.valueOf(this.dimensionalMultiplier.getText()),
                     this.oneWayTravelCheckbox.isChecked(), this.irisUpgradeCheckbox.isChecked(), this.chevronUpgradeCheckbox.isChecked(), gateType, this.reverseWormholeKillsCheckbox.isChecked(), this.closeFromEitherEndCheckbox.isChecked(),
                     this.preserveInventoryCheckbox.isChecked(), this.noPowerRequiredCheckbox.isChecked(), this.chevronsLockOnDialCheckbox.isChecked(), this.returnIrisToPreviousStateCheckbox.isChecked(), this.transientDamageCheckbox.isChecked(),
-                    this.transparencyCheckbox.isChecked(), orientation, this.useDHDFuelSourceCheckbox.isChecked(), this.allowRedstoneOutputCheckbox.isChecked(), this.allowRedstoneInputCheckbox.isChecked());
+                    this.transparencyCheckbox.isChecked(), orientation, this.useDHDFuelSourceCheckbox.isChecked(), this.allowRedstoneOutputCheckbox.isChecked(), this.allowRedstoneInputCheckbox.isChecked(), this.playerCanDestroyGateCheckbox.isChecked());
 
                 this.close();
             })
@@ -689,6 +699,9 @@ public class ConfiguratorScreen extends BasicScreen {
 
             this.allowRedstoneInputCheckbox.setChecked(localGate.allowRedstoneInput);
             this.allowRedstoneInputCheckbox.setEnabled(this.allowRedstoneInputPerm);
+
+            this.playerCanDestroyGateCheckbox.setChecked(localGate.canPlayerBreakGate);
+            this.playerCanDestroyGateCheckbox.setEnabled(this.playerCanDestroyGatePerm);
 
             if (localGate.gateOrientation == 2) {
                 this.horizontalFaceUpCheckbox.setChecked(true);

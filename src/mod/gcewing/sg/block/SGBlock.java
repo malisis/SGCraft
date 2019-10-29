@@ -24,6 +24,12 @@ public abstract class SGBlock<TE extends TileEntity> extends BaseBlock<TE> imple
 
     @Override    
     public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer player, boolean willHarvest) {
+        if (!player.capabilities.isCreativeMode) {
+            if (!canPlayerBreakGeneratedGates(world, pos)) {
+                return false;  // Prevents gates from being broken when we don't want them to be.
+            }
+        }
+
         if (player.capabilities.isCreativeMode && isConnected(world, pos)) {
             if (world.isRemote)
                 SGBaseTE.sendErrorMsg(player, "disconnectFirst");
@@ -35,5 +41,13 @@ public abstract class SGBlock<TE extends TileEntity> extends BaseBlock<TE> imple
     boolean isConnected(World world, BlockPos pos) {
         SGBaseTE bte = getBaseTE(world, pos);
         return bte != null && bte.isConnected();
+    }
+
+    boolean canPlayerBreakGeneratedGates(World world, BlockPos pos) {
+        SGBaseTE bte = getBaseTE(world, pos);
+        if (bte != null) {
+            return bte.canPlayerBreakGate;
+        }
+        return true;
     }
 }

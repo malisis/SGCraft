@@ -16,7 +16,7 @@ import gcewing.sg.BaseBlockUtils;
 import gcewing.sg.BaseConfiguration;
 import gcewing.sg.BaseTileInventory;
 import gcewing.sg.BaseUtils;
-import gcewing.sg.features.zpm.ZpmConsoleTE;
+import gcewing.sg.features.zpm.console.ZpmConsoleTE;
 import gcewing.sg.generator.GeneratorAddressRegistry;
 import gcewing.sg.tileentity.data.GateAccessData;
 import gcewing.sg.tileentity.data.PlayerAccessData;
@@ -32,7 +32,7 @@ import gcewing.sg.client.renderer.SGBaseTERenderer;
 import gcewing.sg.entity.EntityStargateIris;
 import gcewing.sg.features.ic2.IC2PowerTE;
 import gcewing.sg.features.zpm.ZpmAddon;
-import gcewing.sg.features.ic2.zpm.ZpmInterfaceCartTE;
+import gcewing.sg.features.ic2.zpm.interfacecart.ZpmInterfaceCartTE;
 import gcewing.sg.features.oc.OCIntegration;
 import gcewing.sg.features.oc.OCInterfaceTE;
 import gcewing.sg.features.oc.OCWirelessEndpoint;
@@ -165,7 +165,6 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     final static double openingTransientIntensity = 1.3;
     final static double openingTransientRandomness = 0.25;
     final static double closingTransientRandomness = 0.25;
-    final static double transientDamageRate = 50;
 
     final static int maxIrisPhase = 70; // ticks
 
@@ -190,6 +189,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     static Random random = new Random();
     static DamageSource transientDamageSource = new DamageSource("sgcraft:transient");
     public static BaseConfiguration cfg;
+    static double transientDamageRate = 5000;
 
     // Instanced options
     public boolean isMerged;
@@ -260,6 +260,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public boolean useDHDFuelSource = true;
     public boolean allowRedstoneOutput = true;
     public boolean allowRedstoneInput = true;
+    public boolean canPlayerBreakGate = false;
 
     // Access Control Lists
     private List<PlayerAccessData> playerAccessData;
@@ -295,6 +296,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         this.useDHDFuelSource = cfg.getBoolean("dhd", "useDHDFuelSource", this.useDHDFuelSource);
         this.allowRedstoneOutput = cfg.getBoolean("stargate", "allowRedstoneOutput", this.allowRedstoneOutput);
         this.allowRedstoneInput = cfg.getBoolean("iris", "allowRedstoneInput", this.allowRedstoneInput);
+        this.canPlayerBreakGate = cfg.getBoolean("stargate", "canPlayerBreakGate", this.canPlayerBreakGate);
     }
 
     public static void configure(BaseConfiguration cfg) {
@@ -330,6 +332,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         cfg.getBoolean("dhd", "useDHDFuelSource", true);
         cfg.getBoolean("stargate", "allowRedstoneOutput", true);
         cfg.getBoolean("iris", "allowRedstoneInput", true);
+        cfg.getBoolean("stargate", "canPlayerBreakGate", false);
 
         // Global static config values
         minutesOpenPerFuelItem = cfg.getInteger("stargate", "minutesOpenPerFuelItem", minutesOpenPerFuelItem);
@@ -337,6 +340,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         logStargateEvents = cfg.getBoolean("options", "logStargateEvents", logStargateEvents);
         soundVolume = (float)cfg.getDouble("stargate", "soundVolume", soundVolume);
         variableChevronPositions = cfg.getBoolean("stargate", "variableChevronPositions", variableChevronPositions);
+        transientDamageRate = cfg.getDouble("stargate", "transientDamageRate", transientDamageRate);
     }
 
     public static SGBaseTE get(IBlockAccess world, BlockPos pos) {
@@ -636,6 +640,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         } else {
             this.allowRedstoneInput = cfg.getBoolean("iris", "allowRedstoneInput", this.allowRedstoneInput);
         }
+
+        if (nbt.hasKey("canPlayerBreakGate") && !SGCraft.forceSGBaseTEUpdate) {
+            this.canPlayerBreakGate = nbt.getBoolean("canPlayerBreakGate");
+        } else {
+            this.canPlayerBreakGate = cfg.getBoolean("stargate", "canPlayerBreakGate", this.canPlayerBreakGate);
+        }
     }
 
     protected String getStringOrNull(NBTTagCompound nbt, String name) {
@@ -724,6 +734,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setBoolean("defaultAllowAdminAccess", this.defaultAllowAdminAccess);
         nbt.setBoolean("allowRedstoneOutput", this.allowRedstoneOutput);
         nbt.setBoolean("allowRedstoneInput", this.allowRedstoneInput);
+        nbt.setBoolean("canPlayerBreakGate", this.canPlayerBreakGate);
 
         return nbt;
     }
@@ -1896,22 +1907,20 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
             // Block Damage Area
             t = localToGlobalTransformation();
-            p0 = t.p(-1.0, 0.5, 0.5);
+            p0 = t.p(-1.0, 0.5, 0.0); // left to right, up from base, forward from base.
             p1 = t.p(1.0, 2.5, 2.5);
 
-            if (performBlockDamage && !this.irisIsClosed()) {
+            if (this.performBlockDamage && !this.irisIsClosed()) {
                 BlockPos startPos = new BlockPos(p0.x, p0.y, p0.z);
                 BlockPos endPos = new BlockPos(p1.x, p1.y, p1.z);
 
                 for (final BlockPos nearPos : BlockPos.getAllInBox(startPos, endPos)) {
-                    if (SGCraft.wormholeCanDestroyUnbreakableBlocks) {
-                        world.setBlockState(nearPos, Blocks.AIR.getDefaultState());
-                    } else if (world.getBlockState(nearPos).getBlockHardness(world, nearPos) >= 0) {
+                    if (SGCraft.wormholeCanDestroyUnbreakableBlocks || world.getBlockState(nearPos).getBlockHardness(world, nearPos) >= 0) {
                         world.setBlockState(nearPos, Blocks.AIR.getDefaultState());
                     }
                 }
 
-                performBlockDamage = false;
+                this.performBlockDamage = false;
             }
         }
     }

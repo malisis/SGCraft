@@ -4,11 +4,10 @@
 //
 //------------------------------------------------------------------------------------------------
 
-package gcewing.sg.features.zpm;
+package gcewing.sg.features.ic2.zpm.modulehub;
 
 import gcewing.sg.SGCraft;
 import gcewing.sg.client.gui.SGScreen;
-import gcewing.sg.features.ic2.zpm.ZpmInterfaceCartTE;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
@@ -16,25 +15,25 @@ import net.minecraft.world.World;
 
 import java.text.DecimalFormat;
 
-public class ZPMConsoleScreen extends SGScreen {
+public class ZpmModuleHubScreen extends SGScreen {
 
-    static String screenTitle = I18n.format("tile.sgcraft:zpm_console.name");
+    static String screenTitle = I18n.format("tile.sgcraft:zpm_interface_cart.name");
     static final int guiWidth = 256;
     static final int guiHeight = 208;
     final static DecimalFormat dFormat = new DecimalFormat("###,###,###,##0");
 
-    ZpmConsoleTE te;
+    ZpmModuleHubTE te;
 
-    public static ZPMConsoleScreen create(EntityPlayer player, World world, BlockPos pos) {
-        ZpmConsoleTE te = ZpmConsoleTE.at(world, pos);
+    public static ZpmModuleHubScreen create(EntityPlayer player, World world, BlockPos pos) {
+        ZpmModuleHubTE te = ZpmModuleHubTE.at(world, pos);
         if (te != null)
-            return new ZPMConsoleScreen(player, te);
+            return new ZpmModuleHubScreen(player, te);
         else
             return null;
     }
 
-    public ZPMConsoleScreen(EntityPlayer player, ZpmConsoleTE te) {
-        super(new ZpmConsoleContainer(player, te), guiWidth, guiHeight);
+    public ZpmModuleHubScreen(EntityPlayer player, ZpmModuleHubTE te) {
+        super(new ZpmModuleHubContainer(player, te), guiWidth, guiHeight);
         this.te = te;
     }
     
@@ -47,6 +46,6 @@ public class ZPMConsoleScreen extends SGScreen {
         setTextColor(0x004c66);
         drawCenteredString(screenTitle, cx, 8);
         drawString("ZPM", 120, 45);
-        drawString(I18n.format("sgcraft.gui.zpmConsole.label.availablePower")+ ": " + dFormat.format(te.getEnergyStored()), 60, 100);
+        drawString(I18n.format("sgcraft.gui.zpmConsole.label.availablePower")+": " + dFormat.format(te.availableEnergy()), 60, 100);
     }
 }

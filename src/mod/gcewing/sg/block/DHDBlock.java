@@ -90,6 +90,24 @@ public class DHDBlock extends BaseBlock<DHDTE> {
     }
 
     @Override
+    public boolean removedByPlayer(IBlockState state, World world, BlockPos pos, EntityPlayer player, boolean willHarvest) {
+        if (!player.capabilities.isCreativeMode) {
+            DHDTE cte = getTileEntity(world, pos);
+            if (cte != null) {
+                if (cte.isLinkedToStargate) {
+                    SGBaseTE gte = cte.getLinkedStargateTE();
+                    if (gte != null) {
+                        if (!gte.canPlayerBreakGate) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+        return super.removedByPlayer(state, world, pos, player, willHarvest);
+    }
+
+    @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
         DHDTE cte = getTileEntity(world, pos);
         super.breakBlock(world, pos, state);

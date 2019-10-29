@@ -4,7 +4,7 @@
 //
 //------------------------------------------------------------------------------------------------
 
-package gcewing.sg.features.ic2.zpm;
+package gcewing.sg.features.ic2.zpm.interfacecart;
 
 import gcewing.sg.SGCraft;
 import gcewing.sg.client.gui.SGScreen;

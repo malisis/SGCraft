@@ -1,4 +1,4 @@
-package gcewing.sg.features.zpm;
+package gcewing.sg.features.zpm.console;
 
 import net.minecraft.inventory.IInventory;
 import net.minecraft.inventory.Slot;

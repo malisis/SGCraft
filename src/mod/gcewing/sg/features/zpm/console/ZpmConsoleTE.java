@@ -1,10 +1,11 @@
-package gcewing.sg.features.zpm;
+package gcewing.sg.features.zpm.console;
 
 import static gcewing.sg.BaseUtils.min;
-import static gcewing.sg.features.zpm.ZpmConsole.ZPM_LOADED;
+import static gcewing.sg.features.zpm.console.ZpmConsole.ZPM_LOADED;
 
 import gcewing.sg.BaseTileInventory;
 import gcewing.sg.SGCraft;
+import gcewing.sg.features.zpm.ZPMItem;
 import gcewing.sg.interfaces.ISGEnergySource;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.enchantment.Enchantment;

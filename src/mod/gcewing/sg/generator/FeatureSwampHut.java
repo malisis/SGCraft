@@ -158,6 +158,7 @@ public class FeatureSwampHut extends StructureComponent {
             }
             if (te.homeAddress != null) {
                 GeneratorAddressRegistry.addAddress(te.getWorld(), te.homeAddress);
+                te.canPlayerBreakGate = SGBaseTE.cfg.getBoolean("stargate", "canPlayerBreakGate", true);
             } else {
                 System.err.println("Something bad happened!!! please report to Dockter:  Error 1");
             }

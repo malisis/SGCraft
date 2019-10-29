@@ -4,7 +4,7 @@
 //
 //------------------------------------------------------------------------------------------------
 
-package gcewing.sg.features.zpm;
+package gcewing.sg.features.ic2.zpm.modulehub;
 
 import gcewing.sg.BaseContainer;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,43 +13,41 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class ZpmConsoleContainer extends BaseContainer {
+public class ZpmModuleHubContainer extends BaseContainer {
 
-    static final int numFuelSlotColumns = 2;
+    static final int numFuelSlotColumns = 3;
     static final int zpmSlotsX = 120;
     static final int zpmSlotsY = 54;
     static final int playerSlotsX = 48;
     static final int playerSlotsY = 124;
 
-    ZpmConsoleTE te;
+    ZpmModuleHubTE te;
 
-    public static ZpmConsoleContainer create(EntityPlayer player, World world, BlockPos pos) {
-        ZpmConsoleTE te = ZpmConsoleTE.at(world, pos);
-        if (te != null) {
-            return new ZpmConsoleContainer(player, te);
-        } else {
+    public static ZpmModuleHubContainer create(EntityPlayer player, World world, BlockPos pos) {
+        ZpmModuleHubTE te =ZpmModuleHubTE.at(world, pos);
+        if (te != null)
+            return new ZpmModuleHubContainer(player, te);
+        else
             return null;
-        }
     }
 
-    public ZpmConsoleContainer(EntityPlayer player, ZpmConsoleTE te) {
-        super(ZPMConsoleScreen.guiWidth, ZPMConsoleScreen.guiHeight);
+    public ZpmModuleHubContainer(EntityPlayer player, ZpmModuleHubTE te) {
+        super(ZpmModuleHubScreen.guiWidth, ZpmModuleHubScreen.guiHeight);
         this.te = te;
 
         addZpmSlots();
         addPlayerSlots(player, playerSlotsX, playerSlotsY);
     }
-    
+
     void addZpmSlots() {
-        int b = 0; // First Slot
-        int n = ZpmConsoleTE.numSlots;
+        int b = ZpmModuleHubTE.firstZpmSlot;
+        int n = ZpmModuleHubTE.numZpmSlots;
         for (int i = 0; i < n; i++) {
             int row = i / numFuelSlotColumns;
             int col = i % numFuelSlotColumns;
             int x = zpmSlotsX + col * 18;
             int y = zpmSlotsY + row * 18;
-
-            addSlotToContainer(new ZpmConsoleSlot(te, b + i, x, y));
+            addSlotToContainer(new ZpmModuleHubSlot(te, b + i, x, y));
         }
     }
 
@@ -59,7 +57,7 @@ public class ZpmConsoleContainer extends BaseContainer {
         Slot slot = inventorySlots.get(index);
         ItemStack stack = slot.getStack();
         if (slot != null && slot.getHasStack()) {
-            BaseContainer.SlotRange destRange = transferSlotRange(index, stack);
+            SlotRange destRange = transferSlotRange(index, stack);
             if (destRange != null) {
                 if (index >= destRange.numSlots) {
                     result = stack.copy();
@@ -70,19 +68,19 @@ public class ZpmConsoleContainer extends BaseContainer {
                     else
                         slot.onSlotChanged();
                 } else {
-                    player.inventory.addItemStackToInventory(te.decrStackSize(0, 1));
+                    player.inventory.addItemStackToInventory(te.decrStackSize(index, 1));
                 }
             }
         }
         return result;
     }
 
-
     @Override
     protected SlotRange transferSlotRange(int srcSlotIndex, ItemStack stack) {
         SlotRange range = new SlotRange();
         range.firstSlot = 0;
         range.numSlots = 1;
+
         return range;
     }
 }

@@ -17,8 +17,8 @@ import gcewing.sg.client.renderer.DHDTERenderer;
 import gcewing.sg.client.renderer.IrisRenderer;
 import gcewing.sg.client.renderer.SGBaseTERenderer;
 import gcewing.sg.entity.EntityStargateIris;
-import gcewing.sg.features.ic2.zpm.ZPMInterfaceCartScreen;
-import gcewing.sg.features.zpm.ZPMConsoleScreen;
+import gcewing.sg.features.ic2.zpm.interfacecart.ZPMInterfaceCartScreen;
+import gcewing.sg.features.zpm.console.ZPMConsoleScreen;
 import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
 

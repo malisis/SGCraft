@@ -4,17 +4,16 @@
 //
 //------------------------------------------------------------------------------------------------
 
-package gcewing.sg.features.ic2.zpm;
+package gcewing.sg.features.zpm.console;
 
 import gcewing.sg.BaseContainer;
-import gcewing.sg.tileentity.DHDTE;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class ZpmInterfaceCartContainer extends BaseContainer {
+public class ZpmConsoleContainer extends BaseContainer {
 
     static final int numFuelSlotColumns = 2;
     static final int zpmSlotsX = 120;
@@ -22,18 +21,19 @@ public class ZpmInterfaceCartContainer extends BaseContainer {
     static final int playerSlotsX = 48;
     static final int playerSlotsY = 124;
 
-    ZpmInterfaceCartTE te;
-    
-    public static ZpmInterfaceCartContainer create(EntityPlayer player, World world, BlockPos pos) {
-        ZpmInterfaceCartTE te =ZpmInterfaceCartTE.at(world, pos);
-        if (te != null)
-            return new ZpmInterfaceCartContainer(player, te);
-        else
+    ZpmConsoleTE te;
+
+    public static ZpmConsoleContainer create(EntityPlayer player, World world, BlockPos pos) {
+        ZpmConsoleTE te = ZpmConsoleTE.at(world, pos);
+        if (te != null) {
+            return new ZpmConsoleContainer(player, te);
+        } else {
             return null;
+        }
     }
-    
-    public ZpmInterfaceCartContainer(EntityPlayer player, ZpmInterfaceCartTE te) {
-        super(ZPMInterfaceCartScreen.guiWidth, ZPMInterfaceCartScreen.guiHeight);
+
+    public ZpmConsoleContainer(EntityPlayer player, ZpmConsoleTE te) {
+        super(ZPMConsoleScreen.guiWidth, ZPMConsoleScreen.guiHeight);
         this.te = te;
 
         addZpmSlots();
@@ -41,14 +41,15 @@ public class ZpmInterfaceCartContainer extends BaseContainer {
     }
     
     void addZpmSlots() {
-        int b = ZpmInterfaceCartTE.firstZpmSlot;
-        int n = ZpmInterfaceCartTE.numZpmSlots;
+        int b = 0; // First Slot
+        int n = ZpmConsoleTE.numSlots;
         for (int i = 0; i < n; i++) {
             int row = i / numFuelSlotColumns;
             int col = i % numFuelSlotColumns;
             int x = zpmSlotsX + col * 18;
             int y = zpmSlotsY + row * 18;
-            addSlotToContainer(new ZpmInterfaceCartSlot(te, b + i, x, y));
+
+            addSlotToContainer(new ZpmConsoleSlot(te, b + i, x, y));
         }
     }
 
@@ -76,12 +77,12 @@ public class ZpmInterfaceCartContainer extends BaseContainer {
         return result;
     }
 
+
     @Override
     protected SlotRange transferSlotRange(int srcSlotIndex, ItemStack stack) {
         SlotRange range = new SlotRange();
         range.firstSlot = 0;
         range.numSlots = 1;
-
         return range;
     }
 }

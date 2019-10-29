@@ -1,12 +1,12 @@
-package gcewing.sg.features.ic2.zpm;
+package gcewing.sg.features.ic2.zpm.modulehub;
 
 import static gcewing.sg.BaseUtils.min;
-import static gcewing.sg.features.ic2.zpm.ZpmInterfaceCart.ZPM_LOADED;
+import static gcewing.sg.features.ic2.zpm.interfacecart.ZpmInterfaceCart.ZPM_LOADED;
 
 import gcewing.sg.BaseTileInventory;
+import gcewing.sg.SGCraft;
 import gcewing.sg.features.zpm.ZPMItem;
 import gcewing.sg.interfaces.ISGEnergySource;
-import gcewing.sg.SGCraft;
 import ic2.api.energy.prefab.BasicSource;
 import ic2.api.energy.tile.IEnergyAcceptor;
 import ic2.api.energy.tile.IEnergySource;
@@ -32,18 +32,21 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 
-public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEnergySource, IEnergySource, IInventory, ITickable {
+public final class ZpmModuleHubTE extends BaseTileInventory implements ISGEnergySource, IEnergySource, IInventory, ITickable {
     private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
-    public final BasicSource source;
+    public final BasicSource hubSource;
     public static final int firstZpmSlot = 0;
-    public static final int numZpmSlots = 1;
+    public static final int numZpmSlots = 3;
     public static final int numSlots = numZpmSlots; // future usage > 1
+    public int zpmSlot0Energy = 0;
+    public int zpmSlot1Energy = 0;
+    public int zpmSlot2Energy = 0;
 
     private double energyPerSGEnergyUnit = 80;
     private int update = 0;
 
-    public ZpmInterfaceCartTE() {
-        this.source = new ZpmInterfaceCartBasicSource(this, Integer.MAX_VALUE, 3);
+    public ZpmModuleHubTE() {
+        this.hubSource = new ZpmModuleHubBasicSource(this, Integer.MAX_VALUE, 5);
     }
 
     /* TileEntity */
@@ -51,15 +54,19 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
     @Override
     public void readFromNBT(final NBTTagCompound compound) {
         super.readFromNBT(compound);
-        this.source.readFromNBT(compound);
-
+        this.hubSource.readFromNBT(compound);
+        this.zpmSlot0Energy = compound.getInteger("zpmSlot0Energy");
+        this.zpmSlot1Energy = compound.getInteger("zpmSlot1Energy");
+        this.zpmSlot2Energy = compound.getInteger("zpmSlot2Energy");
     }
 
     @Override
     public NBTTagCompound writeToNBT(final NBTTagCompound compound) {
         super.writeToNBT(compound);
-        this.source.writeToNBT(compound);
-
+        this.hubSource.writeToNBT(compound);
+        compound.setInteger("zpmSlot0Energy", zpmSlot0Energy);
+        compound.setInteger("zpmSlot1Energy", zpmSlot1Energy);
+        compound.setInteger("zpmSlot2Energy", zpmSlot2Energy);
         return compound;
     }
 
@@ -69,18 +76,18 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
             return;
         }
 
-        this.source.update();
+        this.hubSource.update();
     }
 
     @Override
     public void onChunkUnload() {
-        this.source.onChunkUnload();
+        this.hubSource.onChunkUnload();
     }
 
     @Override
     public void invalidate() {
         super.invalidate(); // this is important for mc!
-        this.source.invalidate(); // notify the energy source
+        this.hubSource.invalidate(); // notify the energy hubSource
     }
 
     @Override
@@ -106,19 +113,19 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
 
     @Override
     public double availableEnergy() {
-        return this.source.getEnergyStored();
+        return this.hubSource.getEnergyStored();
     }
 
     @Override
     public double totalAvailableEnergy() {
-        return this.source.getCapacity();
+        return this.hubSource.getCapacity();
     }
 
     @Override
     public double drawEnergyDouble(double amount) {
-        double available = this.source.getEnergyStored();
+        double available = this.hubSource.getEnergyStored();
         double supply = min(amount, available);
-        this.source.drawEnergy(supply * energyPerSGEnergyUnit);
+        this.hubSource.drawEnergy(supply * energyPerSGEnergyUnit);
 
         if (isTainted(this.getStackInSlot(0))) {
             world.newExplosion(null, this.pos.getX(), this.pos.getY(), this.pos.getZ(), (float)250, true, true);
@@ -130,13 +137,39 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
 
     @Override
     public double getOfferedEnergy() {
-        return this.source.getOfferedEnergy();
+        return this.hubSource.getOfferedEnergy();
     }
 
     @Override
     public void drawEnergy(double v) {
-        this.source.drawEnergy(v);
-        if (isTainted(this.getStackInSlot(0))) {
+        int zpmCount = 0;
+
+        if (zpmSlot0Energy > 0) {
+            zpmCount = zpmCount + 1;
+        }
+        if (zpmSlot1Energy > 0) {
+            zpmCount = zpmCount + 1;
+        }
+        if (zpmSlot2Energy > 0) {
+            zpmCount = zpmCount + 1;
+        }
+
+        double drawAmount = v / zpmCount;
+        int perZpmDrawAmount = (int)(drawAmount / zpmCount);
+
+        this.hubSource.drawEnergy(drawAmount);
+
+        if (zpmSlot0Energy > 0) {
+            this.zpmSlot0Energy = this.zpmSlot0Energy - perZpmDrawAmount;
+        }
+        if (zpmSlot1Energy > 0) {
+            this.zpmSlot1Energy = this.zpmSlot0Energy - perZpmDrawAmount;
+        }
+        if (zpmSlot2Energy > 0) {
+            this.zpmSlot2Energy = this.zpmSlot0Energy - perZpmDrawAmount;
+        }
+
+        if (isTainted(this.getStackInSlot(0)) || isTainted(this.getStackInSlot(1)) || isTainted(this.getStackInSlot(2))) {
             world.newExplosion(null, this.pos.getX(), this.pos.getY(), this.pos.getZ(), (float)250, true, true);
         }
 
@@ -145,17 +178,17 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
 
     @Override
     public int getSourceTier() {
-        return this.source.getSourceTier();
+        return this.hubSource.getSourceTier();
     }
 
     @Override
     public boolean emitsEnergyTo(IEnergyAcceptor iEnergyAcceptor, EnumFacing enumFacing) {
-        if (isTainted(this.getStackInSlot(0))) {
+        if (isTainted(this.getStackInSlot(0)) || isTainted(this.getStackInSlot(1))|| isTainted(this.getStackInSlot(2))) {
             world.newExplosion(null, this.pos.getX(), this.pos.getY(), this.pos.getZ(), (float)250, true, true);
         }
 
         markChanged();
-        return this.source.emitsEnergyTo(iEnergyAcceptor, enumFacing);
+        return this.hubSource.emitsEnergyTo(iEnergyAcceptor, enumFacing);
     }
 
     /* Inventory */
@@ -182,7 +215,7 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
 
     @Override
     public ItemStack getStackInSlot(final int index) {
-        return this.items.get(0);
+        return this.items.get(index);
     }
 
     @Override // This prevents the zpm from being input/extract from the console.
@@ -201,9 +234,19 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
         }
 
         if(tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
-            tag.setDouble(ZPMItem.ENERGY, this.source.getEnergyStored());
-            tag.setBoolean(ZPMItem.LOADED, false);
-            this.source.setEnergyStored(0);
+            if (index == 0) {
+                tag.setDouble(ZPMItem.ENERGY, this.zpmSlot0Energy);
+                tag.setBoolean(ZPMItem.LOADED, false);
+                this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot0Energy);
+            } else if (index == 1) {
+                tag.setDouble(ZPMItem.ENERGY, this.zpmSlot1Energy);
+                tag.setBoolean(ZPMItem.LOADED, false);
+                this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot1Energy);
+            } else if (index == 2) {
+                tag.setDouble(ZPMItem.ENERGY, this.zpmSlot2Energy);
+                tag.setBoolean(ZPMItem.LOADED, false);
+                this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot2Energy);
+            }
         }
 
         IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
@@ -226,9 +269,19 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
         }
 
         if(tag != null && tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
-            tag.setDouble(ZPMItem.ENERGY, this.source.getEnergyStored());
-            tag.setBoolean(ZPMItem.LOADED, false);
-            this.source.setEnergyStored(0);
+            if (index == 0) {
+                tag.setDouble(ZPMItem.ENERGY, this.zpmSlot0Energy);
+                tag.setBoolean(ZPMItem.LOADED, false);
+                this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot0Energy);
+            } else if (index == 1) {
+                tag.setDouble(ZPMItem.ENERGY, this.zpmSlot1Energy);
+                tag.setBoolean(ZPMItem.LOADED, false);
+                this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot1Energy);
+            } else if (index == 2) {
+                tag.setDouble(ZPMItem.ENERGY, this.zpmSlot2Energy);
+                tag.setBoolean(ZPMItem.LOADED, false);
+                this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot2Energy);
+            }
         }
 
         IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
@@ -254,12 +307,17 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
 
             if (!tag.hasKey(ZPMItem.ENERGY, 99 /* number */)) {
                 tag.setDouble(ZPMItem.ENERGY, Integer.MAX_VALUE);
-                this.source.setCapacity(Integer.MAX_VALUE);
-                this.source.setEnergyStored(tag.getDouble(ZPMItem.ENERGY));
-            } else {
-                this.source.setEnergyStored(tag.getDouble(ZPMItem.ENERGY));
             }
 
+            if (index == 0) {
+                this.zpmSlot0Energy = (int)tag.getDouble(ZPMItem.ENERGY);
+            } else if (index == 1) {
+                this.zpmSlot1Energy = (int)tag.getDouble(ZPMItem.ENERGY);
+            } else if (index == 2) {
+                this.zpmSlot2Energy = (int)tag.getDouble(ZPMItem.ENERGY);
+            }
+
+            this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() + tag.getDouble(ZPMItem.ENERGY));
         }
 
         if (world != null){ // This will be null both on the server AND client at time, no idea why....
@@ -324,9 +382,9 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
         return new TextComponentString("ZPM Container");
     }
 
-    public static ZpmInterfaceCartTE at(IBlockAccess world, BlockPos pos) {
+    public static ZpmModuleHubTE at(IBlockAccess world, BlockPos pos) {
         TileEntity te = world.getTileEntity(pos);
-        return te instanceof ZpmInterfaceCartTE ? (ZpmInterfaceCartTE) te : null;
+        return te instanceof ZpmModuleHubTE ? (ZpmModuleHubTE) te : null;
     }
 
     public boolean isTainted(ItemStack item) {

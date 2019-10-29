@@ -2,7 +2,8 @@ package gcewing.sg.features.zpm;
 
 import static gcewing.sg.BaseMod.isModLoaded;
 
-import gcewing.sg.features.ic2.zpm.ZpmInterfaceCartTE;
+import gcewing.sg.features.ic2.zpm.interfacecart.ZpmInterfaceCartTE;
+import gcewing.sg.features.zpm.console.ZpmConsoleTE;
 import gcewing.sg.interfaces.ISGEnergySource;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
