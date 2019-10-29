@@ -16,14 +16,34 @@ public final class ZpmHubBasicSource extends BasicSource {
 
     @Override
     public void drawEnergy(double amount) {
-        super.drawEnergy(amount);
-        if (this.parent instanceof ZpmHubTE) {
-            ((ZpmHubTE) this.parent).markChanged();
+        ZpmHubTE te = ((ZpmHubTE) this.parent);
+        if (te != null) {
+            te.drawEnergy(amount);
+
+            int zpmCount = ((ZpmHubTE) this.parent).getZpmSlotsloaded();
+
+            double drawAmount = amount / zpmCount;
+            int perZpmDrawAmount = (int) (drawAmount / zpmCount);
+
+            if (te.zpmSlot0Energy > 0) {
+                te.zpmSlot0Energy = te.zpmSlot0Energy - perZpmDrawAmount;
+            }
+            if (te.zpmSlot1Energy > 0) {
+                te.zpmSlot1Energy = te.zpmSlot1Energy - perZpmDrawAmount;
+            }
+            if (te.zpmSlot2Energy > 0) {
+                te.zpmSlot2Energy = te.zpmSlot2Energy - perZpmDrawAmount;
+            }
+
+            super.drawEnergy(drawAmount);
+
+            te.markChanged();
+            // Todo: fix this.
+            /*
             if (((ZpmHubTE)this.parent).isTainted(((ZpmHubTE)this.parent).getStackInSlot(0))) {
                 world.newExplosion(null, this.pos.getX(), this.pos.getY(), this.pos.getZ(), (float)250, true, true);
-            }
+            } */
         }
-
     }
 
     @Override

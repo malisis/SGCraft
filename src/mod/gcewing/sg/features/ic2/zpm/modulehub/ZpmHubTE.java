@@ -59,6 +59,7 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
         this.zpmSlot0Energy = compound.getInteger("zpmSlot0Energy");
         this.zpmSlot1Energy = compound.getInteger("zpmSlot1Energy");
         this.zpmSlot2Energy = compound.getInteger("zpmSlot2Energy");
+        //System.out.println("Read: 0: " + this.zpmSlot0Energy);
     }
 
     @Override
@@ -159,28 +160,7 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
 
     @Override
     public void drawEnergy(double v) {
-        int zpmCount = getZpmSlotsloaded();
-
-        double drawAmount = v / zpmCount;
-        int perZpmDrawAmount = (int)(drawAmount / zpmCount);
-
-        this.hubSource.drawEnergy(drawAmount);
-
-        if (zpmSlot0Energy > 0) {
-            this.zpmSlot0Energy = this.zpmSlot0Energy - perZpmDrawAmount;
-        }
-        if (zpmSlot1Energy > 0) {
-            this.zpmSlot1Energy = this.zpmSlot1Energy - perZpmDrawAmount;
-        }
-        if (zpmSlot2Energy > 0) {
-            this.zpmSlot2Energy = this.zpmSlot2Energy - perZpmDrawAmount;
-        }
-
-        if (isTainted(this.getStackInSlot(0)) || isTainted(this.getStackInSlot(1)) || isTainted(this.getStackInSlot(2))) {
-            world.newExplosion(null, this.pos.getX(), this.pos.getY(), this.pos.getZ(), (float)250, true, true);
-        }
-
-        markChanged();
+        // This is a death method in this class, refer to ZpmHubBasicSource
     }
 
     @Override
@@ -271,9 +251,14 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
         IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
         world.setBlockState(pos, other, 3);
 
+        //Cleanup because it can get ahead of itself.
+        if (getZpmSlotsloaded() == 0) {
+            this.hubSource.setEnergyStored(0);
+        }
+
         markChanged();
 
-        return ItemStackHelper.getAndRemove(this.items, 0);
+        return ItemStackHelper.getAndRemove(this.items, index);
     }
 
     @Override
@@ -308,6 +293,11 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
 
         IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
         world.setBlockState(pos, other, 3);
+
+        //Cleanup because it can get ahead of itself.
+        if (getZpmSlotsloaded() == 0) {
+            this.hubSource.setEnergyStored(0);
+        }
 
         markChanged();
 

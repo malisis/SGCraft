@@ -153,7 +153,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static int Ic2SafeInput = 2048;
     public static int Ic2MaxEnergyBuffer = 1000000;
     public static double Ic2euPerSGEnergyUnit = 20.0;
-    public static int Ic2PowerTETier = 3;
+    public static int Ic2PowerTETier = 5; //3
 
     // SG Power Block Options
     public static int FPMaxEnergyBuffer = 4000000;
