@@ -22,6 +22,9 @@ import gcewing.sg.features.configurator.ConfiguratorItem;
 import gcewing.sg.features.configurator.network.ConfiguratorNetworkHandler;
 import gcewing.sg.features.gdo.GdoItem;
 import gcewing.sg.features.gdo.network.GdoNetworkHandler;
+import gcewing.sg.features.ic2.zpm.modulehub.ZpmHub;
+import gcewing.sg.features.ic2.zpm.modulehub.ZpmHubContainer;
+import gcewing.sg.features.ic2.zpm.modulehub.ZpmHubTE;
 import gcewing.sg.features.pdd.AddressNameRegistry;
 import gcewing.sg.features.zpm.ZPMItem;
 import gcewing.sg.features.zpm.ZPMMultiplierRegistry;
@@ -133,7 +136,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static IIntegration ccIntegration; //[CC]
     public static OCIntegration ocIntegration; //[OC]
 
-    public static Block zpm_interface_cart, zpm_console;
+    public static Block zpm_interface_cart, zpm_console, zpm_hub;
     public static Item zpm, gdo, pdd, configurator;
 
     public static CreativeTabs creativeTabs;
@@ -198,6 +201,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 
         if (isModLoaded("ic2")) {
             GameRegistry.registerTileEntity(ZpmInterfaceCartTE.class, new ResourceLocation(this.modID + ":" + "tile_zpminterfacecart"));
+            GameRegistry.registerTileEntity(ZpmHubTE.class, new ResourceLocation(this.modID + ":" + "tile_zpmmodulehub"));
         }
 
         GameRegistry.registerTileEntity(ZpmConsoleTE.class, new ResourceLocation(this.modID + ":" + "tile_zpmconsole"));
@@ -283,6 +287,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 
         if (isModLoaded("ic2")) {
             zpm_interface_cart = newBlock("zpm_interface_cart", ZpmInterfaceCart.class);
+            zpm_hub = newBlock("zpm_module_hub", ZpmHub.class);
         }
         zpm_console = newBlock("zpm_console", ZpmConsole.class);
 
@@ -484,6 +489,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         addContainer(SGGui.PowerUnit, PowerContainer.class);
         addContainer(SGGui.ZPMInterfaceCart, ZpmInterfaceCartContainer.class);
         addContainer(SGGui.ZPMConsole, ZpmConsoleContainer.class);
+        addContainer(SGGui.ZPMHub, ZpmHubContainer.class);
     }
 
     @Override
@@ -567,6 +573,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         // Note: Complex Item Models register within their creation class because their registration order isn't important.
         if (SGCraft.zpm_interface_cart != null) {
             registerModel(Item.getItemFromBlock(SGCraft.zpm_interface_cart));
+        }
+        if (SGCraft.zpm_hub != null) {
+            registerModel(Item.getItemFromBlock(SGCraft.zpm_hub));
         }
         if (SGCraft.zpm_console != null) {
             registerModel(Item.getItemFromBlock(SGCraft.zpm_console));

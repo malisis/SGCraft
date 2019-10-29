@@ -13,7 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-public class ZpmModuleHubContainer extends BaseContainer {
+public class ZpmHubContainer extends BaseContainer {
 
     static final int numFuelSlotColumns = 3;
     static final int zpmSlotsX = 120;
@@ -21,18 +21,18 @@ public class ZpmModuleHubContainer extends BaseContainer {
     static final int playerSlotsX = 48;
     static final int playerSlotsY = 124;
 
-    ZpmModuleHubTE te;
+    ZpmHubTE te;
 
-    public static ZpmModuleHubContainer create(EntityPlayer player, World world, BlockPos pos) {
-        ZpmModuleHubTE te =ZpmModuleHubTE.at(world, pos);
+    public static ZpmHubContainer create(EntityPlayer player, World world, BlockPos pos) {
+        ZpmHubTE te = ZpmHubTE.at(world, pos);
         if (te != null)
-            return new ZpmModuleHubContainer(player, te);
+            return new ZpmHubContainer(player, te);
         else
             return null;
     }
 
-    public ZpmModuleHubContainer(EntityPlayer player, ZpmModuleHubTE te) {
-        super(ZpmModuleHubScreen.guiWidth, ZpmModuleHubScreen.guiHeight);
+    public ZpmHubContainer(EntityPlayer player, ZpmHubTE te) {
+        super(ZpmHubScreen.guiWidth, ZpmHubScreen.guiHeight);
         this.te = te;
 
         addZpmSlots();
@@ -40,14 +40,14 @@ public class ZpmModuleHubContainer extends BaseContainer {
     }
 
     void addZpmSlots() {
-        int b = ZpmModuleHubTE.firstZpmSlot;
-        int n = ZpmModuleHubTE.numZpmSlots;
+        int b = ZpmHubTE.firstZpmSlot;
+        int n = ZpmHubTE.numZpmSlots;
         for (int i = 0; i < n; i++) {
             int row = i / numFuelSlotColumns;
             int col = i % numFuelSlotColumns;
             int x = zpmSlotsX + col * 18;
             int y = zpmSlotsY + row * 18;
-            addSlotToContainer(new ZpmModuleHubSlot(te, b + i, x, y));
+            addSlotToContainer(new ZpmHubSlot(te, b + i, x, y));
         }
     }
 

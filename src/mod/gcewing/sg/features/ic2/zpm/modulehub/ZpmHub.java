@@ -29,11 +29,11 @@ import java.util.ArrayList;
 
 import javax.annotation.Nullable;
 
-public class ZpmModuleHub extends BlockContainer {
+public class ZpmHub extends BlockContainer {
 
     public static final PropertyBool ZPM_LOADED = PropertyBool.create("zpm");
 
-    public ZpmModuleHub() {
+    public ZpmHub() {
         super(Material.ROCK);
         setHardness(1.5f);
     }
@@ -45,7 +45,7 @@ public class ZpmModuleHub extends BlockContainer {
 
     @Override
     public void breakBlock(World world, BlockPos pos, IBlockState state) {
-        ZpmModuleHubTE zpmHub = ZpmModuleHubTE.at(world, pos);
+        ZpmHubTE zpmHub = ZpmHubTE.at(world, pos);
         for (int slot = 0; slot <=2;slot++) { // 3
             ItemStack zpm = zpmHub.getStackInSlot(slot);
             NBTTagCompound tag = zpm.getTagCompound();
@@ -80,7 +80,7 @@ public class ZpmModuleHub extends BlockContainer {
     @Nullable
     @Override
     public TileEntity createNewTileEntity(final World world, final int meta) {
-        return new ZpmModuleHubTE();
+        return new ZpmHubTE();
     }
 
     @Override
@@ -107,7 +107,7 @@ public class ZpmModuleHub extends BlockContainer {
 
     @Override
     public int getMetaFromState(final IBlockState state) {
-        boolean zpmLoaded = state.getValue(ZpmModuleHub.ZPM_LOADED);
+        boolean zpmLoaded = state.getValue(ZpmHub.ZPM_LOADED);
         if (zpmLoaded) {
             return state.getValue(BlockHorizontal.FACING).getHorizontalIndex() + 4;
         } else {
@@ -134,9 +134,10 @@ public class ZpmModuleHub extends BlockContainer {
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing side, float hx, float hy, float hz)  {
         world.notifyBlockUpdate(pos, state, state, 3);
         world.scheduleBlockUpdate(pos, state.getBlock(),0,0);
-        ZpmModuleHubTE.at(world, pos).markDirty();
+        ZpmHubTE.at(world, pos).markDirty();
         if (!world.isRemote) {
-            SGCraft.mod.openGui(player, SGGui.ZPMInterfaceCart, world, pos);
+            System.out.println("Activating Block GUI");
+            SGCraft.mod.openGui(player, SGGui.ZPMHub, world, pos);
         }
         return true;
     }

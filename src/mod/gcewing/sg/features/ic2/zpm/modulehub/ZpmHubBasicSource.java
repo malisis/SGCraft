@@ -5,11 +5,11 @@ import ic2.api.energy.tile.IEnergyAcceptor;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 
-public final class ZpmModuleHubBasicSource extends BasicSource {
+public final class ZpmHubBasicSource extends BasicSource {
 
     private final TileEntity parent;
 
-    public ZpmModuleHubBasicSource(final TileEntity parent, final double capacity, final int tier) {
+    public ZpmHubBasicSource(final TileEntity parent, final double capacity, final int tier) {
         super(parent, capacity, tier);
         this.parent = parent;
     }
@@ -17,9 +17,9 @@ public final class ZpmModuleHubBasicSource extends BasicSource {
     @Override
     public void drawEnergy(double amount) {
         super.drawEnergy(amount);
-        if (this.parent instanceof ZpmModuleHubTE) {
-            ((ZpmModuleHubTE) this.parent).markChanged();
-            if (((ZpmModuleHubTE)this.parent).isTainted(((ZpmModuleHubTE)this.parent).getStackInSlot(0))) {
+        if (this.parent instanceof ZpmHubTE) {
+            ((ZpmHubTE) this.parent).markChanged();
+            if (((ZpmHubTE)this.parent).isTainted(((ZpmHubTE)this.parent).getStackInSlot(0))) {
                 world.newExplosion(null, this.pos.getX(), this.pos.getY(), this.pos.getZ(), (float)250, true, true);
             }
         }

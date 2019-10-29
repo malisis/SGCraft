@@ -32,8 +32,8 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 
-public final class ZpmModuleHubTE extends BaseTileInventory implements ISGEnergySource, IEnergySource, IInventory, ITickable {
-    private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
+public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource, IEnergySource, IInventory, ITickable {
+    private NonNullList<ItemStack> items = NonNullList.withSize(3, ItemStack.EMPTY);
     public final BasicSource hubSource;
     public static final int firstZpmSlot = 0;
     public static final int numZpmSlots = 3;
@@ -41,12 +41,13 @@ public final class ZpmModuleHubTE extends BaseTileInventory implements ISGEnergy
     public int zpmSlot0Energy = 0;
     public int zpmSlot1Energy = 0;
     public int zpmSlot2Energy = 0;
+    public int zpmSlotsloaded = 0;
 
     private double energyPerSGEnergyUnit = 80;
     private int update = 0;
 
-    public ZpmModuleHubTE() {
-        this.hubSource = new ZpmModuleHubBasicSource(this, Integer.MAX_VALUE, 5);
+    public ZpmHubTE() {
+        this.hubSource = new ZpmHubBasicSource(this, Integer.MAX_VALUE, 3);
     }
 
     /* TileEntity */
@@ -140,8 +141,7 @@ public final class ZpmModuleHubTE extends BaseTileInventory implements ISGEnergy
         return this.hubSource.getOfferedEnergy();
     }
 
-    @Override
-    public void drawEnergy(double v) {
+    public int getZpmSlotsloaded() {
         int zpmCount = 0;
 
         if (zpmSlot0Energy > 0) {
@@ -154,6 +154,13 @@ public final class ZpmModuleHubTE extends BaseTileInventory implements ISGEnergy
             zpmCount = zpmCount + 1;
         }
 
+        return zpmCount;
+    }
+
+    @Override
+    public void drawEnergy(double v) {
+        int zpmCount = getZpmSlotsloaded();
+
         double drawAmount = v / zpmCount;
         int perZpmDrawAmount = (int)(drawAmount / zpmCount);
 
@@ -163,10 +170,10 @@ public final class ZpmModuleHubTE extends BaseTileInventory implements ISGEnergy
             this.zpmSlot0Energy = this.zpmSlot0Energy - perZpmDrawAmount;
         }
         if (zpmSlot1Energy > 0) {
-            this.zpmSlot1Energy = this.zpmSlot0Energy - perZpmDrawAmount;
+            this.zpmSlot1Energy = this.zpmSlot1Energy - perZpmDrawAmount;
         }
         if (zpmSlot2Energy > 0) {
-            this.zpmSlot2Energy = this.zpmSlot0Energy - perZpmDrawAmount;
+            this.zpmSlot2Energy = this.zpmSlot2Energy - perZpmDrawAmount;
         }
 
         if (isTainted(this.getStackInSlot(0)) || isTainted(this.getStackInSlot(1)) || isTainted(this.getStackInSlot(2))) {
@@ -178,7 +185,16 @@ public final class ZpmModuleHubTE extends BaseTileInventory implements ISGEnergy
 
     @Override
     public int getSourceTier() {
-        return this.hubSource.getSourceTier();
+        //return this.hubSource.getSourceTier();
+        if (getZpmSlotsloaded() == 2) {
+            return 4;
+        }
+        if (getZpmSlotsloaded() == 3) {
+            return 5;
+        }
+
+        // Fallback of 0 or 1.
+        return 3;
     }
 
     @Override
@@ -195,7 +211,7 @@ public final class ZpmModuleHubTE extends BaseTileInventory implements ISGEnergy
 
     @Override
     public int getSizeInventory() {
-        return 1;
+        return 3;
     }
 
     @Override
@@ -225,7 +241,7 @@ public final class ZpmModuleHubTE extends BaseTileInventory implements ISGEnergy
 
     @Override
     public ItemStack removeStackFromSlot(final int index) {
-        final ItemStack item = ItemStackHelper.getAndSplit(this.items, 0, 1);
+        final ItemStack item = ItemStackHelper.getAndSplit(this.items, index, 1);
         NBTTagCompound tag = item.getTagCompound();
 
         if(tag == null) {
@@ -238,28 +254,31 @@ public final class ZpmModuleHubTE extends BaseTileInventory implements ISGEnergy
                 tag.setDouble(ZPMItem.ENERGY, this.zpmSlot0Energy);
                 tag.setBoolean(ZPMItem.LOADED, false);
                 this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot0Energy);
+                this.zpmSlot0Energy = 0;
             } else if (index == 1) {
                 tag.setDouble(ZPMItem.ENERGY, this.zpmSlot1Energy);
                 tag.setBoolean(ZPMItem.LOADED, false);
                 this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot1Energy);
+                this.zpmSlot1Energy = 0;
             } else if (index == 2) {
                 tag.setDouble(ZPMItem.ENERGY, this.zpmSlot2Energy);
                 tag.setBoolean(ZPMItem.LOADED, false);
                 this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot2Energy);
+                this.zpmSlot2Energy = 0;
             }
         }
 
         IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
         world.setBlockState(pos, other, 3);
 
-        markDirty();
+        markChanged();
 
         return ItemStackHelper.getAndRemove(this.items, 0);
     }
 
     @Override
     public ItemStack decrStackSize(final int index, final int quantity) {
-        final ItemStack item = ItemStackHelper.getAndRemove(this.items, 0);
+        final ItemStack item = ItemStackHelper.getAndRemove(this.items, index);
 
         NBTTagCompound tag = item.getTagCompound();
 
@@ -273,28 +292,31 @@ public final class ZpmModuleHubTE extends BaseTileInventory implements ISGEnergy
                 tag.setDouble(ZPMItem.ENERGY, this.zpmSlot0Energy);
                 tag.setBoolean(ZPMItem.LOADED, false);
                 this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot0Energy);
+                this.zpmSlot0Energy = 0;
             } else if (index == 1) {
                 tag.setDouble(ZPMItem.ENERGY, this.zpmSlot1Energy);
                 tag.setBoolean(ZPMItem.LOADED, false);
                 this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot1Energy);
+                this.zpmSlot1Energy = 0;
             } else if (index == 2) {
                 tag.setDouble(ZPMItem.ENERGY, this.zpmSlot2Energy);
                 tag.setBoolean(ZPMItem.LOADED, false);
                 this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot2Energy);
+                this.zpmSlot2Energy = 0;
             }
         }
 
         IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
         world.setBlockState(pos, other, 3);
 
-        markDirty();
+        markChanged();
 
         return item;
     }
 
     @Override
     public void setInventorySlotContents(final int index, final ItemStack item) {
-        this.items.set(0, item);
+        this.items.set(index, item);
         if (isValidFuelItem(item)) {
             NBTTagCompound tag = item.getTagCompound();
 
@@ -325,7 +347,7 @@ public final class ZpmModuleHubTE extends BaseTileInventory implements ISGEnergy
             world.setBlockState(pos, other, 3);
         }
 
-        markDirty();
+        markChanged();
     }
 
     public static boolean isValidFuelItem(ItemStack stack) {
@@ -382,9 +404,9 @@ public final class ZpmModuleHubTE extends BaseTileInventory implements ISGEnergy
         return new TextComponentString("ZPM Container");
     }
 
-    public static ZpmModuleHubTE at(IBlockAccess world, BlockPos pos) {
+    public static ZpmHubTE at(IBlockAccess world, BlockPos pos) {
         TileEntity te = world.getTileEntity(pos);
-        return te instanceof ZpmModuleHubTE ? (ZpmModuleHubTE) te : null;
+        return te instanceof ZpmHubTE ? (ZpmHubTE) te : null;
     }
 
     public boolean isTainted(ItemStack item) {

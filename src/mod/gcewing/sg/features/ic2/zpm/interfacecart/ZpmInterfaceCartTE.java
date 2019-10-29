@@ -209,7 +209,7 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
         IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
         world.setBlockState(pos, other, 3);
 
-        markDirty();
+        markChanged();
 
         return ItemStackHelper.getAndRemove(this.items, 0);
     }
@@ -234,7 +234,7 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
         IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
         world.setBlockState(pos, other, 3);
 
-        markDirty();
+        markChanged();
 
         return item;
     }
@@ -267,7 +267,7 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
             world.setBlockState(pos, other, 3);
         }
 
-        markDirty();
+        markChanged();
     }
 
     public static boolean isValidFuelItem(ItemStack stack) {
