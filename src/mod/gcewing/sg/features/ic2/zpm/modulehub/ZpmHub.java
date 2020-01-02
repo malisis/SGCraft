@@ -9,6 +9,7 @@ import net.minecraft.block.BlockHorizontal;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.properties.PropertyInteger;
 import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.EntityLivingBase;
@@ -31,7 +32,7 @@ import javax.annotation.Nullable;
 
 public class ZpmHub extends BlockContainer {
 
-    public static final PropertyBool ZPM_LOADED = PropertyBool.create("zpm");
+    public static final PropertyInteger ZPMS = PropertyInteger.create("zpms", 0, 3);
 
     public ZpmHub() {
         super(Material.ROCK);
@@ -96,23 +97,18 @@ public class ZpmHub extends BlockContainer {
     @Deprecated
     @Override
     public IBlockState getStateForPlacement(final World world, final BlockPos pos, final EnumFacing facing, final float hitX, final float hitY, final float hitZ, final int meta, final EntityLivingBase placer) {
-        return this.getDefaultState().withProperty(BlockHorizontal.FACING, placer.getHorizontalFacing().getOpposite()).withProperty(ZPM_LOADED, false);
+        return this.getDefaultState().withProperty(BlockHorizontal.FACING, placer.getHorizontalFacing().getOpposite()).withProperty(ZPMS, 0);
     }
 
     @Deprecated
     @Override
     public IBlockState getStateFromMeta(final int meta) {
-        return this.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.byHorizontalIndex(meta)).withProperty(ZPM_LOADED, false);
+        return this.getDefaultState().withProperty(BlockHorizontal.FACING, EnumFacing.byHorizontalIndex(meta)).withProperty(ZPMS, 0);
     }
 
     @Override
     public int getMetaFromState(final IBlockState state) {
-        boolean zpmLoaded = state.getValue(ZpmHub.ZPM_LOADED);
-        if (zpmLoaded) {
-            return state.getValue(BlockHorizontal.FACING).getHorizontalIndex() + 4;
-        } else {
-            return state.getValue(BlockHorizontal.FACING).getHorizontalIndex();
-        }
+       return state.getValue(BlockHorizontal.FACING).getHorizontalIndex();
     }
 
     @Override
@@ -122,7 +118,7 @@ public class ZpmHub extends BlockContainer {
 
     @Override
     protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, new IProperty[] {BlockHorizontal.FACING, ZPM_LOADED});
+        return new BlockStateContainer(this, new IProperty[] {BlockHorizontal.FACING, ZPMS});
     }
 
     @Override
@@ -136,7 +132,6 @@ public class ZpmHub extends BlockContainer {
         world.scheduleBlockUpdate(pos, state.getBlock(),0,0);
         ZpmHubTE.at(world, pos).markDirty();
         if (!world.isRemote) {
-            System.out.println("Activating Block GUI");
             SGCraft.mod.openGui(player, SGGui.ZPMHub, world, pos);
         }
         return true;
@@ -146,10 +141,8 @@ public class ZpmHub extends BlockContainer {
     public ArrayList<ItemStack> getDrops(IBlockAccess world, BlockPos pos, IBlockState state, int fortune) {
         ArrayList<ItemStack> returnList = new ArrayList<ItemStack>();
         Item item = getItemDropped(state, ((World)world).rand, fortune);
-        // Todo:
-
-        //ItemStack zpm_interface_cart = new ItemStack(item, 1);
-        //returnList.add(zpm_interface_cart);
+        ItemStack zpm_hub = new ItemStack(item, 1);
+        returnList.add(zpm_hub);
 
         return returnList;
     }

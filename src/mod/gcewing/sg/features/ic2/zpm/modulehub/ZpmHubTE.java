@@ -1,7 +1,7 @@
 package gcewing.sg.features.ic2.zpm.modulehub;
 
 import static gcewing.sg.BaseUtils.min;
-import static gcewing.sg.features.ic2.zpm.interfacecart.ZpmInterfaceCart.ZPM_LOADED;
+import static gcewing.sg.features.ic2.zpm.modulehub.ZpmHub.ZPMS;
 
 import gcewing.sg.BaseTileInventory;
 import gcewing.sg.SGCraft;
@@ -173,7 +173,6 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
             return 5;
         }
 
-        // Fallback of 0 or 1.
         return 3;
     }
 
@@ -248,7 +247,7 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
             }
         }
 
-        IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
+        IBlockState other = world.getBlockState(pos).withProperty(ZPMS, this.getZpmSlotsloaded());
         world.setBlockState(pos, other, 3);
 
         //Cleanup because it can get ahead of itself.
@@ -291,7 +290,7 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
             }
         }
 
-        IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
+        IBlockState other = world.getBlockState(pos).withProperty(ZPMS, this.getZpmSlotsloaded());
         world.setBlockState(pos, other, 3);
 
         //Cleanup because it can get ahead of itself.
@@ -333,7 +332,7 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
         }
 
         if (world != null){ // This will be null both on the server AND client at time, no idea why....
-            IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, isValidFuelItem(item));
+            IBlockState other = world.getBlockState(pos).withProperty(ZPMS, this.getZpmSlotsloaded());
             world.setBlockState(pos, other, 3);
         }
 

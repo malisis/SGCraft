@@ -287,7 +287,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 
         if (isModLoaded("ic2")) {
             zpm_interface_cart = newBlock("zpm_interface_cart", ZpmInterfaceCart.class);
-            zpm_hub = newBlock("zpm_module_hub", ZpmHub.class);
+            zpm_hub = newBlock("zpm_hub", ZpmHub.class);
         }
         zpm_console = newBlock("zpm_console", ZpmConsole.class);
 
