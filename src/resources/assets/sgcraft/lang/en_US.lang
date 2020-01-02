@@ -60,6 +60,7 @@ message.sgcraft:playerAccessToDenied=Insufficient player access permission at de
 
 tile.sgcraft:zpm_interface_cart.name=ZPM Interface Cart
 tile.sgcraft:zpm_console.name=ZPM Console
+tile.sgcraft:zpm_hub.name=ZPM Hub
 item.sgcraft:zpm.name=Zero Point Module
 item.sgcraft:gdo.name=Handheld GDO
 item.sgcraft:pdd.name=Personal Dialer Device
