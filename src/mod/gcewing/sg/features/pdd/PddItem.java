@@ -85,7 +85,7 @@ public class PddItem extends Item {
                         final List<AddressData> addresses = AddressData.getAddresses(compound);
                         String localGateAddress = localGate.homeAddress.toUpperCase().replace("-", "");
                         if (addresses.stream().noneMatch(data -> data.getAddress().replaceAll("-","").equalsIgnoreCase(localGateAddress))) {
-                            PddNetworkHandler.addPddEntryFromServer(player, localGateAddress);
+                            PddNetworkHandler.addPddEntryFromServer(player, localGateAddress, addresses.size() + 10);
                         } else {
                             sendErrorMsg(player, "pddContainsAddress");
                         }

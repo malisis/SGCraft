@@ -27,17 +27,19 @@ public class PddNetworkHandler extends SGChannel {
         pddChannel = this;
     }
 
-    public static void addPddEntryFromServer(EntityPlayer player, String address) {
+    public static void addPddEntryFromServer(EntityPlayer player, String address, int nextIndex) {
         ChannelOutput data = pddChannel.openPlayer(player,"AddPddEntry");
         data.writeUTF(address);
+        data.writeInt(nextIndex);
         data.close();
     }
 
     @ClientMessageHandler("AddPddEntry")
     public void handlePddAddAddressRequest(EntityPlayer player, ChannelInput data) {
         String address = data.readUTF();
+        int nextIndex = data.readInt();
         address = SGAddressing.formatAddress(address, "-", "-");
-        new PddEntryScreen(null, player, "Name Here", address, 10, 0, false, false, 1).display();
+        new PddEntryScreen(null, player, "Name Here", address, nextIndex, 0, false, false, 1).display();
     }
 
     public static void updatePdd(EntityPlayer player, boolean value, int status) {
