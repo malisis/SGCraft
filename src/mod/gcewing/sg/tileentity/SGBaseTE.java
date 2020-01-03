@@ -261,6 +261,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     public boolean allowRedstoneOutput = true;
     public boolean allowRedstoneInput = true;
     public boolean canPlayerBreakGate = false;
+    public boolean displayGateAddress = true;
 
     // Access Control Lists
     private List<PlayerAccessData> playerAccessData;
@@ -297,6 +298,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         this.allowRedstoneOutput = cfg.getBoolean("stargate", "allowRedstoneOutput", this.allowRedstoneOutput);
         this.allowRedstoneInput = cfg.getBoolean("iris", "allowRedstoneInput", this.allowRedstoneInput);
         this.canPlayerBreakGate = cfg.getBoolean("stargate", "canPlayerBreakGate", this.canPlayerBreakGate);
+        this.displayGateAddress = cfg.getBoolean("stargate", "displayGateAddress", this.displayGateAddress);
     }
 
     public static void configure(BaseConfiguration cfg) {
@@ -333,6 +335,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         cfg.getBoolean("stargate", "allowRedstoneOutput", true);
         cfg.getBoolean("iris", "allowRedstoneInput", true);
         cfg.getBoolean("stargate", "canPlayerBreakGate", false);
+        cfg.getBoolean("stargate", "displayGateAddress", true);
 
         // Global static config values
         minutesOpenPerFuelItem = cfg.getInteger("stargate", "minutesOpenPerFuelItem", minutesOpenPerFuelItem);
@@ -646,6 +649,12 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         } else {
             this.canPlayerBreakGate = cfg.getBoolean("stargate", "canPlayerBreakGate", this.canPlayerBreakGate);
         }
+
+        if (nbt.hasKey("displayGateAddress") && !SGCraft.forceSGBaseTEUpdate) {
+            this.displayGateAddress = nbt.getBoolean("displayGateAddress");
+        } else {
+            this.displayGateAddress = cfg.getBoolean("stargate", "displayGateAddress", this.displayGateAddress);
+        }
     }
 
     protected String getStringOrNull(NBTTagCompound nbt, String name) {
@@ -735,6 +744,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         nbt.setBoolean("allowRedstoneOutput", this.allowRedstoneOutput);
         nbt.setBoolean("allowRedstoneInput", this.allowRedstoneInput);
         nbt.setBoolean("canPlayerBreakGate", this.canPlayerBreakGate);
+        nbt.setBoolean("displayGateAddress", this.displayGateAddress);
 
         return nbt;
     }

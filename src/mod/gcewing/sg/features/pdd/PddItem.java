@@ -82,12 +82,16 @@ public class PddItem extends Item {
 
                 if (SGCraft.hasPermission(player, "sgcraft.gui.pdd")) {
                     if (player.isSneaking()) {
-                        final List<AddressData> addresses = AddressData.getAddresses(compound);
-                        String localGateAddress = localGate.homeAddress.toUpperCase().replace("-", "");
-                        if (addresses.stream().noneMatch(data -> data.getAddress().replaceAll("-","").equalsIgnoreCase(localGateAddress))) {
-                            PddNetworkHandler.addPddEntryFromServer(player, localGateAddress, addresses.size() + 10);
+                        if (localGate.displayGateAddress) {
+                            final List<AddressData> addresses = AddressData.getAddresses(compound);
+                            String localGateAddress = localGate.homeAddress.toUpperCase().replace("-", "");
+                            if (addresses.stream().noneMatch(data -> data.getAddress().replaceAll("-", "").equalsIgnoreCase(localGateAddress))) {
+                                PddNetworkHandler.addPddEntryFromServer(player, localGateAddress, addresses.size() + 10);
+                            } else {
+                                sendErrorMsg(player, "pddContainsAddress");
+                            }
                         } else {
-                            sendErrorMsg(player, "pddContainsAddress");
+                            sendErrorMsg(player, "gateAddressHidden");
                         }
                     } else {
                         if (localGate.allowGateAccess(player.getName()) || isPermissionsAdmin){

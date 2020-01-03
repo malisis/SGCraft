@@ -72,10 +72,16 @@ public class SGBaseScreen extends SGScreen {
         drawTexturedRect(0, 0, guiWidth, guiHeight, 0, 0);
         int cx = this.xSize / 2;
         if (this.addressValid)
-            drawAddressSymbols(cx, 22, this.address);
+            if (this.te.displayGateAddress) {
+                drawAddressSymbols(cx, 22, this.address);
+            } else {
+                drawCenteredString("... Gate Address Hidden ...", cx, 42);
+            }
         setTextColor(0x004c66);
         drawCenteredString(this.screenTitle, cx, 8);
-        drawCenteredString(this.formattedAddress, cx, 72);
+        if (this.te.displayGateAddress) {
+            drawCenteredString(this.formattedAddress, cx, 72);
+        }
         if (this.te.numCamouflageSlots > 0 && this.te.gateOrientation == 1 && this.te.allowAdminAccess(player.getName()))
             drawCenteredString("Base Camouflage", 92, 92);
     }
