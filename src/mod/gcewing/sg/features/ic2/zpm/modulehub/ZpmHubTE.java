@@ -155,6 +155,14 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
             zpmCount = zpmCount + 1;
         }
 
+        if (zpmCount == 1) {
+            this.hubSource.setSourceTier(3);
+        } else if (zpmCount == 2) {
+            this.hubSource.setSourceTier(4);
+        } else if (zpmCount == 3) {
+            this.hubSource.setSourceTier(5);
+        }
+
         return zpmCount;
     }
 
@@ -165,7 +173,7 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
 
     @Override
     public int getSourceTier() {
-        //return this.hubSource.getSourceTier();
+        // Note functionality wise this method does nothing.
         if (getZpmSlotsloaded() == 2) {
             return 4;
         }
@@ -232,30 +240,23 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
             if (index == 0) {
                 tag.setDouble(ZPMItem.ENERGY, this.zpmSlot0Energy);
                 tag.setBoolean(ZPMItem.LOADED, false);
-                this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot0Energy);
-                this.zpmSlot0Energy = 0;
             } else if (index == 1) {
                 tag.setDouble(ZPMItem.ENERGY, this.zpmSlot1Energy);
                 tag.setBoolean(ZPMItem.LOADED, false);
-                this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot1Energy);
-                this.zpmSlot1Energy = 0;
             } else if (index == 2) {
                 tag.setDouble(ZPMItem.ENERGY, this.zpmSlot2Energy);
                 tag.setBoolean(ZPMItem.LOADED, false);
-                this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot2Energy);
-                this.zpmSlot2Energy = 0;
             }
         }
 
-        IBlockState other = world.getBlockState(pos).withProperty(ZPMS, this.getZpmSlotsloaded());
-        world.setBlockState(pos, other, 3);
+        if (world != null && !world.isRemote) {
+            validateSlotStatus();
 
-        //Cleanup because it can get ahead of itself.
-        if (getZpmSlotsloaded() == 0) {
-            this.hubSource.setEnergyStored(0);
+            IBlockState other = world.getBlockState(pos).withProperty(ZPMS, this.getZpmSlotsloaded());
+            world.setBlockState(pos, other, 3);
+
+            markChanged();
         }
-
-        markChanged();
 
         return ItemStackHelper.getAndRemove(this.items, index);
     }
@@ -275,30 +276,23 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
             if (index == 0) {
                 tag.setDouble(ZPMItem.ENERGY, this.zpmSlot0Energy);
                 tag.setBoolean(ZPMItem.LOADED, false);
-                this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot0Energy);
-                this.zpmSlot0Energy = 0;
             } else if (index == 1) {
                 tag.setDouble(ZPMItem.ENERGY, this.zpmSlot1Energy);
                 tag.setBoolean(ZPMItem.LOADED, false);
-                this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot1Energy);
-                this.zpmSlot1Energy = 0;
             } else if (index == 2) {
                 tag.setDouble(ZPMItem.ENERGY, this.zpmSlot2Energy);
                 tag.setBoolean(ZPMItem.LOADED, false);
-                this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot2Energy);
-                this.zpmSlot2Energy = 0;
             }
         }
 
-        IBlockState other = world.getBlockState(pos).withProperty(ZPMS, this.getZpmSlotsloaded());
-        world.setBlockState(pos, other, 3);
+        if (world != null && !world.isRemote) {
+            validateSlotStatus();
 
-        //Cleanup because it can get ahead of itself.
-        if (getZpmSlotsloaded() == 0) {
-            this.hubSource.setEnergyStored(0);
+            IBlockState other = world.getBlockState(pos).withProperty(ZPMS, this.getZpmSlotsloaded());
+            world.setBlockState(pos, other, 3);
+
+            markChanged();
         }
-
-        markChanged();
 
         return item;
     }
@@ -331,12 +325,41 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
             this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() + tag.getDouble(ZPMItem.ENERGY));
         }
 
-        if (world != null){ // This will be null both on the server AND client at time, no idea why....
+        if (world != null && !world.isRemote) {
+            validateSlotStatus();
+
             IBlockState other = world.getBlockState(pos).withProperty(ZPMS, this.getZpmSlotsloaded());
             world.setBlockState(pos, other, 3);
+
+            markChanged();
+        }
+    }
+
+    public void validateSlotStatus() {
+        // This is to catch shenanigans by the server and client with shift-click insanity.
+        if (isValidFuelItem(this.getStackInSlot(0))) {
+            // good
+        } else {
+            this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot0Energy);
+            this.zpmSlot0Energy = 0;
         }
 
-        markChanged();
+        if (isValidFuelItem(this.getStackInSlot(1))) {
+            // good
+        } else {
+            this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot1Energy);
+            this.zpmSlot1Energy = 0;
+        }
+        if (isValidFuelItem(this.getStackInSlot(2))) {
+            // good
+        } else {
+            this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() - this.zpmSlot2Energy);
+            this.zpmSlot2Energy = 0;
+        }
+
+        if (getZpmSlotsloaded() == 0) {
+            this.hubSource.setEnergyStored(0);
+        }
     }
 
     public static boolean isValidFuelItem(ItemStack stack) {

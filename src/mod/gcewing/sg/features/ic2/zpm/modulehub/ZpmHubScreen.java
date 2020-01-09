@@ -47,7 +47,9 @@ public class ZpmHubScreen extends SGScreen {
         setTextColor(0x004c66);
         drawCenteredString(screenTitle, cx, 8);
         drawString("ZPM Slots", 123, 42);
-        drawString("IC2 Power Tier: " + dFormat.format(te.getZpmSlotsloaded()+2), 60, 90);
+        if (te.getZpmSlotsloaded() > 0) {
+            drawString("IC2 Power Tier: " + dFormat.format(te.getZpmSlotsloaded() + 2), 60, 90);
+        }
         if (te.getZpmSlotsloaded() > 1) {
             drawString("Optimization factor: x" + dFormat.format(te.getZpmSlotsloaded()), 60, 100);
         }

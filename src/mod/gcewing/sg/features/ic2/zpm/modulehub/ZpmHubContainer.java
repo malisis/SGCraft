@@ -45,7 +45,7 @@ public class ZpmHubContainer extends BaseContainer {
         for (int i = 0; i < n; i++) {
             int row = i / numFuelSlotColumns;
             int col = i % numFuelSlotColumns;
-            int x = zpmSlotsX + col * 18;
+            int x = zpmSlotsX + col * 19;
             int y = zpmSlotsY + row * 18;
             addSlotToContainer(new ZpmHubSlot(te, b + i, x, y));
         }

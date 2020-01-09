@@ -206,10 +206,11 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
             this.source.setEnergyStored(0);
         }
 
-        IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
-        world.setBlockState(pos, other, 3);
-
-        markChanged();
+        if (world != null && !world.isRemote) {
+            IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
+            world.setBlockState(pos, other, 3);
+            markChanged();
+        }
 
         return ItemStackHelper.getAndRemove(this.items, 0);
     }
@@ -231,10 +232,11 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
             this.source.setEnergyStored(0);
         }
 
-        IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
-        world.setBlockState(pos, other, 3);
-
-        markChanged();
+        if (world != null && !world.isRemote) {
+            IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
+            world.setBlockState(pos, other, 3);
+            markChanged();
+        }
 
         return item;
     }
@@ -259,15 +261,13 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
             } else {
                 this.source.setEnergyStored(tag.getDouble(ZPMItem.ENERGY));
             }
-
         }
 
-        if (world != null){ // This will be null both on the server AND client at time, no idea why....
+        if (world != null && !world.isRemote){ // This will be null both on the server AND client at time, no idea why....
             IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, isValidFuelItem(item));
             world.setBlockState(pos, other, 3);
+            markChanged();
         }
-
-        markChanged();
     }
 
     public static boolean isValidFuelItem(ItemStack stack) {
