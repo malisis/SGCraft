@@ -17,6 +17,8 @@ import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import java.io.IOException;
+
 public class PlayerAccessEntryScreen extends BasicScreen {
     private int lastUpdate = 0;
     private boolean unlockMouse = true;
@@ -144,7 +146,7 @@ public class PlayerAccessEntryScreen extends BasicScreen {
     }
 
     @Override
-    protected void keyTyped(char keyChar, int keyCode) {
+    protected void keyTyped(char keyChar, int keyCode) throws IOException {
         if (keyCode == Keyboard.KEY_RETURN) {
             if (!this.nameTextField.getText().isEmpty()) {
                 ConfiguratorNetworkHandler.sendPAEntryUpdateToServer(localGate, "", this.nameTextField.getText().trim(), function);
@@ -156,7 +158,7 @@ public class PlayerAccessEntryScreen extends BasicScreen {
     }
 
     @Override
-    protected void mouseClicked(int x, int y, int button) {
+    protected void mouseClicked(int x, int y, int button) throws IOException {
         super.mouseClicked(x, y, button);
         this.lastUpdate = 0; // Reset the timer when mouse is pressed.
     }

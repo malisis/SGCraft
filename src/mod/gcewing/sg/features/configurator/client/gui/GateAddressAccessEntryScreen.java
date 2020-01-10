@@ -21,6 +21,8 @@ import net.minecraft.util.text.TextFormatting;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import java.io.IOException;
+
 public class GateAddressAccessEntryScreen extends BasicScreen {
     private int lastUpdate = 0;
     private boolean unlockMouse = true;
@@ -158,7 +160,7 @@ public class GateAddressAccessEntryScreen extends BasicScreen {
     }
 
     @Override
-    protected void keyTyped(char keyChar, int keyCode) {
+    protected void keyTyped(char keyChar, int keyCode) throws IOException {
         if (keyCode == Keyboard.KEY_RETURN) {
             if (this.addressTextField.getText().length() == 9 && this.addressTextField.getText().substring(4,5).equalsIgnoreCase("-") && this.addressTextField.getText().substring(8,9).equalsIgnoreCase("-")) {
                 ConfiguratorNetworkHandler.sendGAAEntryUpdateToServer(localGate, this.oldAddress, this.addressTextField.getText().trim().toUpperCase(), function);
@@ -175,7 +177,7 @@ public class GateAddressAccessEntryScreen extends BasicScreen {
     }
 
     @Override
-    protected void mouseClicked(int x, int y, int button) {
+    protected void mouseClicked(int x, int y, int button) throws IOException {
         super.mouseClicked(x, y, button);
         this.lastUpdate = 0; // Reset the timer when mouse is pressed.
     }

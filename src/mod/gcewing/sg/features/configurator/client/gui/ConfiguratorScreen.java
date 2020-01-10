@@ -742,7 +742,7 @@ public class ConfiguratorScreen extends BasicScreen {
     }
 
     @Override
-    protected void keyTyped(char keyChar, int keyCode) {
+    protected void keyTyped(char keyChar, int keyCode) throws IOException {
         if (keyCode == Keyboard.KEY_TAB) {
             if (this.secondsToStayOpen.isFocused()) {
                 this.gateRotationSpeed.setFocused(true);
@@ -773,21 +773,13 @@ public class ConfiguratorScreen extends BasicScreen {
                 return;
             }
         }
-        try {
-            super.keyTyped(keyChar, keyCode);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        super.keyTyped(keyChar, keyCode);
         this.lastUpdate = 0; // Reset the timer when key is typed.
     }
 
     @Override
-    protected void mouseClicked(int x, int y, int button) {
-        try {
-            super.mouseClicked(x, y, button);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    protected void mouseClicked(int x, int y, int button) throws IOException {
+        super.mouseClicked(x, y, button);
         this.lastUpdate = 0; // Reset the timer when mouse is pressed.
     }
 

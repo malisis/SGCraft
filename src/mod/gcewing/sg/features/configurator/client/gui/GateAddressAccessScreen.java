@@ -35,6 +35,7 @@ import net.minecraft.world.World;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -346,13 +347,13 @@ public class GateAddressAccessScreen extends BasicScreen {
     }
 
     @Override
-    protected void keyTyped(char keyChar, int keyCode) {
+    protected void keyTyped(char keyChar, int keyCode) throws IOException {
         super.keyTyped(keyChar, keyCode);
         this.lastUpdate = 0; // Reset the timer when key is typed.
     }
 
     @Override
-    protected void mouseClicked(int x, int y, int button) {
+    protected void mouseClicked(int x, int y, int button) throws IOException {
         super.mouseClicked(x, y, button);
         this.lastUpdate = 0; // Reset the timer when mouse is pressed.
     }
