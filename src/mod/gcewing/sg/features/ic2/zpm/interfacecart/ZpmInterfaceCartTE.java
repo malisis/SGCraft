@@ -206,7 +206,7 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
             this.source.setEnergyStored(0);
         }
 
-        if (world != null && !world.isRemote) {
+        if (world != null) {
             IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
             world.setBlockState(pos, other, 3);
             markChanged();
@@ -232,7 +232,7 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
             this.source.setEnergyStored(0);
         }
 
-        if (world != null && !world.isRemote) {
+        if (world != null) {
             IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, false);
             world.setBlockState(pos, other, 3);
             markChanged();
@@ -263,7 +263,7 @@ public final class ZpmInterfaceCartTE extends BaseTileInventory implements ISGEn
             }
         }
 
-        if (world != null && !world.isRemote){ // This will be null both on the server AND client at time, no idea why....
+        if (world != null){ // This will be null both on the server AND client at time, no idea why....
             IBlockState other = world.getBlockState(pos).withProperty(ZPM_LOADED, isValidFuelItem(item));
             world.setBlockState(pos, other, 3);
             markChanged();

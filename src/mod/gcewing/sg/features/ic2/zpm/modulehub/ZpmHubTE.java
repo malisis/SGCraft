@@ -249,7 +249,7 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
             }
         }
 
-        if (world != null && !world.isRemote) {
+        if (world != null) {
             validateSlotStatus();
 
             IBlockState other = world.getBlockState(pos).withProperty(ZPMS, this.getZpmSlotsloaded());
@@ -285,7 +285,7 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
             }
         }
 
-        if (world != null && !world.isRemote) {
+        if (world != null) {
             validateSlotStatus();
 
             IBlockState other = world.getBlockState(pos).withProperty(ZPMS, this.getZpmSlotsloaded());
@@ -325,7 +325,7 @@ public final class ZpmHubTE extends BaseTileInventory implements ISGEnergySource
             this.hubSource.setEnergyStored(this.hubSource.getEnergyStored() + tag.getDouble(ZPMItem.ENERGY));
         }
 
-        if (world != null && !world.isRemote) {
+        if (world != null) {
             validateSlotStatus();
 
             IBlockState other = world.getBlockState(pos).withProperty(ZPMS, this.getZpmSlotsloaded());

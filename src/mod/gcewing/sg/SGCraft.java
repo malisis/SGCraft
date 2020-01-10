@@ -196,7 +196,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             }
         };
         FMLCommonHandler.instance().bus().register(this);
-        OBJLoader.INSTANCE.addDomain("sgcraft");
+        if (FMLCommonHandler.instance().getSide().isClient()) {
+            OBJLoader.INSTANCE.addDomain("sgcraft");
+        }
         ic2Integration = integrateWithMod("ic2", "gcewing.sg.features.ic2.IC2Integration"); //[IC2]
         ccIntegration = (IIntegration) integrateWithMod("computercraft", "gcewing.sg.features.cc.CCIntegration"); //[CC]
         ocIntegration = (OCIntegration)integrateWithMod("opencomputers", "gcewing.sg.features.oc.OCIntegration"); //[OC]
