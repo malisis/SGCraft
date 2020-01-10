@@ -53,6 +53,9 @@ repositories {
     maven { url = "http://maven.ic2.player.to" }
     maven { url = "http://repo.spongepowered.org/maven" }
     maven { url = "http://cc.crzd.me/maven/" }
+    flatDir {
+        dirs "lib"
+    }
 }
 
 dependencies {
@@ -67,7 +70,7 @@ dependencies {
     compile "li.cil.oc:OpenComputers:MC1.12.1-1.7.1.52"
     compile "net.industrial-craft:industrialcraft-2:2.8.93-ex112:api"
     deobfCompile "dan200.computercraft:ComputerCraft:1.80pr1-build4"
-    deobfCompile ('com.almuradev:malisiscore:1.12.2-6.5.0-SNAPSHOT') {
+    deobfCompile ('com.almuradev:malisiscore:1.12.2-6.5.1-SNAPSHOT') {
         transitive = false
     }
 }

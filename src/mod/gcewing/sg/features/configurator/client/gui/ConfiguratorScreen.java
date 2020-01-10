@@ -29,6 +29,8 @@ import net.minecraft.world.World;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
+import java.io.IOException;
+
 public class ConfiguratorScreen extends BasicScreen {
     private int lastUpdate = 0;
     private boolean unlockMouse = true;
@@ -771,13 +773,21 @@ public class ConfiguratorScreen extends BasicScreen {
                 return;
             }
         }
-        super.keyTyped(keyChar, keyCode);
+        try {
+            super.keyTyped(keyChar, keyCode);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         this.lastUpdate = 0; // Reset the timer when key is typed.
     }
 
     @Override
     protected void mouseClicked(int x, int y, int button) {
-        super.mouseClicked(x, y, button);
+        try {
+            super.mouseClicked(x, y, button);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         this.lastUpdate = 0; // Reset the timer when mouse is pressed.
     }
 
