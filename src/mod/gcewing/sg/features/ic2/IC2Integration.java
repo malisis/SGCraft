@@ -51,6 +51,10 @@ public class IC2Integration extends BaseSubsystem<SGCraft, SGCraftClient> {
             if (mod.config.getBoolean("recipes", "zpmInterfaceCartBlock", true)) {
                 mod.newRecipe("zpm_Interface_Cart", mod.zpm_interface_cart, 1, "eAw", "wBw", "wMe", 'B', mod.ic2PowerUnit, 'A', advancedCasing, 'w', wire, 'M', machine, 'e', circuit);
             }
+
+            if (mod.config.getBoolean("recipes", "zpmHubBlock", true)) {
+                mod.newRecipe("zpm_Hub", mod.zpm_hub, 1, "eAw", "wBw", "BMB", 'B', mod.zpm_console, 'A', advancedCasing, 'w', wire, 'M', machine, 'e', circuit);
+            }
         }
     }
 }
