@@ -53,6 +53,7 @@ repositories {
     maven { url = "http://maven.ic2.player.to" }
     maven { url = "http://repo.spongepowered.org/maven" }
     maven { url = "http://cc.crzd.me/maven/" }
+    maven { url = "https://archiva-repository.apache.org/archiva/repository/snapshots" }
     maven {
         name = 'CoFH Maven'
         url = 'http://maven.covers1624.net'
@@ -63,7 +64,7 @@ repositories {
 }
 
 dependencies {
-    compile ("org.spongepowered:spongeforge:1.12.2-2768-7.1.6-RC3621:dev") {
+    compile ("org.spongepowered:spongeforge:1.12.2-2838-7.1.8-RC3968:dev") {
         exclude module: 'testplugins'
         exclude module: 'testmods'
     }
@@ -91,7 +92,7 @@ deobfMcMCP { failOnAtError = false }
 deobfMcSRG { failOnAtError = false }
 
 minecraft {
-    version = "1.12.2-14.23.5.2815"
+    version = "1.12.2-14.23.5.2838"
     runDir = "run"
     mappings = 'snapshot_20180808'
     useDepAts = true
