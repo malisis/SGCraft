@@ -273,6 +273,9 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        // Village registry
+        FeatureGeneration.initVillageStargate();
     }
 
     @Override

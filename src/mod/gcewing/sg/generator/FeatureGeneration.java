@@ -12,9 +12,12 @@ import java.lang.reflect.Field;
 import gcewing.sg.BaseConfiguration;
 import gcewing.sg.BaseReflectionUtils;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.*;
 import net.minecraft.world.gen.structure.*;
+
+import net.minecraftforge.fml.common.registry.VillagerRegistry;
 
 import net.minecraftforge.event.terraingen.*;
 
@@ -22,44 +25,66 @@ public class FeatureGeneration {
 
     // Generic
     public static boolean debugStructures = false;
+    public static int genericTaintedZpm = 10;
 
-    // Pyramid
+    // Village
+    public static boolean villageAddon = true;
+    public static int villageAddonChance = 25;
+    public static int villageChevronUpgradeChance = 25;
+    public static boolean villageSpawnTokra = true;
+    public static int villageZpmChestChance = 15;
+
+    // Desert Temple
     public static boolean pyramidAddon = true;
     public static int pyramidAddonChance = 25;
     public static int pyramidChevronUpgradeChance = 25;
     public static boolean pyramidSpawnTokra = true;
     public static int pyramidZpmChestChance = 15;
 
-    // Pyramid
+    // Igloo
     public static boolean iglooAddon = true;
     public static int iglooAddonChance = 25;
     public static int iglooChevronUpgradeChance = 25;
     public static boolean iglooSpawnTokra = true;
     public static int iglooZpmChestChance = 15;
 
-    // Pyramid
+    // Jungle Temple
     public static boolean jungleAddon = true;
     public static int jungleAddonChance = 25;
     public static int jungleChevronUpgradeChance = 25;
     public static boolean jungleSpawnTokra = true;
     public static int jungleZpmChestChance = 15;
 
-    // Pyramid
+    // Swamp Hut
     public static boolean swampAddon = true;
     public static int swampAddonChance = 25;
     public static int swampChevronUpgradeChance = 25;
     public static boolean swampSpawnTokra = true;
     public static int swampZpmChestChance = 15;
+    public static int swampAddonRuinedChance = 50;
 
-
+    private static final VillagerRegistry VILLAGER_REGISTRY = VillagerRegistry.instance();
 
 
     static Field structureMap = BaseReflectionUtils.getFieldDef(MapGenStructure.class,
         "structureMap", "field_75053_d");
     
+    public static void initVillageStargate() {
+        VILLAGER_REGISTRY.registerVillageCreationHandler(new FeatureVillageStargate.VillageManager());
+        MapGenStructureIO.registerStructureComponent(FeatureVillageStargate.class, "sgcraft:FeatureVillageStargate");
+                                            }
+
     public static void configure(BaseConfiguration config) {
         // Generic
         debugStructures = config.getBoolean("debug", "debugStructures", debugStructures);
+        genericTaintedZpm = config.getInteger("generaton", "generic_tainted_zpm", genericTaintedZpm);
+
+        // Villages
+        villageAddon = config.getBoolean("generaton", "village_addon", villageAddon);
+        villageAddonChance = config.getInteger("generaton", "village_addon_chance", villageAddonChance);
+        villageZpmChestChance = config.getInteger("generaton", "village_zpm_chest_chance", villageZpmChestChance);
+        villageChevronUpgradeChance = config.getInteger("generaton", "village_chevron_upgrade_chance", villageChevronUpgradeChance);
+        villageSpawnTokra = config.getBoolean("generaton", "village_spawn_tokra", villageSpawnTokra);
 
         // Pyramids
         pyramidAddon = config.getBoolean("generaton", "pyramid_addon", pyramidAddon);
@@ -88,7 +113,6 @@ public class FeatureGeneration {
         swampZpmChestChance = config.getInteger("generaton", "swamp_zpm_chest_chance", swampZpmChestChance);
         swampChevronUpgradeChance = config.getInteger("generaton", "swamp_chevron_upgrade_chance", swampChevronUpgradeChance);
         swampSpawnTokra = config.getBoolean("generaton", "swamp_spawn_tokra", swampSpawnTokra);
-
     }
 
     public static void onInitMapGen(InitMapGenEvent e) {
@@ -113,7 +137,6 @@ public class FeatureGeneration {
         BaseReflectionUtils.setField(gen, structureMap, new SGStructureMap());
         return gen;
     }
-
 }
 
 class SGStructureMap extends Long2ObjectOpenHashMap {
@@ -125,70 +148,31 @@ class SGStructureMap extends Long2ObjectOpenHashMap {
     @Override
     @SuppressWarnings("unchecked")
     public Object put(final long key, final Object value) {
-        //if (FeatureGeneration.debugStructures)
-           // System.out.printf("SGCraft: FeatureGeneration: SGStructureMap.put: %s\n", value);
         if (value instanceof StructureStart)
             augmentStructureStart((StructureStart)value);
         return super.put(key, value);
     }
     
     void augmentStructureStart(StructureStart start) {
-        if (FeatureGeneration.debugStructures) {
-            //System.out.printf("SGCraft: FeatureGeneration: augmentStructureStart: %s\n", start);
-        }
         List<StructureComponent> oldComponents = start.getComponents();
         List<StructureComponent> newComponents = new ArrayList<StructureComponent>();
+        StructureComponent newComp = null;
         for (Object comp : oldComponents) {
-            if (FeatureGeneration.debugStructures) {
-                //System.out.printf("SGCraft: FeatureGeneration: Found component %s\n", comp);
-                //System.out.println("SGCraft: Instance: " + comp.getClass().getCanonicalName() + " -- " + comp.getClass().getSimpleName());
-            }
+            newComp = null;
             if (comp instanceof ComponentScatteredFeaturePieces.DesertPyramid && FeatureGeneration.pyramidAddon) {
-                StructureBoundingBox box = ((StructureComponent)comp).getBoundingBox();
-                if (FeatureGeneration.debugStructures) {
-                    BlockPos boxCenter = new BlockPos(box.minX + (box.maxX - box.minX + 1) / 2, box.minY + (box.maxY - box.minY + 1) / 2, box.minZ + (box.maxZ - box.minZ + 1) / 2);
-                    //System.out.printf("SGCraft: FeatureGeneration: Augmenting %s at (%s, %s)\n",
-                            //comp.getClass().getSimpleName(), boxCenter.getX(), boxCenter.getZ());
-                }
-                StructureComponent newComp = new FeatureUnderDesertPyramid((StructureComponent)comp);
-                start.getBoundingBox().expandTo(newComp.getBoundingBox());
-                newComponents.add(newComp);
+                newComp = new FeatureUnderDesertPyramid((StructureComponent)comp);
+            } else if (comp instanceof ComponentScatteredFeaturePieces.SwampHut && FeatureGeneration.swampAddon) {
+                newComp = new FeatureSwampHut((StructureComponent)comp);
+            } else if (comp instanceof ComponentScatteredFeaturePieces.Igloo && FeatureGeneration.iglooAddon) {
+                newComp = new FeatureIgloo((StructureComponent)comp);
+            } else if (comp instanceof ComponentScatteredFeaturePieces.JunglePyramid && FeatureGeneration.jungleAddon) {
+                newComp = new FeatureJungleTemple((StructureComponent)comp);
             }
 
-            if (comp instanceof ComponentScatteredFeaturePieces.SwampHut && FeatureGeneration.swampAddon) {
+            if (newComp != null) {
                 StructureBoundingBox box = ((StructureComponent)comp).getBoundingBox();
-                if (FeatureGeneration.debugStructures) {
-                    BlockPos boxCenter = new BlockPos(box.minX + (box.maxX - box.minX + 1) / 2, box.minY + (box.maxY - box.minY + 1) / 2, box.minZ + (box.maxZ - box.minZ + 1) / 2);
-                    //System.out.printf("SGCraft: FeatureGeneration: Augmenting %s at (%s, %s)\n",
-                      //  comp.getClass().getSimpleName(), boxCenter.getX(), boxCenter.getZ());
-                }
-                StructureComponent newComp = new FeatureSwampHut((StructureComponent)comp);
                 start.getBoundingBox().expandTo(newComp.getBoundingBox());
-                newComponents.add(newComp);
-            }
-
-            if (comp instanceof ComponentScatteredFeaturePieces.Igloo && FeatureGeneration.iglooAddon) {
-                StructureBoundingBox box = ((StructureComponent)comp).getBoundingBox();
-                if (FeatureGeneration.debugStructures) {
-                    BlockPos boxCenter = new BlockPos(box.minX + (box.maxX - box.minX + 1) / 2, box.minY + (box.maxY - box.minY + 1) / 2, box.minZ + (box.maxZ - box.minZ + 1) / 2);
-                    //System.out.printf("SGCraft: FeatureGeneration: Augmenting %s at (%s, %s)\n",
-                    //  comp.getClass().getSimpleName(), boxCenter.getX(), boxCenter.getZ());
-                }
-                StructureComponent newComp = new FeatureIgloo((StructureComponent)comp);
-                start.getBoundingBox().expandTo(newComp.getBoundingBox());
-                newComponents.add(newComp);
-            }
-
-            if (comp instanceof ComponentScatteredFeaturePieces.JunglePyramid && FeatureGeneration.jungleAddon) {
-                StructureBoundingBox box = ((StructureComponent)comp).getBoundingBox();
-                if (FeatureGeneration.debugStructures) {
-                    BlockPos boxCenter = new BlockPos(box.minX + (box.maxX - box.minX + 1) / 2, box.minY + (box.maxY - box.minY + 1) / 2, box.minZ + (box.maxZ - box.minZ + 1) / 2);
-                    //System.out.printf("SGCraft: FeatureGeneration: Augmenting %s at (%s, %s)\n",
-                    //  comp.getClass().getSimpleName(), boxCenter.getX(), boxCenter.getZ());
-                }
-                StructureComponent newComp = new FeatureJungleTemple((StructureComponent)comp);
-                start.getBoundingBox().expandTo(newComp.getBoundingBox());
-                newComponents.add(newComp);
+                newComponents.add (newComp);
             }
         }
         oldComponents.addAll(newComponents);
