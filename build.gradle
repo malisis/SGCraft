@@ -17,27 +17,15 @@ buildscript {
     dependencies {
         classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.4'
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-        classpath 'org.spongepowered:mixingradle:0.6+'
         classpath 'commons-io:commons-io:2.4'
     }
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'org.spongepowered.mixin'
 
-
-mixin {
-    add sourceSets.main, "mixins.sgcraft.refmap.json"
-}
 
 jar {
-    manifest.attributes(
-            'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
-            'MixinConfigs': 'mixins.sgcraft.json',
-            'FMLCorePluginContainsFMLMod': 'true',
-            'ForceLoadAsMod': true
-    )
     classifier = 'original'
 }
 
@@ -68,7 +56,6 @@ dependencies {
         exclude module: 'testplugins'
         exclude module: 'testmods'
     }
-    compile "org.spongepowered:mixin:0.7.11-SNAPSHOT"
     compile 'org.spongepowered:configurate-yaml:3.6'
     compile 'org.spongepowered:configurate-core:3.6'
     compile 'com.google.code.gson:gson:2.8.0'
@@ -135,7 +122,6 @@ shadowJar {
         include dependency('org.spongepowered:configurate-core')
         include dependency('org.spongepowered:configurate-yaml')
         include dependency('org.yaml:snakeyaml')
-        include dependency('org.spongepowered:mixin')
     }
     afterEvaluate {
         from zipTree(reobfJar.jar)
