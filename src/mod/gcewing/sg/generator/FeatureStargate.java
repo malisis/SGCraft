@@ -467,7 +467,7 @@ public class FeatureStargate extends StructureComponent {
     }
 
     public void GenerateTokRa (World world, StructureBoundingBox clip) {
-        if (generateTokra && pass == 0) {
+        if (generateTokra && pass == 3) {
             if ((chestPos == null) && (FeatureGeneration.debugStructures)) {
                 System.err.println ("Tried to spawn a Tok'Ra but chestPos was null!");
                 return;

@@ -17,8 +17,6 @@ import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.*;
 import net.minecraft.world.gen.structure.*;
 
-import net.minecraftforge.fml.common.registry.VillagerRegistry;
-
 import net.minecraftforge.event.terraingen.*;
 
 public class FeatureGeneration {
@@ -33,6 +31,20 @@ public class FeatureGeneration {
     public static int villageChevronUpgradeChance = 25;
     public static boolean villageSpawnTokra = true;
     public static int villageZpmChestChance = 15;
+
+    // Nether Fortress
+    public static boolean netherAddon = true;
+    public static int netherAddonChance = 25;
+    public static int netherChevronUpgradeChance = 25;
+    public static boolean netherSpawnTokra = false;
+    public static int netherZpmChestChance = 15;
+
+    // Ocean Monument
+    public static boolean oceanmonumentAddon = true;
+    public static int oceanmonumentAddonChance = 25;
+    public static int oceanmonumentChevronUpgradeChance = 25;
+    public static boolean oceanmonumentSpawnTokra = false;
+    public static int oceanmonumentZpmChestChance = 15;
 
     // Desert Temple
     public static boolean pyramidAddon = true;
@@ -63,17 +75,9 @@ public class FeatureGeneration {
     public static int swampZpmChestChance = 15;
     public static int swampAddonRuinedChance = 50;
 
-    private static final VillagerRegistry VILLAGER_REGISTRY = VillagerRegistry.instance();
-
-
     static Field structureMap = BaseReflectionUtils.getFieldDef(MapGenStructure.class,
         "structureMap", "field_75053_d");
     
-    public static void initVillageStargate() {
-        VILLAGER_REGISTRY.registerVillageCreationHandler(new FeatureVillageStargate.VillageManager());
-        MapGenStructureIO.registerStructureComponent(FeatureVillageStargate.class, "sgcraft:FeatureVillageStargate");
-                                            }
-
     public static void configure(BaseConfiguration config) {
         // Generic
         debugStructures = config.getBoolean("debug", "debugStructures", debugStructures);
@@ -85,6 +89,19 @@ public class FeatureGeneration {
         villageZpmChestChance = config.getInteger("generaton", "village_zpm_chest_chance", villageZpmChestChance);
         villageChevronUpgradeChance = config.getInteger("generaton", "village_chevron_upgrade_chance", villageChevronUpgradeChance);
         villageSpawnTokra = config.getBoolean("generaton", "village_spawn_tokra", villageSpawnTokra);
+
+        // Nether Fortress
+        netherAddon = config.getBoolean("generaton", "nether_addon", netherAddon);
+        netherAddonChance = config.getInteger("generaton", "nether_addon_chance", netherAddonChance);
+        netherZpmChestChance = config.getInteger("generaton", "nether_zpm_chest_chance", netherZpmChestChance);
+        netherChevronUpgradeChance = config.getInteger("generaton", "nether_chevron_upgrade_chance", netherChevronUpgradeChance);
+        netherSpawnTokra = config.getBoolean("generaton", "nether_spawn_tokra", netherSpawnTokra);
+
+        oceanmonumentAddon = config.getBoolean("generaton", "oceanmon_addon", oceanmonumentAddon);
+        oceanmonumentAddonChance = config.getInteger("generaton", "oceanmon_addon_chance", oceanmonumentAddonChance);
+        oceanmonumentZpmChestChance = config.getInteger("generaton", "oceanmon_zpm_chest_chance", oceanmonumentZpmChestChance);
+        oceanmonumentChevronUpgradeChance = config.getInteger("generaton", "oceanmon_chevron_upgrade_chance", oceanmonumentChevronUpgradeChance);
+        oceanmonumentSpawnTokra = false;
 
         // Pyramids
         pyramidAddon = config.getBoolean("generaton", "pyramid_addon", pyramidAddon);
@@ -116,18 +133,15 @@ public class FeatureGeneration {
     }
 
     public static void onInitMapGen(InitMapGenEvent e) {
-        // if (debugStructures)
-        //  System.out.printf("SGCraft: FeatureGeneration.onInitMapGen: %s\n", e.getType());
         switch (e.getType()) {
+            case OCEAN_MONUMENT:
+            case NETHER_BRIDGE:
             case SCATTERED_FEATURE:
                 MapGenBase newGen = e.getNewGen();
-                if (newGen instanceof MapGenStructure) {
+                if (newGen instanceof MapGenStructure)
                     e.setNewGen(modifyScatteredFeatureGen((MapGenStructure)newGen));
-                    // if (FeatureGeneration.debugStructures)
-                    //   System.out.printf("SGCraft: FeatureGeneration: Installed SGStructureMap\n");
-                }
                 else
-                    System.out.printf("SGCraft: FeatureGeneration: SCATTERED_FEATURE generator is not a MapGenStructure, cannot customise\n");
+                    System.out.println("SGCraft: FeatureGeneration: " + e.getType() + " is not supported yet.");
                 break;
         }
 
@@ -140,7 +154,6 @@ public class FeatureGeneration {
 }
 
 class SGStructureMap extends Long2ObjectOpenHashMap {
-
     public SGStructureMap() {
         super(1024);
     }
@@ -167,6 +180,10 @@ class SGStructureMap extends Long2ObjectOpenHashMap {
                 newComp = new FeatureIgloo((StructureComponent)comp);
             } else if (comp instanceof ComponentScatteredFeaturePieces.JunglePyramid && FeatureGeneration.jungleAddon) {
                 newComp = new FeatureJungleTemple((StructureComponent)comp);
+            } else if (comp instanceof StructureNetherBridgePieces.Start) {
+                newComp = new FeatureNetherFortress((StructureComponent)comp);
+            } else if (comp instanceof StructureOceanMonumentPieces.MonumentBuilding) {
+                newComp = new FeatureOceanMonument((StructureComponent)comp);
             }
 
             if (newComp != null) {
