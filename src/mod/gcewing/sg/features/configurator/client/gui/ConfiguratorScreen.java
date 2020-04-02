@@ -58,9 +58,9 @@ public class ConfiguratorScreen extends BasicScreen {
     //}
 
     public ConfiguratorScreen(EntityPlayer player, World worldIn, boolean isAdmin, boolean secondsToStayOpenPerm, boolean gateRotationSpeedPerm, boolean energyBufferSizePerm, boolean energyPerNaquadahPerm, boolean openingsPerNaquadahPerm,
-        boolean distanceFactorMultiplierPerm, boolean interDimensionalMultiplierPerm, boolean oneWayTravelOnlyPerm, boolean irisUpgradePerm, boolean chevronUpgradePerm, boolean pegasusGateTypePerm, boolean reverseWormholeKillsPerm,
-        boolean closeFromEitherEndPerm, boolean preserveInventoryOnIrisDeathPerm, boolean noInputPowerRequiredPerm, boolean chevronsLockOnDialPerm, boolean returnToPreviousIrisStatePerm, boolean transientDamagePerm, boolean transparencyPerm,
-        boolean dhdAsFuelSourcePerm, boolean allowRedstoneOutputPerm, boolean allowRedstoneInputPerm, boolean playerCanDestroyGatePerm, boolean displayGateAddressPerm, boolean gateAccessPerm, boolean playerAccessPerm) {
+            boolean distanceFactorMultiplierPerm, boolean interDimensionalMultiplierPerm, boolean oneWayTravelOnlyPerm, boolean irisUpgradePerm, boolean chevronUpgradePerm, boolean pegasusGateTypePerm, boolean reverseWormholeKillsPerm,
+            boolean closeFromEitherEndPerm, boolean preserveInventoryOnIrisDeathPerm, boolean noInputPowerRequiredPerm, boolean chevronsLockOnDialPerm, boolean returnToPreviousIrisStatePerm, boolean transientDamagePerm, boolean transparencyPerm,
+            boolean dhdAsFuelSourcePerm, boolean allowRedstoneOutputPerm, boolean allowRedstoneInputPerm, boolean playerCanDestroyGatePerm, boolean displayGateAddressPerm, boolean gateAccessPerm, boolean playerAccessPerm) {
 
         this.player = player;
         this.isAdmin = isAdmin;
@@ -277,26 +277,28 @@ public class ConfiguratorScreen extends BasicScreen {
         // ****************************************************************************************************************************
 
         this.gateAddressAccessListButton = new UIButtonBuilder(this)
-            .width(160)
-            .anchor(Anchor.TOP | Anchor.CENTER)
-            .position(0, this.dimensionalMultiplier.getY() + 60)
-            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.gateAddressAccessList"))
-            .onClick(() -> {
-                new GateAddressAccessScreen(this, player, world, true).display();
-            })
-            .listener(this)
-            .build("button.gateaddressaccesslist");
+                .width(160)
+                .anchor(Anchor.TOP | Anchor.CENTER)
+                .position(0, this.dimensionalMultiplier.getY() + 60)
+                .enabled(gateAccessPerm)
+                .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.gateAddressAccessList"))
+                .onClick(() -> {
+                    new GateAddressAccessScreen(this, player, world, true).display();
+                })
+                .listener(this)
+                .build("button.gateaddressaccesslist");
 
         this.playerAccessListButton = new UIButtonBuilder(this)
-            .width(160)
-            .anchor(Anchor.TOP | Anchor.CENTER)
-            .position(0, this.gateAddressAccessListButton.getY() + 20)
-            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.playerAccessList"))
-            .onClick(() -> {
-                new PlayerAccessScreen(this, player, world, true).display();
-            })
-            .listener(this)
-            .build("button.playeraccesslist");
+                .width(160)
+                .anchor(Anchor.TOP | Anchor.CENTER)
+                .position(0, this.gateAddressAccessListButton.getY() + 20)
+                .enabled(playerAccessPerm)
+                .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.playerAccessList"))
+                .onClick(() -> {
+                    new PlayerAccessScreen(this, player, world, true).display();
+                })
+                .listener(this)
+                .build("button.playeraccesslist");
 
         final UILabel accessControlSystemsLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.accessControlSystems") + ":");
         accessControlSystemsLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
@@ -486,41 +488,41 @@ public class ConfiguratorScreen extends BasicScreen {
 
         // Load Defaults button
         final UIButton buttonDefaults = new UIButtonBuilder(this)
-            .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.LEFT)
-            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.loadDefaults"))
-            .onClick(() -> {
-                // Todo: make this match config....
-                this.secondsToStayOpen.setText(String.valueOf(SGBaseTE.cfg.getInteger("stargate", "secondsToStayOpen", 500)));
-                this.gateRotationSpeed.setText(String.valueOf(2.0)); // Isn't contained in base config file
-                this.energyBufferSize.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "maxEnergyBuffer", 2500.0)));
-                this.energyPerNaquadah.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "energyPerFuelItem", 25000.0)));
-                this.gateOpeningsPerNaquadah.setText(String.valueOf(SGBaseTE.cfg.getInteger("stargate", "gateOpeningsPerFuelItem", 10)));
-                this.distanceMultiplier.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "distanceFactorMultiplier", 1.0)));
-                this.dimensionalMultiplier.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "interDimensionMultiplier", 4.0)));
-                this.oneWayTravelCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "oneWayTravel", true));
-                this.irisUpgradeCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "irisUpgrade", true));
-                this.chevronUpgradeCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "chevronUpgrade", true));
-                this.reverseWormholeKillsCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "reverseWormholeKills", false));
-                this.closeFromEitherEndCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "requiresNoPower", true));
-                this.preserveInventoryCheckbox.setChecked(SGBaseTE.cfg.getBoolean("iris", "preserveInventory", false));
-                this.noPowerRequiredCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "closeFromEitherEnd", false));
-                this.chevronsLockOnDialCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "chevronsLockOnDial", false));
-                this.returnIrisToPreviousStateCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "returnToPreviousIrisState", false));
-                this.transientDamageCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "transientDamage", true));
-                this.transparencyCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "transparency", true));
-                this.useDHDFuelSourceCheckbox.setChecked(SGBaseTE.cfg.getBoolean("dhd", "useDHDFuelSource", true));
-                this.allowRedstoneOutputCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "allowRedstoneOutput", true));
-                this.allowRedstoneInputCheckbox.setChecked(SGBaseTE.cfg.getBoolean("iris", "allowRedstoneInput", true));
-                this.playerCanDestroyGateCheckbox.setChecked(SGBaseTE.cfg.getBoolean("gate", "canPlayerBreakGate", true));
-                this.displayGateAddressCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "displayGateAddress", true));
+                .width(40)
+                .anchor(Anchor.BOTTOM | Anchor.LEFT)
+                .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.loadDefaults"))
+                .onClick(() -> {
+                    // Todo: make this match config....
+                    this.secondsToStayOpen.setText(String.valueOf(SGBaseTE.cfg.getInteger("stargate", "secondsToStayOpen", 500)));
+                    this.gateRotationSpeed.setText(String.valueOf(2.0)); // Isn't contained in base config file
+                    this.energyBufferSize.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "maxEnergyBuffer", 2500.0)));
+                    this.energyPerNaquadah.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "energyPerFuelItem", 25000.0)));
+                    this.gateOpeningsPerNaquadah.setText(String.valueOf(SGBaseTE.cfg.getInteger("stargate", "gateOpeningsPerFuelItem", 10)));
+                    this.distanceMultiplier.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "distanceFactorMultiplier", 1.0)));
+                    this.dimensionalMultiplier.setText(String.valueOf(SGBaseTE.cfg.getDouble("stargate", "interDimensionMultiplier", 4.0)));
+                    this.oneWayTravelCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "oneWayTravel", true));
+                    this.irisUpgradeCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "irisUpgrade", true));
+                    this.chevronUpgradeCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "chevronUpgrade", true));
+                    this.reverseWormholeKillsCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "reverseWormholeKills", false));
+                    this.closeFromEitherEndCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "requiresNoPower", true));
+                    this.preserveInventoryCheckbox.setChecked(SGBaseTE.cfg.getBoolean("iris", "preserveInventory", false));
+                    this.noPowerRequiredCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "closeFromEitherEnd", false));
+                    this.chevronsLockOnDialCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "chevronsLockOnDial", false));
+                    this.returnIrisToPreviousStateCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "returnToPreviousIrisState", false));
+                    this.transientDamageCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "transientDamage", true));
+                    this.transparencyCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "transparency", true));
+                    this.useDHDFuelSourceCheckbox.setChecked(SGBaseTE.cfg.getBoolean("dhd", "useDHDFuelSource", true));
+                    this.allowRedstoneOutputCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "allowRedstoneOutput", true));
+                    this.allowRedstoneInputCheckbox.setChecked(SGBaseTE.cfg.getBoolean("iris", "allowRedstoneInput", true));
+                    this.playerCanDestroyGateCheckbox.setChecked(SGBaseTE.cfg.getBoolean("gate", "canPlayerBreakGate", true));
+                    this.displayGateAddressCheckbox.setChecked(SGBaseTE.cfg.getBoolean("stargate", "displayGateAddress", true));
 
-                if (localGate.gateOrientation == 1) {
-                    this.transientDamageCheckbox.setChecked(false);
-                }
-            })
-            .listener(this)
-            .build("button.defaults");
+                    if (localGate.gateOrientation == 1) {
+                        this.transientDamageCheckbox.setChecked(false);
+                    }
+                })
+                .listener(this)
+                .build("button.defaults");
 
         // Close button
         final UIButton buttonClose = new UIButtonBuilder(this)
@@ -535,34 +537,34 @@ public class ConfiguratorScreen extends BasicScreen {
 
         // Save button
         final UIButton buttonSave = new UIButtonBuilder(this)
-            .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.RIGHT)
-            .position(-(buttonClose.getX() + buttonClose.getWidth() + 5), 0)
-            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
-            .onClick(() -> {
-                int gateType = 1; // Default
-                int orientation = 1;
-                if (this.gateTypeCheckbox.isChecked()) {
-                    gateType = 2; // Pegasus
-                }
-                if (localGate.gateOrientation == 2 || localGate.gateOrientation == 3) {
-                    if (this.horizontalFaceUpCheckbox.isChecked()) {
-                        orientation = 2;
-                    } else {
-                        orientation = 3;
+                .width(40)
+                .anchor(Anchor.BOTTOM | Anchor.RIGHT)
+                .position(-(buttonClose.getX() + buttonClose.getWidth() + 5), 0)
+                .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.save"))
+                .onClick(() -> {
+                    int gateType = 1; // Default
+                    int orientation = 1;
+                    if (this.gateTypeCheckbox.isChecked()) {
+                        gateType = 2; // Pegasus
                     }
-                }
-                ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, Integer.valueOf(this.secondsToStayOpen.getText()), Double.valueOf(this.gateRotationSpeed.getText()), Double.valueOf(this.energyBufferSize.getText()),
-                    Double.valueOf(this.energyPerNaquadah.getText()), Integer.valueOf(this.gateOpeningsPerNaquadah.getText()), Double.valueOf(this.distanceMultiplier.getText()), Double.valueOf(this.dimensionalMultiplier.getText()),
-                    this.oneWayTravelCheckbox.isChecked(), this.irisUpgradeCheckbox.isChecked(), this.chevronUpgradeCheckbox.isChecked(), gateType, this.reverseWormholeKillsCheckbox.isChecked(), this.closeFromEitherEndCheckbox.isChecked(),
-                    this.preserveInventoryCheckbox.isChecked(), this.noPowerRequiredCheckbox.isChecked(), this.chevronsLockOnDialCheckbox.isChecked(), this.returnIrisToPreviousStateCheckbox.isChecked(), this.transientDamageCheckbox.isChecked(),
-                    this.transparencyCheckbox.isChecked(), orientation, this.useDHDFuelSourceCheckbox.isChecked(), this.allowRedstoneOutputCheckbox.isChecked(), this.allowRedstoneInputCheckbox.isChecked(), this.playerCanDestroyGateCheckbox.isChecked(),
-                    this.displayGateAddressCheckbox.isChecked());
+                    if (localGate.gateOrientation == 2 || localGate.gateOrientation == 3) {
+                        if (this.horizontalFaceUpCheckbox.isChecked()) {
+                            orientation = 2;
+                        } else {
+                            orientation = 3;
+                        }
+                    }
+                    ConfiguratorNetworkHandler.sendConfiguratorInputToServer(localGate, Integer.valueOf(this.secondsToStayOpen.getText()), Double.valueOf(this.gateRotationSpeed.getText()), Double.valueOf(this.energyBufferSize.getText()),
+                            Double.valueOf(this.energyPerNaquadah.getText()), Integer.valueOf(this.gateOpeningsPerNaquadah.getText()), Double.valueOf(this.distanceMultiplier.getText()), Double.valueOf(this.dimensionalMultiplier.getText()),
+                            this.oneWayTravelCheckbox.isChecked(), this.irisUpgradeCheckbox.isChecked(), this.chevronUpgradeCheckbox.isChecked(), gateType, this.reverseWormholeKillsCheckbox.isChecked(), this.closeFromEitherEndCheckbox.isChecked(),
+                            this.preserveInventoryCheckbox.isChecked(), this.noPowerRequiredCheckbox.isChecked(), this.chevronsLockOnDialCheckbox.isChecked(), this.returnIrisToPreviousStateCheckbox.isChecked(), this.transientDamageCheckbox.isChecked(),
+                            this.transparencyCheckbox.isChecked(), orientation, this.useDHDFuelSourceCheckbox.isChecked(), this.allowRedstoneOutputCheckbox.isChecked(), this.allowRedstoneInputCheckbox.isChecked(), this.playerCanDestroyGateCheckbox.isChecked(),
+                            this.displayGateAddressCheckbox.isChecked());
 
-                this.close();
-            })
-            .listener(this)
-            .build("button.save");
+                    this.close();
+                })
+                .listener(this)
+                .build("button.save");
 
         final UILabel addressLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.configurator.label.gateAddress") + ":");
         addressLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
