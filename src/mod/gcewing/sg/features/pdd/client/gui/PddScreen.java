@@ -32,7 +32,6 @@ import net.malisis.core.client.gui.component.container.BasicForm;
 import net.malisis.core.client.gui.component.container.BasicList;
 import net.malisis.core.client.gui.component.decoration.UILabel;
 import net.malisis.core.client.gui.component.decoration.UISeparator;
-import net.malisis.core.client.gui.component.decoration.UITooltip;
 import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.client.gui.component.interaction.button.builder.UIButtonBuilder;
 import net.malisis.core.renderer.font.FontOptions;
@@ -378,12 +377,15 @@ public class PddScreen extends BasicScreen {
             this.lastUpdate = 0;
             if (localGate.chevronsLockOnDial) {
                 if (!isAdmin) {
-                    startProgressiveDialSelectedAddress(); // Progressive Dial Sequence
+                    dialSelectedAddressLockEachChevronIndividually(); // Progressive Dial Sequence
                 } else {
-                    immediateDialSelectedAddress(); // Immediate Dial all and lock.
+                    // Todo: the below is a very stupid way to implement this...
+                    dialSelectedAddress(); // Immediate dial address and lock all chevrons at one
+                    // Note: this happens because gate.Connect() checks for "chevronsLockOnDial", if true, then immediately lock dialed address.
                 }
             } else {
-                immediateDialSelectedAddress(); // Immediate Dial but display ring rotation.
+                dialSelectedAddress(); // Immediate Dial but display ring rotation.
+                // This does NOT lock all chevrons at once because the TE value "chevronsLockOnDial" is false; and gate.Connect() knows.
                 this.close();
             }
         }
@@ -456,7 +458,7 @@ public class PddScreen extends BasicScreen {
         }
     }
 
-    private void immediateDialSelectedAddress() {
+    private void dialSelectedAddress() {
         TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
         if (localGateTE instanceof SGBaseTE) {
             localGate = (SGBaseTE) localGateTE;
@@ -476,7 +478,7 @@ public class PddScreen extends BasicScreen {
         }
     }
 
-    private void startProgressiveDialSelectedAddress() {
+    private void dialSelectedAddressLockEachChevronIndividually() {
         final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
         if (localGateTE instanceof SGBaseTE) {
             localGate = (SGBaseTE) localGateTE;
@@ -517,16 +519,7 @@ public class PddScreen extends BasicScreen {
 
                 this.addressList.setVisible(false);
                 TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
-                if (!(localGateTE instanceof SGBaseTE)) {
-                    TileEntity dhdBaseTE = GateUtil.locateDHD(this.world, new BlockPos(player.posX, player.posY, player.posZ), 6, false);
-                    if (dhdBaseTE instanceof DHDTE) {
-                        DHDTE dhd = (DHDTE) dhdBaseTE;
-                        if (dhd.isLinkedToStargate) {
-                            localGateTE = dhd.getLinkedStargateTE();
 
-                        }
-                    }
-                }
                 if (localGateTE instanceof SGBaseTE) {
                     SGBaseTE localGate = (SGBaseTE) localGateTE;
                     this.last = false;
