@@ -313,7 +313,7 @@ public class FeatureStargate extends StructureComponent {
 
     public void GenerateStargate (World world, StructureBoundingBox clip, boolean gateVertical) {
         boolean debug = false;
-
+        System.out.println("DEBUG: Generate Stargate called: " + pass + " Gate POS: " + gatePos);
         if ((pass == 3) && (FeatureGeneration.debugStructures))
             debug = true;
 

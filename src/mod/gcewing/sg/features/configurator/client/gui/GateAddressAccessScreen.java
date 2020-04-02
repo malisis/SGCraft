@@ -347,13 +347,13 @@ public class GateAddressAccessScreen extends BasicScreen {
     }
 
     @Override
-    protected void keyTyped(char keyChar, int keyCode) throws IOException {
+    protected void keyTyped(char keyChar, int keyCode) {
         super.keyTyped(keyChar, keyCode);
         this.lastUpdate = 0; // Reset the timer when key is typed.
     }
 
     @Override
-    protected void mouseClicked(int x, int y, int button) throws IOException {
+    protected void mouseClicked(int x, int y, int button) {
         super.mouseClicked(x, y, button);
         this.lastUpdate = 0; // Reset the timer when mouse is pressed.
     }
