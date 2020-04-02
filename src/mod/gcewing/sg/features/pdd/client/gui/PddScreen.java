@@ -211,15 +211,6 @@ public class PddScreen extends BasicScreen {
             .onClick(() -> {
                 TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, false);
                 if (!(localGate instanceof SGBaseTE)) {
-                    TileEntity dhdBaseTE = GateUtil.locateDHD(this.world, new BlockPos(player.posX, player.posY, player.posZ), 6, false);
-                    if (dhdBaseTE instanceof DHDTE) {
-                        DHDTE dhd = (DHDTE) dhdBaseTE;
-                        if (dhd.isLinkedToStargate) {
-                            localGate = dhd.getLinkedStargateTE();
-                        }
-                    }
-                }
-                if (!(localGate instanceof SGBaseTE)) {
                     return;
                 } else if (localGate != null) {
                     PddNetworkHandler.sendPddInputToServer((SGBaseTE) localGate, 2, "", "");
@@ -471,16 +462,6 @@ public class PddScreen extends BasicScreen {
             localGate = (SGBaseTE) localGateTE;
         }
 
-        if (!(localGateTE instanceof SGBaseTE)) {
-            TileEntity dhdBaseTE = GateUtil.locateDHD(this.world, new BlockPos(player.posX, player.posY, player.posZ), 6, false);
-            if (dhdBaseTE instanceof DHDTE) {
-                DHDTE dhd = (DHDTE) dhdBaseTE;
-                if (dhd.isLinkedToStargate) {
-                    localGate = dhd.getLinkedStargateTE();
-                }
-            }
-        }
-
        if (localGate != null) {
             if (this.addressList.getSelectedItem() != null && !this.addressList.getSelectedItem().getAddress().isEmpty()) {
                 this.gateStatusLabel.setText(I18n.format("sgcraft.gui.pdd.label.dialing"));
@@ -499,17 +480,6 @@ public class PddScreen extends BasicScreen {
         final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
         if (localGateTE instanceof SGBaseTE) {
             localGate = (SGBaseTE) localGateTE;
-        }
-
-        if (!(localGateTE instanceof SGBaseTE)) {
-            TileEntity dhdBaseTE = GateUtil.locateDHD(this.world, new BlockPos(player.posX, player.posY, player.posZ), 6, false);
-            if (dhdBaseTE instanceof DHDTE) {
-                DHDTE dhd = (DHDTE) dhdBaseTE;
-                if (dhd.isLinkedToStargate) {
-                    localGate = dhd.getLinkedStargateTE();
-
-                }
-            }
         }
 
         if (localGate != null) {
