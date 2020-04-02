@@ -209,11 +209,19 @@ public class PddScreen extends BasicScreen {
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.disconnect"))
             .visible(false)
             .onClick(() -> {
-                final TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, false);
-                if (localGate != null) {
-                    if (!(localGate instanceof SGBaseTE)) {
-                        return;
+                TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, false);
+                if (!(localGate instanceof SGBaseTE)) {
+                    TileEntity dhdBaseTE = GateUtil.locateDHD(this.world, new BlockPos(player.posX, player.posY, player.posZ), 6, false);
+                    if (dhdBaseTE instanceof DHDTE) {
+                        DHDTE dhd = (DHDTE) dhdBaseTE;
+                        if (dhd.isLinkedToStargate) {
+                            localGate = dhd.getLinkedStargateTE();
+                        }
                     }
+                }
+                if (!(localGate instanceof SGBaseTE)) {
+                    return;
+                } else if (localGate != null) {
                     PddNetworkHandler.sendPddInputToServer((SGBaseTE) localGate, 2, "", "");
                 }
             })
@@ -492,6 +500,18 @@ public class PddScreen extends BasicScreen {
         if (localGateTE instanceof SGBaseTE) {
             localGate = (SGBaseTE) localGateTE;
         }
+
+        if (!(localGateTE instanceof SGBaseTE)) {
+            TileEntity dhdBaseTE = GateUtil.locateDHD(this.world, new BlockPos(player.posX, player.posY, player.posZ), 6, false);
+            if (dhdBaseTE instanceof DHDTE) {
+                DHDTE dhd = (DHDTE) dhdBaseTE;
+                if (dhd.isLinkedToStargate) {
+                    localGate = dhd.getLinkedStargateTE();
+
+                }
+            }
+        }
+
         if (localGate != null) {
             this.enteredAddress = "";
             this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
@@ -526,7 +546,17 @@ public class PddScreen extends BasicScreen {
                 }
 
                 this.addressList.setVisible(false);
-                final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
+                TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
+                if (!(localGateTE instanceof SGBaseTE)) {
+                    TileEntity dhdBaseTE = GateUtil.locateDHD(this.world, new BlockPos(player.posX, player.posY, player.posZ), 6, false);
+                    if (dhdBaseTE instanceof DHDTE) {
+                        DHDTE dhd = (DHDTE) dhdBaseTE;
+                        if (dhd.isLinkedToStargate) {
+                            localGateTE = dhd.getLinkedStargateTE();
+
+                        }
+                    }
+                }
                 if (localGateTE instanceof SGBaseTE) {
                     SGBaseTE localGate = (SGBaseTE) localGateTE;
                     this.last = false;
