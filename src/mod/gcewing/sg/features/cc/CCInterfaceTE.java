@@ -23,5 +23,4 @@ public class CCInterfaceTE extends SGInterfaceTE implements IComputerInterface {
         for (IComputerAccess cpu : attachedComputers)
             cpu.queueEvent(name, prependArgs(cpu.getAttachmentName(), args));
     }
-    
 }

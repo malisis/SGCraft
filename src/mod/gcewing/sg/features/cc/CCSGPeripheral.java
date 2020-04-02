@@ -7,6 +7,7 @@
 package gcewing.sg.features.cc;
 
 import gcewing.sg.tileentity.SGInterfaceTE;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.*;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.*;
@@ -140,22 +141,27 @@ public class CCSGPeripheral implements IPeripheral {
     
     public void attach(IComputerAccess cpu) {
         System.out.printf("CCSGPeripheral.attach: to %s\n", cpu);
-        CCInterfaceTE te = getInterfaceTE();
-        if (te != null)
-            te.attachedComputers.add(cpu);
+        this.world.getMinecraftServer().addScheduledTask(() -> {
+            CCInterfaceTE te = getInterfaceTE();
+            if (te != null) {
+                te.attachedComputers.add(cpu);
+            }
+        });
     }
     
     public void detach(IComputerAccess cpu) {
         System.out.printf("CCSGPeripheral.detach: from %s\n", cpu);
-        CCInterfaceTE te = getInterfaceTE();
-        if (te != null)
-            te.attachedComputers.remove(cpu);
+        this.world.getMinecraftServer().addScheduledTask(() -> {
+            CCInterfaceTE te = getInterfaceTE();
+            if (te != null) {
+                te.attachedComputers.remove(cpu);
+            }
+        });
     }
     
     public boolean equals(IPeripheral other) {
         return this == other;
     }
-
 }
 
 //------------------------------------------------------------------------------------------------
