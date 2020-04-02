@@ -35,7 +35,7 @@ public class ZpmHub extends BlockContainer {
     public static final PropertyInteger ZPMS = PropertyInteger.create("zpms", 0, 3);
 
     public ZpmHub() {
-        super(Material.ROCK);
+        super(Material.IRON);
         setHardness(1.5f);
     }
 

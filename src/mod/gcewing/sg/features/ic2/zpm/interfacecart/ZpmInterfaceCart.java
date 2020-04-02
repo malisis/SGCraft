@@ -34,7 +34,7 @@ public class ZpmInterfaceCart extends BlockContainer {
     public static final PropertyBool ZPM_LOADED = PropertyBool.create("zpm");
 
     public ZpmInterfaceCart() {
-        super(Material.ROCK);
+        super(Material.IRON);
         setHardness(1.5f);
     }
 
