@@ -1,79 +1,99 @@
 //------------------------------------------------------------------------------------------------
 //
-//   SG Craft - Generate stargate under desert pyramid
+//   SG Craft - Generate a stargate on top of a jungle temple
 //
 //------------------------------------------------------------------------------------------------
 
 package gcewing.sg.generator;
 
-import gcewing.sg.BaseOrientation;
-import gcewing.sg.SGCraft;
-import gcewing.sg.block.SGRingBlock;
-import gcewing.sg.features.zpm.ZPMItem;
-import gcewing.sg.tileentity.DHDTE;
-import gcewing.sg.tileentity.SGBaseTE;
-import net.minecraft.block.BlockChest;
-import net.minecraft.block.BlockStoneSlab;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.enchantment.Enchantment;
-import net.minecraft.entity.IEntityLivingData;
-import net.minecraft.entity.passive.EntityVillager;
+import net.minecraft.block.BlockStairs;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.block.BlockStairs.EnumShape;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.StructureBoundingBox;
 import net.minecraft.world.gen.structure.StructureComponent;
 import net.minecraft.world.gen.structure.template.TemplateManager;
-import net.minecraftforge.fml.common.registry.VillagerRegistry;
 
 import java.util.Random;
 
-public class FeatureJungleTemple extends StructureComponent {
-
-    StructureComponent base;
-    boolean generateStructure = false;
-    boolean generateChevronUpgrade = false;
-    boolean generateZpmChest = false;
-    boolean taintedZpm = false;
-    BlockPos centerPos = null;
-    int pass = 0;
-
+public class FeatureJungleTemple extends FeatureStargate {
     @Override
     protected void readStructureFromNBT(NBTTagCompound compound, TemplateManager templateManager) {}
 
     @Override
     protected void writeStructureToNBT(NBTTagCompound compound) {}
 
-    public FeatureJungleTemple() {
-        //System.out.printf("SGCraft: FeatureUnderDesertPyramid instantiated with no arguments\n");
-    }
+    public FeatureJungleTemple() {}
 
     public FeatureJungleTemple(StructureComponent base) {
-        super(0);
         this.base = base;
+
+        // Set up the options
         Random rand = new Random();
         generateStructure = rand.nextInt(100) <= FeatureGeneration.jungleAddonChance;
         generateChevronUpgrade = rand.nextInt(100) <= FeatureGeneration.jungleChevronUpgradeChance;
         generateZpmChest = rand.nextInt(100) <= FeatureGeneration.jungleZpmChestChance;
-        taintedZpm = rand.nextInt(100) <= 10;
+        generateTokra = FeatureGeneration.jungleSpawnTokra;
 
-        if (FeatureGeneration.debugStructures) {
-            //System.out.println("SGCraft: Creating FeatureJungleTemple with GenerateStructure: " + generateStructure);
+        taintedZpm = rand.nextInt(100) <= FeatureGeneration.genericTaintedZpm;
+
+        if (FeatureGeneration.debugStructures)
+            System.out.println("SGCraft: Creating FeatureJungleTemple with GenerateStructure: " + generateStructure);
+
+        // Set up the building box
+        // Centered on top of the jungle temple
+        StructureBoundingBox baseBox = base.getBoundingBox();
+        centerPos = new BlockPos(baseBox.minX + (baseBox.maxX - baseBox.minX + 1) / 2, baseBox.minY + (baseBox.maxY - baseBox.minY + 1) / 2, baseBox.minZ + (baseBox.maxZ - baseBox.minZ + 1) / 2);
+        int cx = centerPos.getX();
+        int cz = centerPos.getZ();
+        int bottom = baseBox.maxY + 10; // Re-calculated later
+        boundingBox = new StructureBoundingBox(cx - 4, bottom, cz - 4, cx + 4, bottom + 6, cz + 4);
+
+        System.out.println ("SGCraft: Jungle baseBox was " + baseBox);
+        spawnDirection = base.getCoordBaseMode();
+        setCoordBaseMode (EnumFacing.SOUTH);
+
+        if (spawnDirection == EnumFacing.SOUTH) {
+            gateX = 2; gateY = 4; gateZ = 4; gateFaces = EnumFacing.WEST;
+            dhdX = 5; dhdY = 4; dhdZ = 2; dhdFaces = EnumFacing.WEST;
+            chestX = 5; chestY = 4; chestZ = 6; chestFaces = EnumFacing.EAST;
+        } else if (spawnDirection == EnumFacing.NORTH) {
+            gateX = 2; gateY = 4; gateZ = 4; gateFaces = EnumFacing.WEST;
+            dhdX = 5; dhdY = 4; dhdZ = 2; dhdFaces = EnumFacing.WEST;
+            chestX = 5; chestY = 4; chestZ = 6; chestFaces = EnumFacing.EAST;
+        } else if (spawnDirection == EnumFacing.EAST) {
+            gateX = 4; gateY = 4; gateZ = 2; gateFaces = EnumFacing.NORTH;
+            dhdX = 2; dhdY = 4; dhdZ = 5; dhdFaces = EnumFacing.NORTH;
+            chestX = 6; chestY = 4; chestZ = 5; chestFaces = EnumFacing.SOUTH;
+        } else if (spawnDirection == EnumFacing.WEST) {
+            gateX = 4; gateY = 4; gateZ = 2; gateFaces = EnumFacing.NORTH;
+            dhdX = 6; dhdY = 4; dhdZ = 5; dhdFaces = EnumFacing.NORTH;
+            chestX = 2; chestY = 4; chestZ = 5; chestFaces = EnumFacing.SOUTH;
         }
 
-        StructureBoundingBox baseBox = base.getBoundingBox();
-        BlockPos boxCenter = new BlockPos(baseBox.minX + (baseBox.maxX - baseBox.minX + 1) / 2, baseBox.minY + (baseBox.maxY - baseBox.minY + 1) / 2, baseBox.minZ + (baseBox.maxZ - baseBox.minZ + 1) / 2);
-        int cx = boxCenter.getX()-15;
-        int cz = boxCenter.getZ();
-        int bottom = baseBox.minY;
-        centerPos = boxCenter;
+        gatePos = new BlockPos (boundingBox.minX + gateX, boundingBox.minY + gateY, boundingBox.minZ + gateZ);
+        ItemStack cobbleBlock = new ItemStack(Blocks.COBBLESTONE, 1, 0);
+        ItemStack mossyBlock = new ItemStack(Blocks.MOSSY_COBBLESTONE, 1, 0);
+        int tempRand = 0;
+        for (int x = 0; x < 5; x++) {
+            tempRand = rand.nextInt(2);
+            if (tempRand == 0)
+                gateCamo[x] = cobbleBlock;
+            else
+                gateCamo[x] = mossyBlock;
+        }
 
-        boundingBox = new StructureBoundingBox(cx - 5, bottom, cz - 5, cx + 5, bottom + 7, cz + 8);
-        setCoordBaseMode(EnumFacing.SOUTH);
+        dhdPos = new BlockPos (boundingBox.minX + dhdX, boundingBox.minY + dhdY, boundingBox.minZ + dhdZ);
+
+        chestPos = new BlockPos (boundingBox.minX + chestX, boundingBox.minY + chestY, boundingBox.minZ + chestZ);
+
+        if ((generateStructure) && (FeatureGeneration.debugStructures))
+            System.out.println ("SGCraft: Jungle Temple got a gate at " + centerPos + ", facing " + spawnDirection);
     }
 
     @Override
@@ -82,136 +102,88 @@ public class FeatureJungleTemple extends StructureComponent {
     }
 
     protected boolean addAugmentationParts(World world, Random rand, StructureBoundingBox clip) {
-        if (FeatureGeneration.debugStructures) {
-            //System.out.printf("SGCraft: FeatureJungleTemple.addComponentParts in %s clipped to %s\n", getBoundingBox(), clip);
-        }
+        if ((pass == 3) && (FeatureGeneration.debugStructures))
+            System.out.printf("SGCraft: FeatureJungleTemple.addComponentParts in %s clipped to %s\n", getBoundingBox(), clip);
+
         if (base == null) {
-            //System.out.printf("SGCraft: FeatureJungleTemple.addComponentParts: no base\n");
+            System.out.printf("SGCraft: FeatureJungleTemple.addComponentParts: no base\n");
             return false;
         }
-        StructureBoundingBox box = getBoundingBox();
 
-        BlockPos boxCenter = new BlockPos(box.minX + (box.maxX - box.minX + 1) / 2, box.minY + (box.maxY - box.minY + 1) / 2, box.minZ + (box.maxZ - box.minZ + 1) / 2);
-        BlockPos newYPos = world.getTopSolidOrLiquidBlock(boxCenter);
+        // TODO: Find a better way to determine the Jungle Temple's top Y before it generates. This is ugly.
+        // NOTE: Found the same sort of check in Immersive Engineering, used in the Village Engineer's House.
+        //       I don't feel so bad now.
+        if (firstY == -1) {
+            int tempY = FeatureStargate.getJungleTempleTop (world, centerPos) - 5;
 
-        clip.minY = newYPos.getY()-1;
-        box.minY = newYPos.getY()-1;
+            if (tempY < 0)
+                return true;
+
+            firstY = tempY;
+            boundingBox.minY = firstY;
+
+            gatePos = new BlockPos (boundingBox.minX + gateX, boundingBox.minY + gateY, boundingBox.minZ + gateZ);
+            dhdPos = new BlockPos (boundingBox.minX + dhdX, boundingBox.minY + dhdY, boundingBox.minZ + dhdZ);
+            chestPos = new BlockPos (boundingBox.minX + chestX, boundingBox.minY + chestY, boundingBox.minZ + chestZ);
+        } else {
+            boundingBox.minY = firstY;
+        }
 
         IBlockState air = Blocks.AIR.getDefaultState();
-        IBlockState dhd = SGCraft.sgControllerBlock.getDefaultState().withProperty(BaseOrientation.Orient4WaysByState.FACING, EnumFacing.NORTH);
-        IBlockState sgBase = SGCraft.sgBaseBlock.getDefaultState().withProperty(BaseOrientation.Orient4WaysByState.FACING, EnumFacing.NORTH);
-        IBlockState[] sgRings = new IBlockState[2];
-        sgRings[0] = SGCraft.sgRingBlock.getDefaultState();
-        sgRings[1] = sgRings[0].withProperty(SGRingBlock.VARIANT, 1);
-        IBlockState chest = Blocks.CHEST.getDefaultState().withProperty(BlockChest.FACING, EnumFacing.NORTH);
+        IBlockState cobble = Blocks.COBBLESTONE.getDefaultState();
+        IBlockState mossy = Blocks.MOSSY_COBBLESTONE.getDefaultState();
+        IBlockState cobbleStairsS = Blocks.STONE_STAIRS.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.SOUTH);
+        IBlockState cobbleStairsE = Blocks.STONE_STAIRS.getDefaultState().withProperty(BlockStairs.FACING, EnumFacing.EAST);
+
+        // Clear the area
+        fillWithAir(world, clip, 1, 4, 1, 7, 7, 7);
+
+        // Fill floorhole
+        IBlockState id = null;
+        for (int x = 3; x < 5; x++) {
+            for (int z = 3; z < 6; z++) {
+                id = cobble;
+                if (rand.nextInt(2) > 0)
+                    id = mossy;
+
+                if ((spawnDirection == EnumFacing.SOUTH) || (spawnDirection == EnumFacing.NORTH))
+                    setBlockState (world, id, x, 3, z, clip);
+                else
+                    setBlockState (world, id, z, 3, x, clip);
+            }
+        }
+
+        // Access stairs
+        if ((spawnDirection == EnumFacing.NORTH) || (spawnDirection == EnumFacing.SOUTH)) {
+            setBlockState(world, cobbleStairsS, 7, 2, 4, clip);
+            setBlockState(world, air, 7, 2, 5, clip);
+            setBlockState(world, air, 7, 2, 6, clip);
+            setBlockState(world, air, 7, 2, 7, clip);
+            setBlockState(world, cobbleStairsS, 7, 1, 5, clip);
+            setBlockState(world, cobbleStairsS, 7, 0, 6, clip);
+        } else {
+            setBlockState(world, cobbleStairsE, 4, 2, 7, clip);
+            setBlockState(world, air, 3, 2, 7, clip);
+            setBlockState(world, air, 2, 2, 7, clip);
+            setBlockState(world, air, 1, 2, 7, clip);
+            setBlockState(world, cobbleStairsE, 3, 1, 7, clip);
+            setBlockState(world, cobbleStairsE, 2, 0, 7, clip);
+        }
 
         // Stargate
-        for (int i = -2; i <= 2; i++)
-            for (int j = 0; j <= 4; j++) {
-                IBlockState id;
-                if (i == 0 && j == 0) {
-                    id = sgBase;
-                }
-                else if (i == -2 || i == 2 || j == 0 || j == 4) {
-                    id = sgRings[(i + j + 1) & 1];
-                }
-                else {
-                    id = air;
-                }
-                setBlockState(world, id, 5+i, 1+j, 2, clip);
-            }
+        GenerateStargate (world, clip, true);
 
-        int baseX = box.minX + 5, baseY = box.minY + 1, baseZ = box.minZ + 2;
-        SGBaseTE te = (SGBaseTE)world.getTileEntity(new BlockPos(baseX, baseY, baseZ));
-        if (FeatureGeneration.debugStructures) {
-            System.out.println("Jungle Temple Stargate built at: " + baseX + "/" + baseY + "/" + baseZ);
-        }
-
-        if (te != null) {
-            // Randomly give stargates the chevron upgrade.
-            if (generateChevronUpgrade) {
-                te.hasChevronUpgrade = true;
-                if (FeatureGeneration.debugStructures) {
-                    System.out.println("Jungle Temple Stargate at: [" + baseX + "/" + baseY + "/" + baseZ + "] granted chevron upgrade.");
-                }
-            }
-
-            // Set sandstone base so Stargate doesn't appear to float.
-            ItemStack grassBlock = new ItemStack(Blocks.GRASS, 1, 0);
-            te.getInventory().setInventorySlotContents(0, grassBlock.copy());
-            te.getInventory().setInventorySlotContents(1, grassBlock.copy());
-            te.getInventory().setInventorySlotContents(2, grassBlock.copy());
-            te.getInventory().setInventorySlotContents(3, grassBlock.copy());
-            te.getInventory().setInventorySlotContents(4, grassBlock.copy());
-            te.markChanged();
-            if (te.homeAddress == null) {
-                // Attempt to fix TE?
-                te.setMerged(true);
-            }
-            if (te.homeAddress != null) {
-                GeneratorAddressRegistry.addAddress(te.getWorld(), te.homeAddress);
-                te.canPlayerBreakGate = SGBaseTE.cfg.getBoolean("stargate", "canPlayerBreakGate", true);
-            } else {
-                System.err.println("Something bad happened!!! please report to Dockter:  Error 1");
-            }
-        }
+        // Build stair brim
+        GenerateStargateStairs (world, clip, Blocks.STONE_STAIRS);
 
         // DHD
-        setBlockState(world, dhd, 5, 1, 7, clip);
-        int dhdX = box.minX + 5, dhdY = box.minY+1, dhdZ = box.minZ + 7;
-        DHDTE dhdte = (DHDTE)world.getTileEntity(new BlockPos(dhdX, dhdY, dhdZ));
-        if (dhdte != null) {
-            ItemStack naquadahPieces = new ItemStack(SGCraft.naquadah, 3);
-            dhdte.getInventory().setInventorySlotContents(0, naquadahPieces);
-        }
+        GenerateDHD (world, clip);
 
-        int chestX = box.minX + 8, chestY = box.minY + 1, chestZ = box.minZ + 2;
-        BlockPos chestPos = new BlockPos(chestX, chestY, chestZ);
+        // ZPM Chest
+        GenerateChest (world, clip);
 
-        // ZPM Chest Placement
-        if (generateZpmChest) {
-            if (SGCraft.zpm == null) {
-                return true; // ZPM Item not found thus cant continue.
-            }
-
-            if (world.getBlockState(chestPos).getBlock() != Blocks.CHEST) {
-
-                setBlockState(world, chest, 8, 1, 2, clip);  // Expects offset location.
-
-                TileEntityChest chestTE = (TileEntityChest) world.getTileEntity(chestPos);
-
-                if (chestTE != null) {
-                    if (FeatureGeneration.debugStructures) {
-                        System.out.println("Generating ZPM Chest at: " + chestPos);
-                    }
-
-                    ItemStack zpm = new ItemStack(SGCraft.zpm, 1);
-
-                    if (zpm != null) {
-                        NBTTagCompound tag = zpm.getTagCompound();
-                        if (tag == null) {
-                            tag = new NBTTagCompound();
-                        }
-
-                        zpm.setTagCompound(tag);
-                        tag.setDouble(ZPMItem.ENERGY, Integer.MAX_VALUE);
-                        tag.setBoolean(ZPMItem.LOADED, false);
-                    }
-                    if (taintedZpm) {
-                        zpm.addEnchantment(Enchantment.getEnchantmentByID(51), 1);
-                    }
-                    chestTE.getSingleChestHandler().insertItem(0, zpm, false);
-                }
-            }
-        }
-
-        if (FeatureGeneration.jungleSpawnTokra && pass == 0) { // pass = 0 prevents more than 1 entity from spawning.
-            EntityVillager entityvillager = new EntityVillager(world);
-            entityvillager.setLocationAndAngles((double)chestX + 0.5D, (double)chestY + 2, (double)chestZ + 0.5D, 0.0F, 0.0F);
-            entityvillager.setProfession(VillagerRegistry.getId(SGCraft.tokraProfession));
-            entityvillager.finalizeMobSpawn(world.getDifficultyForLocation(new BlockPos(entityvillager)), (IEntityLivingData)null, false);
-            world.spawnEntity(entityvillager);
-        }
+        // TokRa villager
+        GenerateTokRa (world, clip);
 
         pass++;  // Reminder: this entire method is called 4 times during world generation.
 

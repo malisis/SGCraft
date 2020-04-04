@@ -6,3 +6,11 @@ lib/*
 build/
 classes/
 run/
+.classpath
+.metadata/
+.project
+.settings/
+SGCraft_Client.launch
+SGCraft_Server.launch
+bin/
+test.sh

@@ -1,22 +1,18 @@
-Building with Gradle
+Building SGCraft
 --------------------
 
-1. If you haven't already done so, download forge-1.8.9-11.15.0.1691-mdk.zip
-and unpack it.
+1. Unpack the SG Craft source distribution or clone it from github.
 
-2. Unpack the SG Craft source distribution.
+2. In the SG Craft source directory, do:
 
-3. Copy the following files and folders from the Forge directory unpacked in
-step 1 to the SG Craft source directory:
-
-   gradle
-   gradlew (Mac/Unix) or gradlew.bat (Windows)
-
-4. Proceed to step 5.
-
-5. In the SG Craft source directory, do:
-
+   gradlew setupDecompWorkspace --refresh-dependencies
    gradlew build
+
+3. (Optional) If eclipse will be used, run:
+   gradlew eclipse
+
+   Note that as of 2020-03-08, launching the minecraft client or server from
+   eclipse will not work with java versions >=openjdk-8.242
 
 The first time you do this, Gradle will download a big pile of stuff. If all
 goes well, you should see "Build Successful" and there will be an SGCraft-X-Y.jar

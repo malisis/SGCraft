@@ -44,6 +44,9 @@ import gcewing.sg.generator.FeatureIgloo;
 import gcewing.sg.generator.FeatureJungleTemple;
 import gcewing.sg.generator.FeatureSwampHut;
 import gcewing.sg.generator.FeatureUnderDesertPyramid;
+import gcewing.sg.generator.FeatureVillageStargate;
+import gcewing.sg.generator.FeatureNetherFortress;
+import gcewing.sg.generator.FeatureOceanMonument;
 import gcewing.sg.generator.GeneratorAddressRegistry;
 import gcewing.sg.interfaces.IIntegration;
 import gcewing.sg.interfaces.SoundSource;
@@ -97,6 +100,8 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.fml.common.registry.VillagerRegistry;
+
 import ninja.leaping.configurate.ConfigurationNode;
 
 import static java.util.Objects.requireNonNull;
@@ -507,6 +512,13 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         MapGenStructureIO.registerStructureComponent(FeatureSwampHut.class, "SGCraft:FeatureSwampHut");
         MapGenStructureIO.registerStructureComponent(FeatureIgloo.class, "SGCraft:FeatureIgloo");
         MapGenStructureIO.registerStructureComponent(FeatureJungleTemple.class, "SGCraft:FeatureJungleTemple");
+
+		VillagerRegistry VILLAGER_REGISTRY = VillagerRegistry.instance();
+        VILLAGER_REGISTRY.registerVillageCreationHandler(new FeatureVillageStargate.VillageManager());
+        MapGenStructureIO.registerStructureComponent(FeatureVillageStargate.class, "SGCraft:FeatureVillageStargate");
+
+	    MapGenStructureIO.registerStructureComponent(FeatureNetherFortress.class, "SGCraft:FeatureNetherFortress");
+        MapGenStructureIO.registerStructureComponent(FeatureOceanMonument.class, "SGCraft:FeatureOceanMonument");
     }
 
     @Override //[VILL]
