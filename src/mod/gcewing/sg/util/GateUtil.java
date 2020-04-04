@@ -14,6 +14,16 @@ public class GateUtil {
         )) {
             TileEntity gateTE = world.getTileEntity(nearPos);
 
+            if (!(gateTE instanceof SGBaseTE)) {
+                TileEntity dhdBaseTE = GateUtil.locateDHD(world,pos, radius, debug);
+                if (dhdBaseTE instanceof DHDTE) {
+                    DHDTE dhd = (DHDTE) dhdBaseTE;
+                    if (dhd.isLinkedToStargate) {
+                        gateTE = dhd.getLinkedStargateTE();
+                    }
+                }
+            }
+
             if (gateTE instanceof SGBaseTE) {
                 if (gateTE != null) {
                     if (debug) {

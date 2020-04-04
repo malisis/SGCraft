@@ -93,8 +93,8 @@ public class ConfiguratorItem extends Item {
                       SGCraft.hasPermission(player, "sgcraft.configurator.useDHDFuelSource"),
                       SGCraft.hasPermission(player, "sgcraft.configurator.allowRedstoneOutput"),
                       SGCraft.hasPermission(player, "sgcraft.configurator.allowRedstoneInput"),
-                      SGCraft.hasPermission(player, "sgcraft.gui.configurator") && localGate.allowAdminAccess(player.getName()),
-                      SGCraft.hasPermission(player, "sgcraft.gui.configurator") && localGate.allowAdminAccess(player.getName()),
+                      SGCraft.hasPermission(player, "sgcraft.gui.gateAccessMenu") && localGate.allowAdminAccess(player.getName()),
+                      SGCraft.hasPermission(player, "sgcraft.gui.playerAccessMenu") && localGate.allowAdminAccess(player.getName()),
                       SGCraft.hasPermission(player, "sgcraft.configurator.canPlayerBreakGate"),
                       SGCraft.hasPermission(player, "sgcraft.configurator.displayGateAddress"));
 

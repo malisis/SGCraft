@@ -30,10 +30,32 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         configuratorChannel = this;
     }
 
-    public static void sendConfiguratorInputToServer(SGBaseTE te, int secondsToStayOpen, double ringRotationSpeed, double maxEnergyBuffer, double energyPerFuelItem, int gateOpeningsPerFuelItem,
-        double distanceFactorMultiplier, double interDimensionalMultiplier, boolean oneWayTravel, boolean hasIrisUpgrade, boolean hasChevronUpgrade, int gateType, boolean reverseWormholeKills,
-        boolean closeFromEitherEnd, boolean preserveInventory, boolean requiresNoPower, boolean chevronsLockOnDial, boolean returnToPreviousIrisState, boolean transientDamage,
-        boolean transparency, int orientation, boolean useDHDFuelSource, boolean allowRedstoneOutput, boolean allowRedstoneInput, boolean canPlayerBreakGate, boolean displayGateAddress) {
+    public static void sendConfiguratorInputToServer(SGBaseTE te,
+            int secondsToStayOpen,
+            double ringRotationSpeed,
+            double maxEnergyBuffer,
+            double energyPerFuelItem,
+            int gateOpeningsPerFuelItem,
+            double distanceFactorMultiplier,
+            double interDimensionalMultiplier,
+            boolean oneWayTravel,
+            boolean hasIrisUpgrade,
+            boolean hasChevronUpgrade,
+            int gateType,
+            boolean reverseWormholeKills,
+            boolean closeFromEitherEnd,
+            boolean preserveInventory,
+            boolean requiresNoPower,
+            boolean chevronsLockOnDial,
+            boolean returnToPreviousIrisState,
+            boolean transientDamage,
+            boolean transparency,
+            int orientation,
+            boolean useDHDFuelSource,
+            boolean allowRedstoneOutput,
+            boolean allowRedstoneInput,
+            boolean canPlayerBreakGate,
+            boolean displayGateAddress) {
 
         ChannelOutput data = configuratorChannel.openServer("ConfiguratorInput");
         writeCoords(data, te);
@@ -328,10 +350,36 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         }
     }
 
-    public static void openGuiAtClient(SGBaseTE te, EntityPlayer player, int guiType, boolean isAdmin,  boolean secondsToStayOpenPerm, boolean gateRotationSpeedPerm, boolean energyBufferSizePerm, boolean energyPerNaquadahPerm, boolean openingsPerNaquadahPerm,
-        boolean distanceFactorMultiplierPerm, boolean interDimensionalMultiplierPerm, boolean oneWayTravelOnlyPerm, boolean irisUpgradePerm, boolean chevronUpgradePerm, boolean pegasusGateTypePerm, boolean reverseWormholeKillsPerm,
-        boolean closeFromEitherEndPerm, boolean preserveInventoryOnIrisDeathPerm, boolean noInputPowerRequiredPerm, boolean chevronsLockOnDialPerm, boolean returnToPreviousIrisStatePerm, boolean transientDamagePerm, boolean transparencyPerm,
-        boolean dhdAsFuelSourcePerm, boolean allowRedstoneOutputPerm, boolean allowRedstoneInputPerm, boolean gateAccessPerm, boolean playerAccessPerm, boolean canPlayerBreakGatePerm, boolean displayGateAddressPerm) {
+    public static void openGuiAtClient(SGBaseTE te,
+            EntityPlayer player,
+            int guiType,
+            boolean isAdmin,
+            boolean secondsToStayOpenPerm,
+            boolean gateRotationSpeedPerm,
+            boolean energyBufferSizePerm,
+            boolean energyPerNaquadahPerm,
+            boolean openingsPerNaquadahPerm,
+            boolean distanceFactorMultiplierPerm,
+            boolean interDimensionalMultiplierPerm,
+            boolean oneWayTravelOnlyPerm,
+            boolean irisUpgradePerm,
+            boolean chevronUpgradePerm,
+            boolean pegasusGateTypePerm,
+            boolean reverseWormholeKillsPerm,
+            boolean closeFromEitherEndPerm,
+            boolean preserveInventoryOnIrisDeathPerm,
+            boolean noInputPowerRequiredPerm,
+            boolean chevronsLockOnDialPerm,
+            boolean returnToPreviousIrisStatePerm,
+            boolean transientDamagePerm,
+            boolean transparencyPerm,
+            boolean dhdAsFuelSourcePerm,
+            boolean allowRedstoneOutputPerm,
+            boolean allowRedstoneInputPerm,
+            boolean gateAccessPerm,
+            boolean playerAccessPerm,
+            boolean canPlayerBreakGatePerm,
+            boolean displayGateAddressPerm) {
 
         ChannelOutput data = configuratorChannel.openPlayer(player,"OpenConfiguratorGUI");
         // Type is always 1 here. *for now*
@@ -401,9 +449,36 @@ public class ConfiguratorNetworkHandler extends SGChannel {
         boolean displayGateAddressPerm = data.readBoolean();
 
         if (guiType == 1) {
-            new ConfiguratorScreen(player, player.world, isAdmin, secondsToStayOpenPerm, gateRotationSpeedPerm, energyBufferSizePerm, energyPerNaquadahPerm, openingsPerNaquadahPerm, distanceFactoryMultiplierPerm, interDimensionalMultiplierPerm,
-                oneWayTravelOnlyPerm, irisUpgradePerm, chevronUpgradePerm, pegasusGateTypePerm, reverseWormholeKillsPerm, closeFromEitherEndPerm, preserveInventoryOnIrisDeathPerm, noInputPowerRequiredPerm, chevronsLockOnDialPerm,
-                returnToPreviousIrisStatePerm, transientDamagePerm, transparencyPerm, dhdAsFuelSourcePerm, allowRedstoneOutputPerm, allowRedstoneInputPerm, canPlayerBreakGatePerm, displayGateAddressPerm, gateAccessPerm, playerAccessPerm).display();
+            new ConfiguratorScreen(player,
+                    player.world,
+                    isAdmin,
+                    secondsToStayOpenPerm,
+                    gateRotationSpeedPerm,
+                    energyBufferSizePerm,
+                    energyPerNaquadahPerm,
+                    openingsPerNaquadahPerm,
+                    distanceFactoryMultiplierPerm,
+                    interDimensionalMultiplierPerm,
+                    oneWayTravelOnlyPerm,
+                    irisUpgradePerm,
+                    chevronUpgradePerm,
+                    pegasusGateTypePerm,
+                    reverseWormholeKillsPerm,
+                    closeFromEitherEndPerm,
+                    preserveInventoryOnIrisDeathPerm,
+                    noInputPowerRequiredPerm,
+                    chevronsLockOnDialPerm,
+                    returnToPreviousIrisStatePerm,
+                    transientDamagePerm,
+                    transparencyPerm,
+                    dhdAsFuelSourcePerm,
+                    allowRedstoneOutputPerm,
+                    allowRedstoneInputPerm,
+                    canPlayerBreakGatePerm,
+                    displayGateAddressPerm,
+                    gateAccessPerm,
+                    playerAccessPerm)
+                    .display();
         }
     }
 }

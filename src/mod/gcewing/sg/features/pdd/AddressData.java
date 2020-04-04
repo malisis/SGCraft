@@ -8,10 +8,11 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-public final class AddressData {
+public final class AddressData implements Comparable<AddressData> {
 
     static final String ADDRESSES = "addresses";
     private static final String NAME = "name";
@@ -97,6 +98,8 @@ public final class AddressData {
             addresses.add(new AddressData(name, address, locked, index, unid));
         }
 
+        Collections.sort(addresses);
+
         return addresses;
     }
 
@@ -137,5 +140,10 @@ public final class AddressData {
     @Override
     public int hashCode() {
         return Objects.hash(address + name + index + locked);
+    }
+
+    @Override
+    public int compareTo(AddressData o) {
+        return this.getIndex() - o.getIndex();
     }
 }

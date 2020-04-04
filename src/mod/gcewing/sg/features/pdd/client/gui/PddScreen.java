@@ -32,7 +32,6 @@ import net.malisis.core.client.gui.component.container.BasicForm;
 import net.malisis.core.client.gui.component.container.BasicList;
 import net.malisis.core.client.gui.component.decoration.UILabel;
 import net.malisis.core.client.gui.component.decoration.UISeparator;
-import net.malisis.core.client.gui.component.decoration.UITooltip;
 import net.malisis.core.client.gui.component.interaction.UIButton;
 import net.malisis.core.client.gui.component.interaction.button.builder.UIButtonBuilder;
 import net.malisis.core.renderer.font.FontOptions;
@@ -209,11 +208,10 @@ public class PddScreen extends BasicScreen {
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.disconnect"))
             .visible(false)
             .onClick(() -> {
-                final TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, false);
-                if (localGate != null) {
-                    if (!(localGate instanceof SGBaseTE)) {
-                        return;
-                    }
+                TileEntity localGate = GateUtil.locateLocalGate(this.world, this.location, 6, false);
+                if (!(localGate instanceof SGBaseTE)) {
+                    return;
+                } else if (localGate != null) {
                     PddNetworkHandler.sendPddInputToServer((SGBaseTE) localGate, 2, "", "");
                 }
             })
@@ -379,12 +377,15 @@ public class PddScreen extends BasicScreen {
             this.lastUpdate = 0;
             if (localGate.chevronsLockOnDial) {
                 if (!isAdmin) {
-                    startProgressiveDialSelectedAddress(); // Progressive Dial Sequence
+                    dialSelectedAddressLockEachChevronIndividually(); // Progressive Dial Sequence
                 } else {
-                    immediateDialSelectedAddress(); // Immediate Dial all and lock.
+                    // Todo: the below is a very stupid way to implement this...
+                    dialSelectedAddress(); // Immediate dial address and lock all chevrons at one
+                    // Note: this happens because gate.Connect() checks for "chevronsLockOnDial", if true, then immediately lock dialed address.
                 }
             } else {
-                immediateDialSelectedAddress(); // Immediate Dial but display ring rotation.
+                dialSelectedAddress(); // Immediate Dial but display ring rotation.
+                // This does NOT lock all chevrons at once because the TE value "chevronsLockOnDial" is false; and gate.Connect() knows.
                 this.close();
             }
         }
@@ -457,11 +458,12 @@ public class PddScreen extends BasicScreen {
         }
     }
 
-    private void immediateDialSelectedAddress() {
-        final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
+    private void dialSelectedAddress() {
+        TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
         if (localGateTE instanceof SGBaseTE) {
             localGate = (SGBaseTE) localGateTE;
         }
+
        if (localGate != null) {
             if (this.addressList.getSelectedItem() != null && !this.addressList.getSelectedItem().getAddress().isEmpty()) {
                 this.gateStatusLabel.setText(I18n.format("sgcraft.gui.pdd.label.dialing"));
@@ -476,11 +478,12 @@ public class PddScreen extends BasicScreen {
         }
     }
 
-    private void startProgressiveDialSelectedAddress() {
+    private void dialSelectedAddressLockEachChevronIndividually() {
         final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
         if (localGateTE instanceof SGBaseTE) {
             localGate = (SGBaseTE) localGateTE;
         }
+
         if (localGate != null) {
             this.enteredAddress = "";
             this.gateStatusLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.8F).build());
@@ -515,7 +518,8 @@ public class PddScreen extends BasicScreen {
                 }
 
                 this.addressList.setVisible(false);
-                final TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
+                TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
+
                 if (localGateTE instanceof SGBaseTE) {
                     SGBaseTE localGate = (SGBaseTE) localGateTE;
                     this.last = false;

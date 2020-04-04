@@ -35,7 +35,7 @@ public class ZpmConsole extends BlockContainer {
     public static final PropertyBool ZPM_LOADED = PropertyBool.create("zpm");
 
     public ZpmConsole() {
-        super(Material.ROCK);
+        super(Material.IRON);
         setHardness(1.5f);
     }
 
