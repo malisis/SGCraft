@@ -54,7 +54,6 @@ public class FeatureJungleTemple extends FeatureStargate {
         int bottom = baseBox.maxY + 10; // Re-calculated later
         boundingBox = new StructureBoundingBox(cx - 4, bottom, cz - 4, cx + 4, bottom + 6, cz + 4);
 
-        System.out.println ("SGCraft: Jungle baseBox was " + baseBox);
         spawnDirection = base.getCoordBaseMode();
         setCoordBaseMode (EnumFacing.SOUTH);
 

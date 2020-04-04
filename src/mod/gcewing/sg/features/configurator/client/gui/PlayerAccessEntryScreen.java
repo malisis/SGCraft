@@ -146,7 +146,7 @@ public class PlayerAccessEntryScreen extends BasicScreen {
     }
 
     @Override
-    protected void keyTyped(char keyChar, int keyCode) throws IOException {
+    protected void keyTyped(char keyChar, int keyCode) {
         if (keyCode == Keyboard.KEY_RETURN) {
             if (!this.nameTextField.getText().isEmpty()) {
                 ConfiguratorNetworkHandler.sendPAEntryUpdateToServer(localGate, "", this.nameTextField.getText().trim(), function);
@@ -158,7 +158,7 @@ public class PlayerAccessEntryScreen extends BasicScreen {
     }
 
     @Override
-    protected void mouseClicked(int x, int y, int button) throws IOException {
+    protected void mouseClicked(int x, int y, int button) {
         super.mouseClicked(x, y, button);
         this.lastUpdate = 0; // Reset the timer when mouse is pressed.
     }

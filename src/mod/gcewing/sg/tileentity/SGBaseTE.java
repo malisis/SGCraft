@@ -375,9 +375,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
 
     @Override
     public void onAddedToWorld() {
-        if (SGBaseBlock.debugMerge) {
-            System.out.print("SGBaseTE.onAddedToWorld\n");
-        }
+        //if (SGBaseBlock.debugMerge) {
+        System.out.print("SGBaseTE.onAddedToWorld\n");
+        //}
         updateChunkLoadingStatus();
     }
 

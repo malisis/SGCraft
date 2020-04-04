@@ -72,7 +72,7 @@ compile 'org.spongepowered:configurate-yaml:3.6'
     //deobfCompile "cofh:ThermalExpansion:1.12.2-5.5.3.41:universal"
     //deobfCompile "cofh:ThermalFoundation:1.12.2-2.6.2.26:universal"
     //deobfCompile "cofh:ThermalDynamics:1.12.2-2.5.5.21:universal"
-    deobfCompile ('com.almuradev:malisiscore:1.12.2-6.5.2-SNAPSHOT') {
+    deobfCompile ('com.almuradev:malisiscore:1.12.2-6.5.3-SNAPSHOT-dev') {
         transitive = false
     }
 }

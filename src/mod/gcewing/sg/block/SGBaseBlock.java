@@ -114,9 +114,7 @@ public class SGBaseBlock extends SGBlock<SGBaseTE> {
     
     @Override
     public void onBlockAdded(World world, BlockPos pos, IBlockState state) {
-        if (SGBaseBlock.debugMerge) {
-            System.out.printf("SGBaseBlock.onBlockAdded: at %d\n", pos);
-        }
+        System.out.println("STARGATE Base block added on world: " + world.getWorldInfo().getWorldName() + " at: " + pos);
 
         checkForVerticalMerge(world, pos);
         checkForHorizontalMerge(world, pos);
