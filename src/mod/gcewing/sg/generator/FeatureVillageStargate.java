@@ -41,7 +41,7 @@ public class FeatureVillageStargate extends Village {
         super(villagePiece, par2);
         this.setCoordBaseMode(facing);
         this.boundingBox = par4StructureBoundingBox;
-        System.out.println("Constructed Class, likely going to build a gate soon...");
+        //System.out.println("Constructed Class, likely going to build a gate soon...");
 
         // Select platform blocks based on village biome
         this.biome = villagePiece.biome;
