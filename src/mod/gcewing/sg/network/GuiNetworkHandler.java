@@ -4,7 +4,6 @@ import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
 
 import gcewing.sg.BaseDataChannel;
 import gcewing.sg.SGCraft;
-import gcewing.sg.features.configurator.client.gui.ConfiguratorScreen;
 import gcewing.sg.features.gdo.client.gui.GdoScreen;
 import gcewing.sg.features.pdd.client.gui.PddScreen;
 import gcewing.sg.tileentity.SGBaseTE;
@@ -13,7 +12,6 @@ import gcewing.sg.util.SGState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 
 public class GuiNetworkHandler extends SGChannel {
 
