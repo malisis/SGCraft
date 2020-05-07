@@ -382,7 +382,7 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     }
 
     void updateChunkLoadingStatus() {
-        if (state != SGState.Idle || state == SGState.attemptToDial) {
+        if (state != SGState.Idle) {
             int n = chunkLoadingRange;
             // Note this has to be at least one or the chunk loading ticket will fail.
             if (n <= 0)
