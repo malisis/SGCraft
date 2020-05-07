@@ -99,6 +99,7 @@ public class BaseTEChunkManager implements ForgeChunkManager.LoadingCallback {
         for (int i = minX; i <= maxX; i++)
             for (int j = minZ; j <= maxZ; j++) {
                 int x = chunkX + i, z = chunkZ + j;
+                //System.out.println("Created chunk ticket at: " + x + "/" + z);
                 ForgeChunkManager.forceChunk(ticket, new ChunkPos(x, z));
             }
     }
