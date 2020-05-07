@@ -384,9 +384,10 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
     void updateChunkLoadingStatus() {
         if (state != SGState.Idle || state == SGState.attemptToDial) {
             int n = chunkLoadingRange;
-            if (n >= 0) {
-                SGCraft.chunkManager.setForcedChunkRange(this, -n, -n, n, n);
-            }
+            // Note this has to be at least one or the chunk loading ticket will fail.
+            if (n <= 0)
+                n = 1;
+            SGCraft.chunkManager.setForcedChunkRange(this, -n, -n, n, n);
         } else {
             SGCraft.chunkManager.clearForcedChunkRange(this);
         }
