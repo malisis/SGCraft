@@ -75,6 +75,8 @@ public class BaseTEChunkManager implements ForgeChunkManager.LoadingCallback {
             nbt.setInteger("rangeMaxX", maxX);
             nbt.setInteger("rangeMaxZ", maxZ);
             forceChunkRangeOnTicket(te, ticket);
+        } else {
+            System.out.print("SGCraft: unable to create chunk ticket; this will likely cause issues with remote gates prematurely unloading at: " + te.getPos() + " in world: " + te.getWorld().getWorldInfo().getWorldName());
         }
     }
     
