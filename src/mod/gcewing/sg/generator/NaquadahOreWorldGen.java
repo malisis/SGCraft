@@ -31,6 +31,8 @@ public class NaquadahOreWorldGen implements IWorldGenerator {
     static boolean debugRandom = false;
     static int debugLevel = 0;
 
+    static String dimensionIDs = "0";
+
     Random random;
     World world;
     Chunk chunk;
@@ -48,7 +50,10 @@ public class NaquadahOreWorldGen implements IWorldGenerator {
         debugLava = cfg.getBoolean("naquadah", "debugLava", debugLava);
         debugRandom = cfg.getBoolean("naquadah", "debugRandom", debugRandom);
         debugLevel = cfg.getInteger("naquadah", "debugLevel", debugLevel);
+        dimensionIDs = cfg.getString("naquadah", "dimensionIDs", dimensionIDs);
     }
+
+    String[] dimensions = dimensionIDs.split(",");
 
     public void generate(Random random, int chunkX, int chunkZ, World world,
         IChunkGenerator chunkGenerator, IChunkProvider chunkProvider)
@@ -59,7 +64,15 @@ public class NaquadahOreWorldGen implements IWorldGenerator {
         x0 = chunkX * 16;
         z0 = chunkZ * 16;
         chunk = world.getChunk(chunkX, chunkZ);
-        generateChunk();
+        for (String dimension : dimensions) {
+            try {
+                if (world.provider.getDimension() == Integer.parseInt(dimension.replace(" ", "")))
+                    generateChunk();
+            }
+            catch (NumberFormatException ex){
+                //System.out.printf("NaquadahOreWorldGen:[ERROR] Entered dimension ID is not a number.\n");
+            }
+        }
     }
     
     public void regenerate(Chunk chunk) {
@@ -74,7 +87,15 @@ public class NaquadahOreWorldGen implements IWorldGenerator {
         random.setSeed((xSeed * chunkX + zSeed * chunkZ) ^ worldSeed);
         x0 = chunkX * 16;
         z0 = chunkZ * 16;
-        generateChunk();
+        for (String dimension : dimensions) {
+            try {
+                if (world.provider.getDimension() == Integer.parseInt(dimension.replace(" ", "")))
+                    generateChunk();
+            }
+            catch (NumberFormatException ex){
+                //System.out.printf("NaquadahOreWorldGen:[ERROR] Entered dimension ID is not a number.\n");
+            }
+        }
     }
     
     Block getBlock(int x, int y, int z) {
