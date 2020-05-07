@@ -17,7 +17,15 @@ public class CCPeripheralProvider implements IPeripheralProvider {
     @Override
     public IPeripheral getPeripheral(World world, BlockPos pos, EnumFacing side) {
         TileEntity te = world.getTileEntity(pos);
-        return te instanceof CCInterfaceTE ? new CCSGPeripheral(te) : null;
+        if (te instanceof CCInterfaceTE) {
+            IPeripheral peripheral = ((CCInterfaceTE) te).getPeripheral();
+            if (peripheral == null) {
+                peripheral = new CCSGPeripheral(te);
+                ((CCInterfaceTE) te).setPeripheral(peripheral);
+            }
+            return peripheral;
+        } else {
+            return null;
+        }
     }
-
 }
