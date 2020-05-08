@@ -481,8 +481,7 @@ public class FeatureStargate extends StructureComponent {
         }
     }
 
-    public static Block getBiomeStairblock (Biome biome)
-    {
+    public static Block getBiomeStairblock (Biome biome) {
         if (biome == Biomes.DESERT)
             return Blocks.SANDSTONE_STAIRS;
         else if (biome == Biomes.PLAINS)
@@ -495,8 +494,7 @@ public class FeatureStargate extends StructureComponent {
             return Blocks.STONE_BRICK_STAIRS;
     }
 
-    public static Block getBiomeCamoblock (Biome biome)
-    {
+    public static Block getBiomeCamoblock (Biome biome) {
         if (biome == Biomes.DESERT)
             return Blocks.SANDSTONE;
         else if (biome == Biomes.PLAINS)
@@ -509,8 +507,7 @@ public class FeatureStargate extends StructureComponent {
             return Blocks.STONEBRICK;
     }
 
-    public static IBlockState getBiomePlatformblock (Biome biome)
-    {
+    public static IBlockState getBiomePlatformblock (Biome biome) {
         if (biome == Biomes.DESERT)
             return Blocks.SANDSTONE.getDefaultState().withProperty(BlockSandStone.TYPE, BlockSandStone.EnumType.SMOOTH);
         else if (biome == Biomes.PLAINS)
@@ -523,8 +520,7 @@ public class FeatureStargate extends StructureComponent {
             return Blocks.STONEBRICK.getDefaultState();
     }
 
-    public static IBlockState getBiomeRandblockHigh (Biome biome)
-    {
+    public static IBlockState getBiomeRandblockHigh (Biome biome) {
         if (biome == Biomes.DESERT)
             return Blocks.SANDSTONE.getDefaultState().withProperty(BlockSandStone.TYPE, BlockSandStone.EnumType.SMOOTH);
         else if (biome == Biomes.PLAINS)
@@ -537,8 +533,7 @@ public class FeatureStargate extends StructureComponent {
             return Blocks.STONEBRICK.getDefaultState();
     }
 
-    public static IBlockState getBiomeRandblockLow (Biome biome)
-    {
+    public static IBlockState getBiomeRandblockLow (Biome biome) {
         if (biome == Biomes.DESERT)
             return Blocks.SANDSTONE.getDefaultState().withProperty(BlockSandStone.TYPE, BlockSandStone.EnumType.CHISELED);
         else if (biome == Biomes.PLAINS)
@@ -551,8 +546,7 @@ public class FeatureStargate extends StructureComponent {
             return Blocks.STONEBRICK.getDefaultState();
     }
 
-    public static int getSurfaceLevel (World world, BlockPos loc)
-    {
+    public static int getSurfaceLevel (World world, BlockPos loc) {
         BlockPos startPos = world.getTopSolidOrLiquidBlock (loc);
         Block check = null;
         int curX = startPos.getX();
@@ -569,8 +563,7 @@ public class FeatureStargate extends StructureComponent {
     }
 
     // Because World.getTopSolidOrLiquidBlock lies like a snake's belly in a wagon rut.
-    public static int getJungleTempleTop (World world, BlockPos centerPos)
-    {
+    public static int getJungleTempleTop (World world, BlockPos centerPos) {
         int curX = centerPos.getX();
         int curY = centerPos.getY();
         int curZ = centerPos.getZ();

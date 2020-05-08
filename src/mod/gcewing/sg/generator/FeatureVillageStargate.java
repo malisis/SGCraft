@@ -34,14 +34,12 @@ public class FeatureVillageStargate extends Village {
     IBlockState randBlockLow;
     Block stairs;
 
-    public FeatureVillageStargate() {
-    }
+    public FeatureVillageStargate() {}
 
     public FeatureVillageStargate(Start villagePiece, int par2, Random par3Random, StructureBoundingBox par4StructureBoundingBox, EnumFacing facing) {
         super(villagePiece, par2);
         this.setCoordBaseMode(facing);
         this.boundingBox = par4StructureBoundingBox;
-        //System.out.println("Constructed Class, likely going to build a gate soon...");
 
         // Select platform blocks based on village biome
         this.biome = villagePiece.biome;
@@ -86,7 +84,9 @@ public class FeatureVillageStargate extends Village {
         Stargate.updateBoundingBox (boundingBox);
 
         if (FeatureGeneration.villageAddon) {
-            Stargate.GenerateSimpleStargatePlatform(world, clip, stairs, platformBlock, randBlockHigh, randBlockLow);
+            if (rand.nextInt(100) <= FeatureGeneration.villageAddonChance) {
+                Stargate.GenerateSimpleStargatePlatform(world, clip, stairs, platformBlock, randBlockHigh, randBlockLow);
+            }
         } else {
             Stargate.generateTokra = true;
             Stargate.chestPos = new BlockPos (boundingBox.minX + Stargate.chestX, boundingBox.minY + Stargate.chestY, boundingBox.minZ + Stargate.chestZ);
@@ -108,23 +108,7 @@ public class FeatureVillageStargate extends Village {
 
         @Override
         public PieceWeight getVillagePieceWeight(Random random, int i) {
-            /*
-             * Only one Stargate will generate per village.
-             *
-             * I took this opportunity to remove the existing code that allowed
-             * Tok'Ra villagers to spawn in villages. This allowed for the
-             * removal of Mixins entirely and thus SGCraft no longer counts as
-             * a coremod. This is a Good Thing. The following logic replaces
-             * the Tok'Ra-in-villages logic:
-             *  - If config option villageAddon is true, villageAddonChance is
-             *    the chance a Stargate will spawn in the village. A Tok'Ra
-             *    will spawn only if villageSpawnTokra is true.
-             *  - If villageAddon is false, villageAddonChance becomes the
-             *    chance a Tok'Ra will spawn in the village, regardless of the
-             *    state of villageSpawnTokra.
-             */
-            // Todo:  this addon Chance is incorrect; weight != percentage chance.
-            return new PieceWeight(FeatureVillageStargate.class, FeatureGeneration.villageAddonChance, 1);
+            return new PieceWeight(FeatureVillageStargate.class, 100, 1);
         }
 
         @Override
