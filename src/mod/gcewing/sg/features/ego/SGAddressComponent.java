@@ -8,48 +8,43 @@ import net.malisis.ego.gui.element.size.Size;
 
 import java.util.function.Supplier;
 
-public class SGAddressComponent extends UIComponent
-{
+/* Unused WIP */
+public class SGAddressComponent extends UIComponent {
 
-	public SGAddressComponent(Supplier<String> address)
-	{
+    public SGAddressComponent(Supplier<String> address) {
 
-		UILabel label = UILabel.builder()
-							   .parent(this)
-							   .middleCenter()
-							   .text(() -> SGAddressing.formatAddress(address.get(), "-", "-"))
-							   .textColor(0x5555FF)
-							   .scale(1.3F)
-							   .build();
+        UILabel label = UILabel.builder()
+                .parent(this)
+                .middleCenter()
+                .text(() -> SGAddressing.formatAddress(address.get(), "-", "-"))
+                .textColor(0x5555FF)
+                .scale(1.3F)
+                .build();
 
-		setForeground(label);
-	}
+        setForeground(label);
+    }
 
-	public static SGAddressComponentBuilder builder(String address)
-	{
-		return builder(() -> address);
-	}
+    public static SGAddressComponentBuilder builder(String address) {
+        return builder(() -> address);
+    }
 
-	public static SGAddressComponentBuilder builder(Supplier<String> address)
-	{
-		return new SGAddressComponentBuilder(address);
-	}
+    public static SGAddressComponentBuilder builder(Supplier<String> address) {
+        return new SGAddressComponentBuilder(address);
+    }
 
-	public static class SGAddressComponentBuilder extends UIComponentBuilder<SGAddressComponentBuilder, SGAddressComponent>
-	{
-		private final Supplier<String> address;
+    public static class SGAddressComponentBuilder extends UIComponentBuilder<SGAddressComponentBuilder, SGAddressComponent> {
 
-		private SGAddressComponentBuilder(Supplier<String> address)
-		{
-			this.address = address;
-			size(Size.of(100, 20));
-		}
+        private final Supplier<String> address;
 
-		@Override
-		public SGAddressComponent build()
-		{
-			return build(new SGAddressComponent(address));
-		}
-	}
+        private SGAddressComponentBuilder(Supplier<String> address) {
+            this.address = address;
+            size(Size.of(100, 20));
+        }
+
+        @Override
+        public SGAddressComponent build() {
+            return build(new SGAddressComponent(address));
+        }
+    }
 
 }
