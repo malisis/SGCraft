@@ -75,6 +75,8 @@ compile 'org.spongepowered:configurate-yaml:3.6'
     deobfCompile ('com.almuradev:malisiscore:1.12.2-6.5.3-SNAPSHOT') {
         transitive = false
     }
+
+    compile files("lib/ego-1.12.2-1.0.0-dev.jar")
 }
 
 deobfMcMCP { failOnAtError = false }
