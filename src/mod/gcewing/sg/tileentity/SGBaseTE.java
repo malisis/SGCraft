@@ -1181,6 +1181,9 @@ public class SGBaseTE extends BaseTileInventory implements ITickable, LoopingSou
         }
 
         startDiallingStargate(address, targetGate, true, (this.chevronsLockOnDial && !ccInterface));
+        if (!ccInterface) {
+            targetGate.enterState(SGState.attemptToDial, 0); // Force remote gate immediate change state to help chunk stay loaded
+        }
         targetGate.startDiallingStargate(homeAddress, this, false, (this.chevronsLockOnDial && !ccInterface));
 
         if (this.isInitiator) {
