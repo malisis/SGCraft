@@ -4,8 +4,8 @@ import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
 
 import gcewing.sg.BaseDataChannel;
 import gcewing.sg.SGCraft;
-import gcewing.sg.features.configurator.client.gui.ConfiguratorScreen;
 import gcewing.sg.features.gdo.client.gui.GdoScreen;
+import gcewing.sg.features.gdo.client.gui.GdoScreenEGO;
 import gcewing.sg.features.pdd.client.gui.PddScreen;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.SGAddressing;
@@ -13,7 +13,6 @@ import gcewing.sg.util.SGState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 
 public class GuiNetworkHandler extends SGChannel {
 
@@ -65,7 +64,7 @@ public class GuiNetworkHandler extends SGChannel {
     }
 
     public static void openGuiAtClient(SGBaseTE te, EntityPlayer player, int guiType, boolean isAdmin, boolean canEditLocal, boolean canEditRemote) {
-        ChannelOutput data = guiChannel.openPlayer(player,"OpenGUI");
+        ChannelOutput data = guiChannel.openPlayer(player, "OpenGUI");
         writeCoords(data, te);
         data.writeInt(guiType);
         data.writeBoolean(isAdmin);
@@ -114,7 +113,7 @@ public class GuiNetworkHandler extends SGChannel {
             }
 
             if (Minecraft.getMinecraft().currentScreen instanceof GdoScreen) {
-                GdoScreen screen = (GdoScreen)Minecraft.getMinecraft().currentScreen;
+                GdoScreen screen = (GdoScreen) Minecraft.getMinecraft().currentScreen;
                 screen.isRemoteConnected = r_connected;
                 screen.r_hasIrisUpgrade = r_hasIrisUpgrade;
                 screen.r_hasChevronUpgrade = r_hasIrisUpgrade;
@@ -122,7 +121,9 @@ public class GuiNetworkHandler extends SGChannel {
                 screen.r_gateType = r_gateType;
                 screen.r_address = r_address;
             } else {
-                new GdoScreen(player, player.world, isAdmin, r_connected, r_hasIrisUpgrade, r_hasChevronUpgrade, r_isIrisClosed, r_gateType, r_address, canAccessLocal, canAccessRemote).display();
+                //new GdoScreen(player, player.world, isAdmin, r_connected, r_hasIrisUpgrade, r_hasChevronUpgrade, r_isIrisClosed, r_gateType,
+                // r_address, canAccessLocal, canAccessRemote).display();
+                Minecraft.getMinecraft().addScheduledTask(() -> new GdoScreenEGO(pos, canAccessLocal, canAccessRemote).display());
             }
         }
         if (guiType == 3) {
