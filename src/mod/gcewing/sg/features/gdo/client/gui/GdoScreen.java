@@ -4,9 +4,7 @@ import gcewing.sg.SGCraft;
 import gcewing.sg.features.ego.SGWindow;
 import gcewing.sg.features.gdo.network.GdoNetworkHandler;
 import gcewing.sg.network.GuiNetworkHandler;
-import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
-import gcewing.sg.util.GateUtil;
 import gcewing.sg.util.IrisState;
 import gcewing.sg.util.SGAddressing;
 import gcewing.sg.util.SGState;
@@ -21,7 +19,6 @@ import net.malisis.ego.gui.render.GuiIcon;
 import net.malisis.ego.gui.render.GuiTexture;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
@@ -35,20 +32,22 @@ public class GdoScreen extends MalisisGui {
     private UIButton localIrisOpenButton, localGateCloseButton, localIrisCloseButton, remoteIrisOpenButton, remoteGateCloseButton, remoteIrisCloseButton;
     private UIImage localGateImage, remoteGateImage;
     private UILabel localGateAddressLabel, remoteGateAddressLabel;
-    private BlockPos location;
+    private BlockPos pos;
     private World world;
     private EntityPlayer player;
     public boolean isRemoteConnected, r_hasIrisUpgrade, r_hasChevronUpgrade, r_isIrisClosed, canAccessLocal, canAccessRemote;
     public String r_address;
     public int r_gateType;
     public SGBaseTE localGate;
+    private GuiIcon mw_disconnected_no_iris, p_disconnected_no_iris, mw_connected_no_iris, p_connected_no_iris, mw_disconnected_iris_closed, p_disconnected_iris_closed;
+    private GuiIcon mw_connected_iris_closed, p_connected_iris_closed, mw_disconnected_iris_open, p_disconnected_iris_open, mw_connected_iris_open, p_connected_iris_open;
 
-    public GdoScreen(EntityPlayer player, World worldIn,  boolean isAdmin, boolean isRemoteConnected, boolean r_hasIrisUpgrade, boolean r_hasChevronUpgrade,
+    public GdoScreen(BlockPos pos, EntityPlayer player, World worldIn,  boolean isAdmin, boolean isRemoteConnected, boolean r_hasIrisUpgrade, boolean r_hasChevronUpgrade,
         boolean r_isIrisClosed, int r_gateType, String r_address, boolean canAccessLocal, boolean canAccessRemote) {
+        this.pos = pos;
         this.player = player;
         this.isAdmin = isAdmin;
         this.world = worldIn;
-        this.location = new BlockPos(player.posX, player.posY, player.posZ);
         this.isRemoteConnected = isRemoteConnected;
         this.r_hasIrisUpgrade = r_hasIrisUpgrade;
         this.r_hasChevronUpgrade = r_hasChevronUpgrade;
@@ -63,22 +62,25 @@ public class GdoScreen extends MalisisGui {
     @Override
     public void construct() {
         this.background = null;
+
+        // Icon Construction
+        mw_disconnected_no_iris = GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_no_iris.png")));
+        p_disconnected_no_iris = GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_no_iris.png")));
+        mw_connected_no_iris = GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_no_iris.png")));
+        p_connected_no_iris = GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_no_iris.png")));
+        mw_disconnected_iris_closed = GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_iris_closed.png")));
+        p_disconnected_iris_closed = GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_iris_closed.png")));
+        mw_connected_iris_closed = GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_iris_closed.png")));
+        p_connected_iris_closed = GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_iris_closed.png")));
+        mw_disconnected_iris_open = GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_iris_open.png")));
+        p_disconnected_iris_open = GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_iris_open.png")));
+        mw_connected_iris_open = GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_iris_open.png")));
+        p_connected_iris_open = GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_iris_open.png")));
+
         Keyboard.enableRepeatEvents(true);
+        localGate = SGBaseTE.get(player.world, pos);
 
-        TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
-
-        if (!(localGateTE instanceof SGBaseTE)) {
-            TileEntity dhdBaseTE = GateUtil.locateDHD(world,new BlockPos(player.posX, player.posY, player.posZ), 6, false);
-            if (dhdBaseTE instanceof DHDTE) {
-                DHDTE dhd = (DHDTE) dhdBaseTE;
-                if (dhd.isLinkedToStargate) {
-                    localGateTE = dhd.getLinkedStargateTE();
-                }
-            }
-        }
-
-        if (localGateTE instanceof SGBaseTE) {
-            localGate = (SGBaseTE) localGateTE;
+        if (localGate != null) {
             if (!localGate.isMerged) { // Block GDO usage when gate is not merged.
                 SGBaseTE.sendGenericErrorMsg(player, "No Local Stargate within range.");
                 return;
@@ -144,7 +146,7 @@ public class GdoScreen extends MalisisGui {
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.openIris"))
             .enabled(this.canAccessLocal)
             .onClick(() -> {
-                GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 1);
+                GdoNetworkHandler.sendGdoInputToServer(localGate, 1);
             })
             .build();
 
@@ -163,7 +165,7 @@ public class GdoScreen extends MalisisGui {
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.closeIris"))
             .enabled(this.canAccessLocal)
             .onClick(() -> {
-                GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 2);
+                GdoNetworkHandler.sendGdoInputToServer(localGate, 2);
             })
             .build();
 
@@ -211,7 +213,7 @@ public class GdoScreen extends MalisisGui {
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.openIris"))
             .enabled(this.canAccessRemote)
             .onClick(() -> {
-                GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 4);
+                GdoNetworkHandler.sendGdoInputToServer(localGate, 4);
             })
             .build();
 
@@ -231,7 +233,7 @@ public class GdoScreen extends MalisisGui {
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.closeIris"))
             .enabled(this.canAccessRemote)
             .onClick(() -> {
-                GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 5);
+                GdoNetworkHandler.sendGdoInputToServer(localGate, 5);
             })
             .build();
 
@@ -263,36 +265,36 @@ public class GdoScreen extends MalisisGui {
 
             // Disconnected No Iris
             if (!localGate.isConnected() && !localGate.hasIrisUpgrade && (localGate.gateType == 0 || localGate.gateType == 1))
-                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_no_iris.png"))));
+                this.localGateImage.setIcon(mw_disconnected_no_iris);
             if (!localGate.isConnected() && !localGate.hasIrisUpgrade && localGate.gateType == 2)
-                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_no_iris.png"))));
+                this.localGateImage.setIcon(p_disconnected_no_iris);
             // Connected No Iris
             if (localGate.isConnected() && !localGate.hasIrisUpgrade && (localGate.gateType == 0 || localGate.gateType == 1))
-                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_no_iris.png"))));
+                this.localGateImage.setIcon(mw_connected_no_iris);
             if (localGate.isConnected() && !localGate.hasIrisUpgrade && localGate.gateType == 2)
-                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_no_iris.png"))));
+                this.localGateImage.setIcon(p_connected_no_iris);
 
             // Disconnected Iris Closed
             if (!localGate.isConnected() && localGate.hasIrisUpgrade && (localGate.gateType == 0 || localGate.gateType == 1) && localGate.irisIsClosed())
-                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_iris_closed.png"))));
+                this.localGateImage.setIcon(mw_disconnected_iris_closed);
             if (!localGate.isConnected() && localGate.hasIrisUpgrade && localGate.gateType == 2 && localGate.irisIsClosed())
-                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_iris_closed.png"))));
+                this.localGateImage.setIcon(p_disconnected_iris_closed);
             // Connected Iris Closed
             if (localGate.isConnected() && localGate.hasIrisUpgrade && (localGate.gateType == 0 || localGate.gateType == 1) && localGate.irisIsClosed())
-                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_iris_closed.png"))));
+                this.localGateImage.setIcon(mw_connected_iris_closed);
             if (localGate.isConnected() && localGate.hasIrisUpgrade && localGate.gateType == 2 && localGate.irisIsClosed())
-                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_iris_closed.png"))));
+                this.localGateImage.setIcon(p_connected_iris_closed);
 
             // Disconnected Iris Open
             if (!localGate.isConnected() && localGate.hasIrisUpgrade && (localGate.gateType == 0 || localGate.gateType == 1) && !localGate.irisIsClosed())
-                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_iris_open.png"))));
+                this.localGateImage.setIcon(mw_disconnected_iris_open);
             if (!localGate.isConnected() && localGate.hasIrisUpgrade && localGate.gateType == 2 && !localGate.irisIsClosed())
-                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_iris_open.png"))));
+                this.localGateImage.setIcon(p_disconnected_iris_open);
             // Connected Iris Open
             if (localGate.isConnected() && localGate.hasIrisUpgrade && (localGate.gateType == 0 || localGate.gateType == 1) && !localGate.irisIsClosed())
-                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_iris_open.png"))));
+                this.localGateImage.setIcon(mw_connected_iris_open);
             if (localGate.isConnected() && localGate.hasIrisUpgrade && localGate.gateType == 2 && !localGate.irisIsClosed())
-                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_iris_open.png"))));
+                this.localGateImage.setIcon(p_connected_iris_open);
 
             if (!localGate.hasIrisUpgrade) {
                 this.localIrisOpenButton.setEnabled(false);

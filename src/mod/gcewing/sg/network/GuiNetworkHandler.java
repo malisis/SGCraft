@@ -127,7 +127,7 @@ public class GuiNetworkHandler extends SGChannel {
                 screen.r_gateType = r_gateType;
                 screen.r_address = r_address;
             } else {
-                Minecraft.getMinecraft().addScheduledTask(() -> new GdoScreen(player, player.world, isAdmin, r_connected, hasIrisUpgrade, hasChevronUpgrade, isIrisClosed, gateType,
+                Minecraft.getMinecraft().addScheduledTask(() -> new GdoScreen(pos, player, player.world, isAdmin, r_connected, hasIrisUpgrade, hasChevronUpgrade, isIrisClosed, gateType,
                  address, canAccessLocal, canAccessRemote).display());
 
                 //Minecraft.getMinecraft().addScheduledTask(() -> new GdoScreenEGO(pos, canAccessLocal, canAccessRemote).display());
