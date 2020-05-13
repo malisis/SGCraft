@@ -112,18 +112,25 @@ public class GuiNetworkHandler extends SGChannel {
                 r_address = data.readUTF();
             }
 
+            final boolean hasIrisUpgrade = r_hasIrisUpgrade;
+            final boolean hasChevronUpgrade = r_hasChevronUpgrade;
+            final boolean isIrisClosed = r_isIrisClosed;
+            final int gateType = r_gateType;
+            final String address = r_address;
+
             if (Minecraft.getMinecraft().currentScreen instanceof GdoScreen) {
                 GdoScreen screen = (GdoScreen) Minecraft.getMinecraft().currentScreen;
                 screen.isRemoteConnected = r_connected;
-                screen.r_hasIrisUpgrade = r_hasIrisUpgrade;
+                screen.r_hasIrisUpgrade = hasIrisUpgrade;
                 screen.r_hasChevronUpgrade = r_hasIrisUpgrade;
                 screen.r_isIrisClosed = r_isIrisClosed;
                 screen.r_gateType = r_gateType;
                 screen.r_address = r_address;
             } else {
-                //new GdoScreen(player, player.world, isAdmin, r_connected, r_hasIrisUpgrade, r_hasChevronUpgrade, r_isIrisClosed, r_gateType,
-                // r_address, canAccessLocal, canAccessRemote).display();
-                Minecraft.getMinecraft().addScheduledTask(() -> new GdoScreenEGO(pos, canAccessLocal, canAccessRemote).display());
+                Minecraft.getMinecraft().addScheduledTask(() -> new GdoScreen(player, player.world, isAdmin, r_connected, hasIrisUpgrade, hasChevronUpgrade, isIrisClosed, gateType,
+                 address, canAccessLocal, canAccessRemote).display());
+
+                //Minecraft.getMinecraft().addScheduledTask(() -> new GdoScreenEGO(pos, canAccessLocal, canAccessRemote).display());
             }
         }
         if (guiType == 3) {

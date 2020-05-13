@@ -1,26 +1,24 @@
 package gcewing.sg.features.gdo.client.gui;
 
-import com.google.common.eventbus.Subscribe;
+import gcewing.sg.SGCraft;
+import gcewing.sg.features.ego.SGWindow;
 import gcewing.sg.features.gdo.network.GdoNetworkHandler;
 import gcewing.sg.network.GuiNetworkHandler;
 import gcewing.sg.tileentity.DHDTE;
-import gcewing.sg.util.IrisState;
 import gcewing.sg.tileentity.SGBaseTE;
-import gcewing.sg.network.SGChannel;
-import gcewing.sg.SGCraft;
+import gcewing.sg.util.GateUtil;
+import gcewing.sg.util.IrisState;
 import gcewing.sg.util.SGAddressing;
 import gcewing.sg.util.SGState;
-import gcewing.sg.util.GateUtil;
-import net.malisis.core.client.gui.Anchor;
-import net.malisis.core.client.gui.BasicScreen;
-import net.malisis.core.client.gui.GuiTexture;
-import net.malisis.core.client.gui.component.container.BasicForm;
-import net.malisis.core.client.gui.component.decoration.UIImage;
-import net.malisis.core.client.gui.component.decoration.UILabel;
-import net.malisis.core.client.gui.component.interaction.UIButton;
-import net.malisis.core.client.gui.component.interaction.button.builder.UIButtonBuilder;
-import net.malisis.core.renderer.font.FontOptions;
-import net.malisis.core.util.FontColors;
+import net.malisis.ego.gui.MalisisGui;
+import net.malisis.ego.gui.component.container.UIContainer;
+import net.malisis.ego.gui.component.decoration.UIImage;
+import net.malisis.ego.gui.component.decoration.UILabel;
+import net.malisis.ego.gui.component.interaction.UIButton;
+import net.malisis.ego.gui.element.position.Position;
+import net.malisis.ego.gui.element.size.Size;
+import net.malisis.ego.gui.render.GuiIcon;
+import net.malisis.ego.gui.render.GuiTexture;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
@@ -28,16 +26,12 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 
-import java.io.IOException;
-
-public class GdoScreen extends BasicScreen {
+public class GdoScreen extends MalisisGui {
     private int lastUpdate = 0;
-    private boolean unlockMouse = true;
     private boolean isAdmin;
     private boolean debugScreen = false;
-    private BasicForm form, localGateControlArea, remoteGateControlArea;
+    private UIContainer form, localGateControlArea, remoteGateControlArea;
     private UIButton localIrisOpenButton, localGateCloseButton, localIrisCloseButton, remoteIrisOpenButton, remoteGateCloseButton, remoteIrisCloseButton;
     private UIImage localGateImage, remoteGateImage;
     private UILabel localGateAddressLabel, remoteGateAddressLabel;
@@ -68,7 +62,7 @@ public class GdoScreen extends BasicScreen {
     @SuppressWarnings("unchecked")
     @Override
     public void construct() {
-        this.guiscreenBackground = false;
+        this.background = null;
         Keyboard.enableRepeatEvents(true);
 
         TileEntity localGateTE = GateUtil.locateLocalGate(this.world, this.location, 6, false);
@@ -95,153 +89,165 @@ public class GdoScreen extends BasicScreen {
         }
 
         // Master Panel
-        this.form = new BasicForm(this, 400, 225, "");
-        this.form.setAnchor(Anchor.CENTER | Anchor.MIDDLE);
-        this.form.setMovable(true);
-        this.form.setClosable(true);
-        this.form.setBorder(FontColors.WHITE, 1, 185);
-        this.form.setBackgroundAlpha(215);
-        this.form.setBottomPadding(3);
-        this.form.setRightPadding(3);
-        this.form.setTopPadding(20);
-        this.form.setLeftPadding(3);
+        this.form = SGWindow.builder("sgcraft.gui.gdo.label.gdoController")
+            .middleCenter()
+            .size(400, 225)
+            .build();
 
-        final UILabel titleLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.gdo.label.gdoController"));
-        titleLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
-        titleLabel.setPosition(0, -15, Anchor.CENTER | Anchor.TOP);
+        UILabel titleLabel = UILabel.builder()
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.gdo.label.gdoController"))
+            .topCenter(0, -15)
+            .textColor(TextFormatting.WHITE)
+            .shadow(true)
+            .scale(1.1F)
+            .build();
+
         // ****************************************************************************************************************************
         // Local Gate Control
         // ****************************************************************************************************************************
-        localGateControlArea = new BasicForm(this, 195, 185, "");
-        localGateControlArea.setPosition(0, 0, Anchor.LEFT | Anchor.MIDDLE);
-        localGateControlArea.setMovable(false);
-        localGateControlArea.setClosable(false);
-        localGateControlArea.setBorder(FontColors.WHITE, 1, 185);
-        localGateControlArea.setBackgroundAlpha(215);
-        localGateControlArea.setBottomPadding(3);
-        localGateControlArea.setRightPadding(3);
-        localGateControlArea.setTopPadding(3);
-        localGateControlArea.setLeftPadding(3);
+        localGateControlArea = SGWindow.builder()
+            .parent(form)
+            .topCenter()
+            .size(190, 175)
+            .build();
 
-        final UILabel localGateControlLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.gdo.label.localGateControl"));
-        localGateControlLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
-        localGateControlLabel.setPosition(0, 0, Anchor.CENTER | Anchor.TOP);
+        final UILabel localGateControlLabel = UILabel.builder()
+            .parent(localGateControlArea)
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.gdo.label.localGateControl"))
+            .shadow(true)
+            .topCenter()
+            .textColor(TextFormatting.WHITE)
+            .scale(1.1F)
+            .build();
 
-        localGateImage = new UIImage(this, new GuiTexture(SGCraft.mod.resourceLocation("textures/gui_image1.png")), null);
-        localGateImage.setSize(110, 110);
-        localGateImage.setPosition(0, 20, Anchor.TOP | Anchor.CENTER);
+       localGateImage = UIImage.builder()
+            .parent(localGateControlArea)
+            .topCenter(0,20)
+            .size(110, 110)
+            .icon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/gui_image1.png"))))
+            .build();
 
-        localGateAddressLabel = new UILabel(this, "gateAddress");
-        localGateAddressLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.3F).build());
-        localGateAddressLabel.setPosition(0, -30, Anchor.CENTER | Anchor.BOTTOM);
+        localGateAddressLabel = UILabel.builder()
+            .centered()
+            .parent(localGateControlArea)
+            .text("gateAddress")
+            .shadow(true)
+            .below(localGateImage, 5)
+            .textColor(TextFormatting.BLUE)
+            .scale(1.3F)
+            .build();
 
-        localIrisOpenButton = new UIButtonBuilder(this)
-            .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.LEFT)
+        localIrisOpenButton = UIButton.builder()
+            .parent(localGateControlArea)
+            .bottomLeft()
+            .shadow(true)
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.openIris"))
             .enabled(this.canAccessLocal)
             .onClick(() -> {
                 GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 1);
             })
-            .listener(this)
-            .build("button.local.iris.open");
+            .build();
 
-        localGateCloseButton = new UIButtonBuilder(this)
-            .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.CENTER)
+        localGateCloseButton = UIButton.builder()
+            .parent(localGateControlArea)
+            .bottomCenter()
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.disconnect"))
             .onClick(() -> {
                 GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 3);
             })
-            .listener(this)
-            .build("button.local.gate.disconnect");
+            .build();
 
-        localIrisCloseButton = new UIButtonBuilder(this)
-            .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.RIGHT)
+        localIrisCloseButton = UIButton.builder()
+            .parent(localGateControlArea)
+            .bottomRight()
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.closeIris"))
             .enabled(this.canAccessLocal)
             .onClick(() -> {
                 GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 2);
             })
-            .listener(this)
-            .build("button.local.iris.close");
+            .build();
 
         localGateControlArea.add(localGateControlLabel, localGateImage, localGateAddressLabel, localIrisOpenButton, localGateCloseButton, localIrisCloseButton);
 
         // ****************************************************************************************************************************
         // Remote Gate Control
         // ****************************************************************************************************************************
-        remoteGateControlArea = new BasicForm(this, 195, 185, "");
-        remoteGateControlArea.setPosition(0, 0, Anchor.RIGHT | Anchor.MIDDLE);
-        remoteGateControlArea.setMovable(false);
-        remoteGateControlArea.setClosable(false);
-        remoteGateControlArea.setBorder(FontColors.WHITE, 1, 185);
-        remoteGateControlArea.setBackgroundAlpha(215);
-        remoteGateControlArea.setBottomPadding(3);
-        remoteGateControlArea.setRightPadding(3);
-        remoteGateControlArea.setTopPadding(3);
-        remoteGateControlArea.setLeftPadding(3);
+        remoteGateControlArea = SGWindow.builder()
+            .parent(form)
+            .middleRight()
+            .size(190, 175)
+            .build();
 
-        final UILabel remoteGateControlLabel = new UILabel(this, TextFormatting.WHITE + I18n.format("sgcraft.gui.gdo.label.remoteGateControl"));
-        remoteGateControlLabel.setFontOptions(FontOptions.builder().from(FontColors.WHITE_FO).shadow(true).scale(1.1F).build());
-        remoteGateControlLabel.setPosition(0, 0, Anchor.CENTER | Anchor.TOP);
+        final UILabel remoteGateControlLabel = UILabel.builder()
+            .parent(remoteGateControlArea)
+            .centered()
+            .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.gdo.label.remoteGateControl"))
+            .topCenter()
+            .textColor(TextFormatting.WHITE)
+            .scale(1.1F)
+            .build();
 
-        remoteGateImage = new UIImage(this, new GuiTexture(SGCraft.mod.resourceLocation("textures/gui_image1.png")), null);  // Fake Image
-        remoteGateImage.setSize(110, 110);
-        remoteGateImage.setPosition(0, 20, Anchor.TOP | Anchor.CENTER);
+        remoteGateImage = UIImage.builder()
+            .parent(remoteGateControlArea)
+            .centered()
+            .topCenter(0,20)
+            .size(110, 110)
+            .icon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/gui_image1.png"))))
+            .build();
 
-        remoteGateAddressLabel = new UILabel(this, "gateAddress"); // Incorrect Value
-        remoteGateAddressLabel.setFontOptions(FontOptions.builder().from(FontColors.BLUE_FO).shadow(true).scale(1.3F).build());
-        remoteGateAddressLabel.setPosition(0, -30, Anchor.CENTER | Anchor.BOTTOM);
+        remoteGateAddressLabel = UILabel.builder()
+            .parent(remoteGateControlArea)
+            .centered()
+            .below(localGateImage, 5)
+            .text("gateAddress")
+            .shadow(true)
+            .textColor(TextFormatting.BLUE)
+            .scale(1.3F)
+            .build();
 
-        remoteIrisOpenButton = new UIButtonBuilder(this)
-            .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.LEFT)
+        remoteIrisOpenButton = UIButton.builder()
+            .parent(remoteGateControlArea)
+            .bottomLeft()
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.openIris"))
             .enabled(this.canAccessRemote)
             .onClick(() -> {
                 GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 4);
             })
-            .listener(this)
-            .build("button.remote.iris.open");
+            .build();
 
-        remoteGateCloseButton = new UIButtonBuilder(this)
-            .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.CENTER)
+        remoteGateCloseButton = UIButton.builder()
+            .parent(remoteGateControlArea)
+            .bottomCenter()
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.disconnect"))
             .visible(false)
             .onClick(() -> {
                 // Do Nothing at the moment
             })
-            .listener(this)
-            .build("button.remote.gate.disconnect");
+            .build();
 
-        remoteIrisCloseButton = new UIButtonBuilder(this)
-            .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.RIGHT)
+        remoteIrisCloseButton = UIButton.builder()
+            .parent(remoteGateControlArea)
+            .bottomRight()
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.closeIris"))
             .enabled(this.canAccessRemote)
             .onClick(() -> {
                 GdoNetworkHandler.sendGdoInputToServer((SGBaseTE)localGate, 5);
             })
-            .listener(this)
-            .build("button.remote.iris.close");
+            .build();
 
         remoteGateControlArea.add(remoteGateControlLabel, remoteGateImage, remoteGateAddressLabel, remoteIrisOpenButton, remoteGateCloseButton, remoteIrisCloseButton);
 
         // ****************************************************************************************************************************
 
         // Close button
-        final UIButton buttonClose = new UIButtonBuilder(this)
+        final UIButton buttonClose = UIButton.builder()
             .width(40)
-            .anchor(Anchor.BOTTOM | Anchor.RIGHT)
+            .bottomRight()
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.button.close"))
             .onClick(() -> {
                 this.close();
             })
-            .listener(this)
-            .build("button.close");
+            .build();
 
         this.form.add(titleLabel, localGateControlArea, remoteGateControlArea, buttonClose);
         addToScreen(this.form);
@@ -257,36 +263,36 @@ public class GdoScreen extends BasicScreen {
 
             // Disconnected No Iris
             if (!localGate.isConnected() && !localGate.hasIrisUpgrade && (localGate.gateType == 0 || localGate.gateType == 1))
-                this.localGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_no_iris.png")), null);
+                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_no_iris.png"))));
             if (!localGate.isConnected() && !localGate.hasIrisUpgrade && localGate.gateType == 2)
-                this.localGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_no_iris.png")), null);
+                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_no_iris.png"))));
             // Connected No Iris
             if (localGate.isConnected() && !localGate.hasIrisUpgrade && (localGate.gateType == 0 || localGate.gateType == 1))
-                this.localGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_no_iris.png")), null);
+                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_no_iris.png"))));
             if (localGate.isConnected() && !localGate.hasIrisUpgrade && localGate.gateType == 2)
-                this.localGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_no_iris.png")), null);
+                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_no_iris.png"))));
 
             // Disconnected Iris Closed
             if (!localGate.isConnected() && localGate.hasIrisUpgrade && (localGate.gateType == 0 || localGate.gateType == 1) && localGate.irisIsClosed())
-                this.localGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_iris_closed.png")), null);
+                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_iris_closed.png"))));
             if (!localGate.isConnected() && localGate.hasIrisUpgrade && localGate.gateType == 2 && localGate.irisIsClosed())
-                this.localGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_iris_closed.png")), null);
+                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_iris_closed.png"))));
             // Connected Iris Closed
             if (localGate.isConnected() && localGate.hasIrisUpgrade && (localGate.gateType == 0 || localGate.gateType == 1) && localGate.irisIsClosed())
-                this.localGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_iris_closed.png")), null);
+                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_iris_closed.png"))));
             if (localGate.isConnected() && localGate.hasIrisUpgrade && localGate.gateType == 2 && localGate.irisIsClosed())
-                this.localGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_iris_closed.png")), null);
+                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_iris_closed.png"))));
 
             // Disconnected Iris Open
             if (!localGate.isConnected() && localGate.hasIrisUpgrade && (localGate.gateType == 0 || localGate.gateType == 1) && !localGate.irisIsClosed())
-                this.localGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_iris_open.png")), null);
+                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_iris_open.png"))));
             if (!localGate.isConnected() && localGate.hasIrisUpgrade && localGate.gateType == 2 && !localGate.irisIsClosed())
-                this.localGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_iris_open.png")), null);
+                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_iris_open.png"))));
             // Connected Iris Open
             if (localGate.isConnected() && localGate.hasIrisUpgrade && (localGate.gateType == 0 || localGate.gateType == 1) && !localGate.irisIsClosed())
-                this.localGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_iris_open.png")), null);
+                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_iris_open.png"))));
             if (localGate.isConnected() && localGate.hasIrisUpgrade && localGate.gateType == 2 && !localGate.irisIsClosed())
-                this.localGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_iris_open.png")), null);
+                this.localGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_iris_open.png"))));
 
             if (!localGate.hasIrisUpgrade) {
                 this.localIrisOpenButton.setEnabled(false);
@@ -313,46 +319,48 @@ public class GdoScreen extends BasicScreen {
                 this.remoteGateCloseButton.setEnabled(false);
                 this.remoteIrisOpenButton.setEnabled(false);
                 this.remoteIrisCloseButton.setEnabled(false);
-                this.form.setWidth(200);
+                this.form.setSize(Size.of(200, 225));
                 this.remoteGateControlArea.setVisible(false);
 
             } else if (isRemoteConnected) {
-                this.form.setWidth(400);
+                this.form.setSize(Size.of(400, 225));
+                this.localGateControlArea.setPosition(Position.topLeft(localGateControlArea));
+                this.remoteGateControlArea.setPosition(Position.topRight(remoteGateControlArea));
                 this.remoteGateControlArea.setVisible(true);
                 this.remoteGateAddressLabel.setText(r_address);
 
                 // Disconnected No Iris
                 if (!r_hasIrisUpgrade && (r_gateType == 0 || r_gateType == 1))
-                    this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_no_iris.png")), null);
+                    this.remoteGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_no_iris.png"))));
                 if (!r_hasIrisUpgrade && r_gateType == 2)
-                    this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_no_iris.png")), null);
+                    this.remoteGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_no_iris.png"))));
                 // Connected No Iris
                 if (!r_hasIrisUpgrade && (r_gateType == 0 || r_gateType == 1))
-                    this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_no_iris.png")), null);
+                    this.remoteGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_no_iris.png"))));
                 if (!r_hasIrisUpgrade && r_gateType == 2)
-                    this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_no_iris.png")), null);
+                    this.remoteGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_no_iris.png"))));
 
                 // Disconnected Iris Closed
                 if (r_hasIrisUpgrade && (r_gateType == 0 || r_gateType ==1) && r_isIrisClosed)
-                    this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_iris_closed.png")), null);
+                    this.remoteGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_iris_closed.png"))));
                 if (r_hasIrisUpgrade && r_gateType == 2 && r_isIrisClosed)
-                    this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_iris_closed.png")), null);
+                    this.remoteGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_iris_closed.png"))));
                 // Connected Iris Closed
                 if (r_hasIrisUpgrade && (r_gateType == 0 || r_gateType ==1) && r_isIrisClosed)
-                    this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_iris_closed.png")), null);
+                    this.remoteGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_iris_closed.png"))));
                 if (r_hasIrisUpgrade && r_gateType == 2 && r_isIrisClosed)
-                    this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_iris_closed.png")), null);
+                    this.remoteGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_iris_closed.png"))));
 
                 // Disconnected Iris Open
                 if (r_hasIrisUpgrade && (r_gateType == 0 || r_gateType ==1) && !r_isIrisClosed)
-                    this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_iris_open.png")), null);
+                    this.remoteGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_disconnected_iris_open.png"))));
                 if (r_hasIrisUpgrade && r_gateType == 2 && !r_isIrisClosed)
-                    this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_iris_open.png")), null);
+                    this.remoteGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_disconnected_iris_open.png"))));
                 // Connected Iris Open
                 if (r_hasIrisUpgrade && (r_gateType == 0 || r_gateType ==1) && !r_isIrisClosed)
-                    this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_iris_open.png")), null);
+                    this.remoteGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/milkyway_connected_iris_open.png"))));
                 if (r_hasIrisUpgrade && r_gateType == 2 && !r_isIrisClosed)
-                    this.remoteGateImage.setIcon(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_iris_open.png")), null);
+                    this.remoteGateImage.setIcon(GuiIcon.full(new GuiTexture(SGCraft.mod.resourceLocation("textures/pegasus_connected_iris_open.png"))));
 
                 if (!r_hasIrisUpgrade) {
                     this.remoteIrisOpenButton.setEnabled(false);
@@ -377,13 +385,7 @@ public class GdoScreen extends BasicScreen {
     }
 
     @Override
-    public void update(int mouseX, int mouseY, float partialTick) {
-        super.update(mouseX, mouseY, partialTick);
-        if (unlockMouse && this.lastUpdate == 25) {
-            Mouse.setGrabbed(false); // Force the mouse to be visible even though Mouse.isGrabbed() is false.  //#BugsUnited.
-            unlockMouse = false; // Only unlock once per session.
-        }
-
+    public void update() {
         if (!localGate.isMerged)
             this.close();
 
@@ -405,12 +407,6 @@ public class GdoScreen extends BasicScreen {
     protected void keyTyped(char keyChar, int keyCode) {
         super.keyTyped(keyChar, keyCode);
         this.lastUpdate = 0; // Reset the timer when key is typed.
-    }
-
-    @Override
-    protected void mouseClicked(int x, int y, int button) {
-        super.mouseClicked(x, y, button);
-        this.lastUpdate = 0; // Reset the timer when mouse is pressed.
     }
 
     @Override

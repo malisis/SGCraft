@@ -2,7 +2,7 @@ package gcewing.sg.features.ego;
 
 import static com.google.common.base.Preconditions.*;
 
-import net.malisis.core.util.FontColors;
+//import net.malisis.core.util.FontColors;
 import net.malisis.ego.gui.MalisisGui;
 import net.malisis.ego.gui.component.container.UIContainer;
 import net.malisis.ego.gui.component.container.UIContainer.UIContainerBuilder;
@@ -58,7 +58,7 @@ public class SGWindow {
         UIButton close = UIButton.builder()
                 .parent(container)
                 .text("Close")
-                .textColor(FontColors.RED)
+                //.textColor(FontColors.RED)
                 .centered()
                 .below(errorLbl, 5)
                 .width(50)
@@ -218,6 +218,5 @@ public class SGWindow {
                         titleBackgroundColor);
             }
         }
-
     }
 }
