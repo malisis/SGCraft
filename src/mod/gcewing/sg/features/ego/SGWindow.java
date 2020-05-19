@@ -2,8 +2,7 @@ package gcewing.sg.features.ego;
 
 import static com.google.common.base.Preconditions.*;
 
-//import net.malisis.core.util.FontColors;
-import net.malisis.ego.gui.MalisisGui;
+import net.malisis.ego.gui.EGOGui;
 import net.malisis.ego.gui.component.container.UIContainer;
 import net.malisis.ego.gui.component.container.UIContainer.UIContainerBuilder;
 import net.malisis.ego.gui.component.decoration.UILabel;
@@ -13,6 +12,8 @@ import net.malisis.ego.gui.render.GuiRenderer;
 import net.malisis.ego.gui.render.IGuiRenderer;
 import net.malisis.ego.gui.render.shape.GuiShape;
 import org.apache.commons.lang3.StringUtils;
+
+//import net.malisis.core.util.FontColors;
 
 public class SGWindow {
 
@@ -66,7 +67,7 @@ public class SGWindow {
                         .border(1, 0xCC0000, 200)
                         .color(0x000000)
                         .build())
-                .onClick(MalisisGui::closeGui)
+                .onClick(EGOGui::closeGui)
                 .build();
 
         return container;

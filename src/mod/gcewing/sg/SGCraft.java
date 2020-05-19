@@ -25,6 +25,7 @@ import gcewing.sg.features.gdo.network.GdoNetworkHandler;
 import gcewing.sg.features.ic2.zpm.modulehub.ZpmHub;
 import gcewing.sg.features.ic2.zpm.modulehub.ZpmHubContainer;
 import gcewing.sg.features.ic2.zpm.modulehub.ZpmHubTE;
+import gcewing.sg.features.pdd.Address;
 import gcewing.sg.features.pdd.AddressNameRegistry;
 import gcewing.sg.features.zpm.ZPMItem;
 import gcewing.sg.features.zpm.ZPMMultiplierRegistry;
@@ -331,6 +332,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             new PddNetworkHandler(Info.modID+"-pdd");
 
             // PDD default address loader
+            Address.loadDefaultAddresses();
+            /*
             final ConfigurationNode rootNode;
             try {
                 rootNode = AddressNameRegistry.createRootNode(Paths.get(".", "config", "SGCraft", "pdd.yml"));
@@ -338,6 +341,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            */
 
             configurator = addItem(new ConfiguratorItem(), "configurator");
             new ConfiguratorNetworkHandler(Info.modID+"-configurator");
@@ -640,6 +644,14 @@ public class SGCraft extends BaseMod<SGCraftClient> {
 
         // Transient Damage - Unbreakable Blocks
         wormholeCanDestroyUnbreakableBlocks = config.getBoolean("stargate", "wormholeCanDestroyUnbreakableBlocks", wormholeCanDestroyUnbreakableBlocks);
+    }
+
+    public static boolean isAdmin(EntityPlayer player) {
+        return hasPermissionSystem() && hasPermission(player, "sgcraft.admin");
+    }
+
+    public static boolean hasPermission(EntityPlayer player, String permission, boolean checkAdmin) {
+        return (checkAdmin ^ isAdmin(player)) || hasPermission(player, permission);
     }
 
     public static boolean hasPermission(EntityPlayer player, String permission) {

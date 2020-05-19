@@ -3,7 +3,7 @@ package gcewing.sg.features.gdo.client.gui;
 import gcewing.sg.features.ego.SGWindow;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.SGState;
-import net.malisis.ego.gui.MalisisGui;
+import net.malisis.ego.gui.EGOGui;
 import net.malisis.ego.gui.component.UIComponent;
 import net.malisis.ego.gui.component.container.UIContainer;
 import net.malisis.ego.gui.component.interaction.UIButton;
@@ -11,7 +11,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.util.math.BlockPos;
 
-public class GdoScreenEGO extends MalisisGui {
+public class GdoScreenEGO extends EGOGui {
 
     private final SGBaseTE localGate;
     private SGBaseTE remoteGate;

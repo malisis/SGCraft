@@ -8,7 +8,7 @@ import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.IrisState;
 import gcewing.sg.util.SGAddressing;
 import gcewing.sg.util.SGState;
-import net.malisis.ego.gui.MalisisGui;
+import net.malisis.ego.gui.EGOGui;
 import net.malisis.ego.gui.component.container.UIContainer;
 import net.malisis.ego.gui.component.decoration.UIImage;
 import net.malisis.ego.gui.component.decoration.UILabel;
@@ -24,7 +24,7 @@ import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.World;
 import org.lwjgl.input.Keyboard;
 
-public class GdoScreen extends MalisisGui {
+public class GdoScreen extends EGOGui {
     private int lastUpdate = 0;
     private boolean isAdmin;
     private boolean debugScreen = false;

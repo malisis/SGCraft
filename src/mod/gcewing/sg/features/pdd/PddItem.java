@@ -2,118 +2,91 @@ package gcewing.sg.features.pdd;
 
 import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
 
+import com.google.common.collect.Lists;
 import gcewing.sg.SGCraft;
-import gcewing.sg.features.pdd.network.PddNetworkHandler;
-import gcewing.sg.network.GuiNetworkHandler;
-import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.GateUtil;
-import gcewing.sg.util.SGState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.tileentity.TileEntity;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumHand;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
+import java.util.Collection;
 import java.util.List;
 
 import javax.annotation.Nullable;
 
 public class PddItem extends Item {
 
-    public PddItem() {}
+    public PddItem() {
+    }
 
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack stack, @Nullable World player, List<String> tooltip, ITooltipFlag advanced) {
-        super.addInformation(stack, player, tooltip, advanced);
+        tooltip.add(getAddresses(stack).size() + " addresses stored.");
+    }
+
+    private NBTTagCompound getNBT(ItemStack itemStack) {
+        if (itemStack.getTagCompound() == null) {
+            itemStack.setTagCompound(new NBTTagCompound());
+            saveAddresses(itemStack, Address.getDefaultAddresses()); //load default addresses when creating the NBT
+        }
+        return itemStack.getTagCompound();
+    }
+
+    public void saveAddresses(ItemStack itemStack, Collection<Address> addresses) {
+        NBTTagCompound nbt = getNBT(itemStack);
+        NBTTagList list = new NBTTagList();
+        for (Address address : addresses) {
+            list.appendTag(address.toNBT(new NBTTagCompound()));
+        }
+        nbt.setTag(Address.ADDRESSES, list);
+    }
+
+    public List<Address> getAddresses(ItemStack itemStack) {
+        NBTTagList list = getNBT(itemStack).getTagList(Address.ADDRESSES, Constants.NBT.TAG_COMPOUND);
+        List<Address> addresses = Lists.newArrayList();
+        list.forEach(nbt -> addresses.add(Address.fromNBT((NBTTagCompound) nbt)));
+        return addresses;
     }
 
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World worldIn, EntityPlayer player, EnumHand handIn) {
-        if (!worldIn.isRemote && player.getHeldItemMainhand().getItem() == SGCraft.pdd) {
-            final ItemStack stack = player.getHeldItemMainhand();
+    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, EnumHand hand) {
 
-            NBTTagCompound compound = stack.getTagCompound();
-            if (compound == null) {
-                compound = new NBTTagCompound();
-            }
-
-            if (!compound.hasKey(AddressData.ADDRESSES)) {
-                List<AddressData> genericAddressList = AddressNameRegistry.getDefaultPDDEntries();
-                AddressData.writeAddresses(compound, genericAddressList);
-                stack.setTagCompound(compound);
-                player.inventoryContainer.detectAndSendChanges();
-            }
-
-            TileEntity localGateTE = GateUtil.locateLocalGate(worldIn, new BlockPos(player.posX, player.posY, player.posZ), 6, false);
-
-            if (!(localGateTE instanceof SGBaseTE)) {
-                TileEntity dhdBaseTE = GateUtil.locateDHD(worldIn,new BlockPos(player.posX, player.posY, player.posZ), 6, false);
-                if (dhdBaseTE instanceof DHDTE) {
-                    DHDTE dhd = (DHDTE) dhdBaseTE;
-                    if (dhd.isLinkedToStargate) {
-                        localGateTE = dhd.getLinkedStargateTE();
-                    }
-                }
-            }
-
-            if (localGateTE instanceof SGBaseTE) {
-                SGBaseTE localGate = (SGBaseTE) localGateTE;
-
-                boolean canEditLocal = localGate.allowGateAccess(player.getName());
-                boolean canEditRemote = false;
-                if (localGate.isConnected() && localGate.state == SGState.Connected) {
-                    SGBaseTE remoteGate = localGate.getConnectedStargateTE();
-                    if (remoteGate != null) {
-                        canEditRemote = remoteGate.allowGateAccess(player.getName());
-                    }
-                }
-
-                boolean isPermissionsAdmin = SGCraft.hasPermissionSystem() && SGCraft.hasPermission(player, "sgcraft.admin"); // Fallback for a full permissions system override to the Access System
-
-                if (SGCraft.hasPermission(player, "sgcraft.gui.pdd")) {
-                    if (player.isSneaking()) {
-                        if (localGate.displayGateAddress) {
-                            final List<AddressData> addresses = AddressData.getAddresses(compound);
-                            String localGateAddress = localGate.homeAddress.toUpperCase().replace("-", "");
-                            if (addresses.stream().noneMatch(data -> data.getAddress().replaceAll("-", "").equalsIgnoreCase(localGateAddress))) {
-                                PddNetworkHandler.addPddEntryFromServer(player, localGateAddress, addresses.size() + 10);
-                            } else {
-                                sendErrorMsg(player, "pddContainsAddress");
-                            }
-                        } else {
-                            sendErrorMsg(player, "gateAddressHidden");
-                        }
-                    } else {
-                        if (localGate.allowGateAccess(player.getName()) || isPermissionsAdmin){
-                            GuiNetworkHandler.openGuiAtClient(localGate, player, 3, isPermissionsAdmin, canEditLocal, canEditRemote);
-                        } else {
-                            if (!SGCraft.hasPermission(player, "sgcraft.gui.pdd"))
-                                sendErrorMsg(player, "pddPermission");
-                            if (!localGate.allowGateAccess(player.getName()))
-                                sendErrorMsg(player, "insufficientPlayerAccessPermission");
-                        }
-                    }
-                } else {
-                    sendErrorMsg(player, "pddPermission");
-                }
-
-                return new ActionResult<>(EnumActionResult.PASS, player.getHeldItem(handIn));  //Both Server & Client expect a returned value.
-            } else {
-                sendErrorMsg(player, "cantFindStargate");
-                return new ActionResult<>(EnumActionResult.FAIL, player.getHeldItem(handIn));
-            }
+        if (world.isRemote || hand != EnumHand.MAIN_HAND) {
+            return new ActionResult<>(EnumActionResult.SUCCESS, player.getHeldItem(hand));  //Both Server & Client expect a returned value.
         }
 
-        return new ActionResult<>(EnumActionResult.PASS, player.getHeldItem(handIn));  //Both Server & Client expect a returned value.
+        boolean isAdmin = SGCraft.isAdmin(player);
+        if (!isAdmin && !SGCraft.hasPermission(player, "sgcraft.gui.pdd")) {
+            sendErrorMsg(player, "pddPermission");
+            return new ActionResult<>(EnumActionResult.SUCCESS, player.getHeldItem(hand));  //Both Server & Client expect a returned value.
+        }
+
+        ItemStack itemStack = player.getHeldItemMainhand();
+        List<Address> add = getAddresses(itemStack);
+        //     player.inventoryContainer.detectAndSendChanges();
+        NBTTagCompound compound = itemStack.getTagCompound();
+        SGBaseTE localGate = GateUtil.findGate(world, player, 6);
+
+
+        if (player.isSneaking()) {
+            //open add/edit address GUI
+        } else {
+            //open default address list GUI
+        }
+
+        return new ActionResult<>(EnumActionResult.SUCCESS, player.getHeldItem(hand));  //Both Server & Client expect a returned value.
     }
 }
+
