@@ -1,6 +1,6 @@
 package gcewing.sg.features.gdo.client.gui;
 
-import gcewing.sg.features.ego.SGWindow;
+import gcewing.sg.features.ego.SGComponent;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.SGState;
 import net.malisis.ego.gui.EGOGui;
@@ -30,14 +30,14 @@ public class GdoScreenEGO extends EGOGui {
 
     public void construct() {
         if (localGate == null || !localGate.isMerged) {
-            addToScreen(SGWindow.errorWindow("No local Stargate within range."));
+            addToScreen(SGComponent.errorWindow("No local Stargate within range."));
             return;
         }
 
-        UIContainer window = SGWindow.builder("sgcraft.gui.gdo.label.gdoController")
-                .middleCenter()
-                //.size(400, 225)
-                .build();
+        UIContainer window = SGComponent.window("sgcraft.gui.gdo.label.gdoController")
+										.middleCenter()
+										//.size(400, 225)
+										.build();
 
         localComponent = GateControlComponent.builder(localGate, true)
                 .parent(window)

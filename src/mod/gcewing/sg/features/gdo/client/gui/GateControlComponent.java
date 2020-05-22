@@ -1,7 +1,7 @@
 package gcewing.sg.features.gdo.client.gui;
 
 import com.google.common.collect.Maps;
-import gcewing.sg.features.ego.SGWindow;
+import gcewing.sg.features.ego.SGComponent;
 import gcewing.sg.features.gdo.network.GdoNetworkHandler;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.SGAddressing;
@@ -28,7 +28,7 @@ public class GateControlComponent extends UIContainer {
         this.gate = gate;
 
         //window without title
-        setBackground(SGWindow.createBackground(this, null));
+        setBackground(SGComponent.defaultBackground(this));
 
         UILabel title = UILabel.builder()
                 .parent(this)

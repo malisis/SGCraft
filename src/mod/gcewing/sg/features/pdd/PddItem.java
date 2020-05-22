@@ -4,10 +4,12 @@ import static gcewing.sg.tileentity.SGBaseTE.sendErrorMsg;
 
 import com.google.common.collect.Lists;
 import gcewing.sg.SGCraft;
+import gcewing.sg.features.pdd.network.PddMessage;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.GateUtil;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -74,17 +76,11 @@ public class PddItem extends Item {
         }
 
         ItemStack itemStack = player.getHeldItemMainhand();
-        List<Address> add = getAddresses(itemStack);
-        //     player.inventoryContainer.detectAndSendChanges();
-        NBTTagCompound compound = itemStack.getTagCompound();
+        List<Address> addresses = getAddresses(itemStack);
         SGBaseTE localGate = GateUtil.findGate(world, player, 6);
 
 
-        if (player.isSneaking()) {
-            //open add/edit address GUI
-        } else {
-            //open default address list GUI
-        }
+        PddMessage.openPddGui((EntityPlayerMP) player);
 
         return new ActionResult<>(EnumActionResult.SUCCESS, player.getHeldItem(hand));  //Both Server & Client expect a returned value.
     }

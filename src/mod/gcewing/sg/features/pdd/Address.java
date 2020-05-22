@@ -1,6 +1,9 @@
 package gcewing.sg.features.pdd;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import gcewing.sg.SGCraft;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.ConfigurationOptions;
@@ -12,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class Address {

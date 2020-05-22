@@ -6,6 +6,10 @@
 
 package gcewing.sg;
 
+import static java.util.Objects.requireNonNull;
+import static net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerCareer;
+import static net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerProfession;
+
 import gcewing.sg.block.DHDBlock;
 import gcewing.sg.block.NaquadahBlock;
 import gcewing.sg.block.NaquadahOreBlock;
@@ -22,33 +26,34 @@ import gcewing.sg.features.configurator.ConfiguratorItem;
 import gcewing.sg.features.configurator.network.ConfiguratorNetworkHandler;
 import gcewing.sg.features.gdo.GdoItem;
 import gcewing.sg.features.gdo.network.GdoNetworkHandler;
+import gcewing.sg.features.ic2.zpm.interfacecart.ZpmInterfaceCart;
+import gcewing.sg.features.ic2.zpm.interfacecart.ZpmInterfaceCartContainer;
+import gcewing.sg.features.ic2.zpm.interfacecart.ZpmInterfaceCartTE;
 import gcewing.sg.features.ic2.zpm.modulehub.ZpmHub;
 import gcewing.sg.features.ic2.zpm.modulehub.ZpmHubContainer;
 import gcewing.sg.features.ic2.zpm.modulehub.ZpmHubTE;
+import gcewing.sg.features.network.SGNetwork;
+import gcewing.sg.features.oc.OCIntegration;
 import gcewing.sg.features.pdd.Address;
-import gcewing.sg.features.pdd.AddressNameRegistry;
-import gcewing.sg.features.zpm.ZPMItem;
-import gcewing.sg.features.zpm.ZPMMultiplierRegistry;
-import gcewing.sg.features.ic2.zpm.interfacecart.ZpmInterfaceCartContainer;
-import gcewing.sg.features.ic2.zpm.interfacecart.ZpmInterfaceCart;
-import gcewing.sg.features.ic2.zpm.interfacecart.ZpmInterfaceCartTE;
 import gcewing.sg.features.pdd.PddItem;
 import gcewing.sg.features.pdd.network.PddNetworkHandler;
 import gcewing.sg.features.tokra.SGTradeHandler;
 import gcewing.sg.features.tokra.TokraVillagerWorldRegistry;
-import gcewing.sg.features.oc.OCIntegration;
+import gcewing.sg.features.zpm.ZPMItem;
+import gcewing.sg.features.zpm.ZPMMultiplierRegistry;
 import gcewing.sg.features.zpm.console.ZpmConsole;
 import gcewing.sg.features.zpm.console.ZpmConsoleContainer;
 import gcewing.sg.features.zpm.console.ZpmConsoleTE;
 import gcewing.sg.generator.FeatureGeneration;
 import gcewing.sg.generator.FeatureIgloo;
 import gcewing.sg.generator.FeatureJungleTemple;
+import gcewing.sg.generator.FeatureNetherFortress;
+import gcewing.sg.generator.FeatureOceanMonument;
 import gcewing.sg.generator.FeatureSwampHut;
 import gcewing.sg.generator.FeatureUnderDesertPyramid;
 import gcewing.sg.generator.FeatureVillageStargate;
-import gcewing.sg.generator.FeatureNetherFortress;
-import gcewing.sg.generator.FeatureOceanMonument;
 import gcewing.sg.generator.GeneratorAddressRegistry;
+import gcewing.sg.generator.NaquadahOreWorldGen;
 import gcewing.sg.interfaces.IIntegration;
 import gcewing.sg.interfaces.SoundSource;
 import gcewing.sg.item.SGChevronUpgradeItem;
@@ -57,7 +62,6 @@ import gcewing.sg.item.SGPegasusUpgradeItem;
 import gcewing.sg.item.SGRingItem;
 import gcewing.sg.network.GuiNetworkHandler;
 import gcewing.sg.network.SGChannel;
-import gcewing.sg.generator.NaquadahOreWorldGen;
 import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
 import gcewing.sg.util.GeneralAddressRegistry;
@@ -99,21 +103,16 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.fml.common.registry.VillagerRegistry;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
-import net.minecraftforge.fml.common.registry.VillagerRegistry;
-
 import ninja.leaping.configurate.ConfigurationNode;
-
-import static java.util.Objects.requireNonNull;
-import static net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerCareer;
-import static net.minecraftforge.fml.common.registry.VillagerRegistry.VillagerProfession;
 
 import java.io.IOException;
 import java.nio.file.Paths;
 
 @Mod(modid = Info.modID, name = Info.modName, version = Info.versionNumber,
-    acceptableRemoteVersions = Info.versionBounds, dependencies = "after:opencomputers;after:ic2;after:computercraft;after:malisiscore")
+        acceptableRemoteVersions = Info.versionBounds, dependencies = "after:opencomputers;after:ic2;after:computercraft;after:malisiscore")
 
 public class SGCraft extends BaseMod<SGCraftClient> {
 
@@ -144,7 +143,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static OCIntegration ocIntegration; //[OC]
 
     public static Block zpm_interface_cart, zpm_console, zpm_hub;
-    public static Item zpm, gdo, pdd, configurator;
+    public static Item zpm, gdo, configurator;
+    public static PddItem pdd;
 
     public static CreativeTabs creativeTabs;
 
@@ -207,7 +207,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         }
         ic2Integration = integrateWithMod("ic2", "gcewing.sg.features.ic2.IC2Integration"); //[IC2]
         ccIntegration = (IIntegration) integrateWithMod("computercraft", "gcewing.sg.features.cc.CCIntegration"); //[CC]
-        ocIntegration = (OCIntegration)integrateWithMod("opencomputers", "gcewing.sg.features.oc.OCIntegration"); //[OC]
+        ocIntegration = (OCIntegration) integrateWithMod("opencomputers", "gcewing.sg.features.oc.OCIntegration"); //[OC]
 
         if (isModLoaded("ic2")) {
             GameRegistry.registerTileEntity(ZpmInterfaceCartTE.class, new ResourceLocation(this.modID + ":" + "tile_zpminterfacecart"));
@@ -217,6 +217,12 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         GameRegistry.registerTileEntity(ZpmConsoleTE.class, new ResourceLocation(this.modID + ":" + "tile_zpmconsole"));
 
         super.preInit(e);
+
+
+        // PDD default address loader
+        Address.loadDefaultAddresses();
+        //Init network and messages
+        SGNetwork.init();
     }
 
     @Mod.EventHandler
@@ -323,16 +329,14 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         pegasus_upgrade = addItem(new SGPegasusUpgradeItem(), "pegasus_upgrade");
 
         if (isModLoaded("malisiscore")) {
-            new GuiNetworkHandler(Info.modID+"-GUI");
+            new GuiNetworkHandler(Info.modID + "-GUI");
 
             gdo = addItem(new GdoItem(), "gdo");
-            new GdoNetworkHandler(Info.modID+"-gdo");
+            new GdoNetworkHandler(Info.modID + "-gdo");
 
             pdd = addItem(new PddItem(), "pdd");
-            new PddNetworkHandler(Info.modID+"-pdd");
+            new PddNetworkHandler(Info.modID + "-pdd");
 
-            // PDD default address loader
-            Address.loadDefaultAddresses();
             /*
             final ConfigurationNode rootNode;
             try {
@@ -344,7 +348,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             */
 
             configurator = addItem(new ConfiguratorItem(), "configurator");
-            new ConfiguratorNetworkHandler(Info.modID+"-configurator");
+            new ConfiguratorNetworkHandler(Info.modID + "-configurator");
         }
 
         // Structure Generated Address Registry
@@ -422,19 +426,23 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         }
 
         if (config.getBoolean("recipes", "sgChevronBlock", true)) {
-            newRecipe("sgcheveronblock", sgChevronBlock, "CgC", "NpN", "SrS", 'S', smoothSandstone, 'N', "ingotNaquadahAlloy", 'C', chiselledSandstone, 'g', Items.GLOWSTONE_DUST, 'r', Items.REDSTONE, 'p', Items.ENDER_PEARL);
+            newRecipe("sgcheveronblock", sgChevronBlock, "CgC", "NpN", "SrS", 'S', smoothSandstone, 'N', "ingotNaquadahAlloy", 'C',
+                    chiselledSandstone, 'g', Items.GLOWSTONE_DUST, 'r', Items.REDSTONE, 'p', Items.ENDER_PEARL);
         }
 
         if (config.getBoolean("recipes", "sgBaseBlock", true)) {
-            newRecipe("sgbaseblock", sgBaseBlock, 1, "CrC", "NeN", "ScS", 'S', smoothSandstone, 'N', "ingotNaquadahAlloy", 'C', chiselledSandstone, 'r', Items.REDSTONE, 'e', Items.ENDER_EYE, 'c', sgCoreCrystal);
+            newRecipe("sgbaseblock", sgBaseBlock, 1, "CrC", "NeN", "ScS", 'S', smoothSandstone, 'N', "ingotNaquadahAlloy", 'C', chiselledSandstone,
+                    'r', Items.REDSTONE, 'e', Items.ENDER_EYE, 'c', sgCoreCrystal);
         }
 
         if (config.getBoolean("recipes", "sgControllerBlock", true)) {
-            newRecipe("sgcontrollerblock", sgControllerBlock, 1, "bbb", "OpO", "OcO", 'b', Blocks.STONE_BUTTON, 'O', Blocks.OBSIDIAN, 'p', Items.ENDER_PEARL, 'c', sgControllerCrystal);
+            newRecipe("sgcontrollerblock", sgControllerBlock, 1, "bbb", "OpO", "OcO", 'b', Blocks.STONE_BUTTON, 'O', Blocks.OBSIDIAN, 'p',
+                    Items.ENDER_PEARL, 'c', sgControllerCrystal);
         }
 
         if (config.getBoolean("recipes", "sgChevronUpgradeItem", true)) {
-            newRecipe("sgchevronupgrade", sgChevronUpgrade, 1, "g g", "pNp", "r r", 'N', "ingotNaquadahAlloy", 'g', Items.GLOWSTONE_DUST, 'r', Items.REDSTONE, 'p', Items.ENDER_PEARL);
+            newRecipe("sgchevronupgrade", sgChevronUpgrade, 1, "g g", "pNp", "r r", 'N', "ingotNaquadahAlloy", 'g', Items.GLOWSTONE_DUST, 'r',
+                    Items.REDSTONE, 'p', Items.ENDER_PEARL);
         }
 
         if (config.getBoolean("recipes", "sgIrisBladeItem", true)) {
@@ -453,35 +461,45 @@ public class SGCraft extends BaseMod<SGCraftClient> {
             newRecipe("sgcontrollercrystal", sgControllerCrystal, 1, "roo", "odr", "oor", 'o', orangeDye, 'r', Items.REDSTONE, 'd', Items.DIAMOND);
         }
         if (config.getBoolean("recipes", "sgPowerUnit", true)) {
-            newRecipe("sgPowerUnit", sgPowerUnit, 1, "rgr", "zIz", "InI", 'n', Blocks.EMERALD_BLOCK, 'z', sgCoreCrystal, 'r', Items.EMERALD, 'g', Blocks.GLASS_PANE, 'I', Blocks.IRON_BLOCK);
+            newRecipe("sgPowerUnit", sgPowerUnit, 1, "rgr", "zIz", "InI", 'n', Blocks.EMERALD_BLOCK, 'z', sgCoreCrystal, 'r', Items.EMERALD, 'g',
+                    Blocks.GLASS_PANE, 'I', Blocks.IRON_BLOCK);
         }
 
-        if(config.getBoolean("recipes","pegasus_upgrade",true)) {
-            if(config.getBoolean("recipes","pegasus_upgrade_require_crystal", true)) {
+        if (config.getBoolean("recipes", "pegasus_upgrade", true)) {
+            if (config.getBoolean("recipes", "pegasus_upgrade_require_crystal", true)) {
                 //Core Crystal crafting
-                newRecipe("pegasus_upgrade_0", pegasus_upgrade, 1, "glg", "rnr", "glg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', sgCoreCrystal);
-                newRecipe("pegasus_upgrade_1", pegasus_upgrade, 1, "grg", "lnl", "grg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', sgCoreCrystal);
+                newRecipe("pegasus_upgrade_0", pegasus_upgrade, 1, "glg", "rnr", "glg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r',
+                        Items.REDSTONE, 'n', sgCoreCrystal);
+                newRecipe("pegasus_upgrade_1", pegasus_upgrade, 1, "grg", "lnl", "grg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r',
+                        Items.REDSTONE, 'n', sgCoreCrystal);
                 //Recraft upgrade
-                newRecipe("pegasus_upgrade_2", pegasus_upgrade, 2, "glg", "rnr", "glg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', pegasus_upgrade);
-                newRecipe("pegasus_upgrade_3", pegasus_upgrade, 2, "grg", "lnl", "grg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', pegasus_upgrade);
+                newRecipe("pegasus_upgrade_2", pegasus_upgrade, 2, "glg", "rnr", "glg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r',
+                        Items.REDSTONE, 'n', pegasus_upgrade);
+                newRecipe("pegasus_upgrade_3", pegasus_upgrade, 2, "grg", "lnl", "grg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r',
+                        Items.REDSTONE, 'n', pegasus_upgrade);
             } else {
                 //Crafting via naquadah block
-                newRecipe("pegasus_upgrade_0", pegasus_upgrade, 1, "glg", "rnr", "glg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', naquadahBlock);
-                newRecipe("pegasus_upgrade_1", pegasus_upgrade, 1, "grg", "lnl", "grg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r', Items.REDSTONE, 'n', naquadahBlock);
+                newRecipe("pegasus_upgrade_0", pegasus_upgrade, 1, "glg", "rnr", "glg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r',
+                        Items.REDSTONE, 'n', naquadahBlock);
+                newRecipe("pegasus_upgrade_1", pegasus_upgrade, 1, "grg", "lnl", "grg", 'g', Items.GLOWSTONE_DUST, 'l', Blocks.LAPIS_BLOCK, 'r',
+                        Items.REDSTONE, 'n', naquadahBlock);
             }
         }
 
         if (isModLoaded("malisiscore")) {
             if (config.getBoolean("recipes", "pdd", true)) {
-                newRecipe("pdd", pdd, 1, "rcr", "nCn", "xbz", 'n', naquadah, 'z', sgCoreCrystal, 'x', sgControllerCrystal, 'r', Items.REDSTONE, 'b', Items.WRITABLE_BOOK, 'C', Items.CLOCK, 'c', Items.COMPASS);
+                newRecipe("pdd", pdd, 1, "rcr", "nCn", "xbz", 'n', naquadah, 'z', sgCoreCrystal, 'x', sgControllerCrystal, 'r', Items.REDSTONE, 'b',
+                        Items.WRITABLE_BOOK, 'C', Items.CLOCK, 'c', Items.COMPASS);
             }
             if (config.getBoolean("recipes", "gdo", true)) {
-                newRecipe("gdo", gdo, 1, "rCr", "xLz", "nbn", 'n', naquadah, 'z', sgCoreCrystal, 'x', sgControllerCrystal, 'r', Items.REDSTONE, 'b', Items.WRITABLE_BOOK, 'C', Items.CLOCK, 'L', Blocks.LEVER);
+                newRecipe("gdo", gdo, 1, "rCr", "xLz", "nbn", 'n', naquadah, 'z', sgCoreCrystal, 'x', sgControllerCrystal, 'r', Items.REDSTONE, 'b',
+                        Items.WRITABLE_BOOK, 'C', Items.CLOCK, 'L', Blocks.LEVER);
             }
         }
 
         if (config.getBoolean("recipes", "zpmConsole", true)) {
-            newRecipe("zpmConsole", zpm_console, 1, "rgr", "xIz", "InI", 'n', Blocks.GOLD_BLOCK, 'z', sgCoreCrystal, 'x', sgControllerCrystal, 'r', Items.EMERALD, 'g', Blocks.GLASS_PANE, 'I', Blocks.IRON_BLOCK);
+            newRecipe("zpmConsole", zpm_console, 1, "rgr", "xIz", "InI", 'n', Blocks.GOLD_BLOCK, 'z', sgCoreCrystal, 'x', sgControllerCrystal, 'r',
+                    Items.EMERALD, 'g', Blocks.GLASS_PANE, 'I', Blocks.IRON_BLOCK);
         }
 
         if (!isModLoaded("ic2")) {
@@ -517,17 +535,17 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         MapGenStructureIO.registerStructureComponent(FeatureIgloo.class, "SGCraft:FeatureIgloo");
         MapGenStructureIO.registerStructureComponent(FeatureJungleTemple.class, "SGCraft:FeatureJungleTemple");
 
-		VillagerRegistry VILLAGER_REGISTRY = VillagerRegistry.instance();
+        VillagerRegistry VILLAGER_REGISTRY = VillagerRegistry.instance();
         VILLAGER_REGISTRY.registerVillageCreationHandler(new FeatureVillageStargate.VillageManager());
         MapGenStructureIO.registerStructureComponent(FeatureVillageStargate.class, "SGCraft:FeatureVillageStargate");
 
-	    MapGenStructureIO.registerStructureComponent(FeatureNetherFortress.class, "SGCraft:FeatureNetherFortress");
+        MapGenStructureIO.registerStructureComponent(FeatureNetherFortress.class, "SGCraft:FeatureNetherFortress");
         MapGenStructureIO.registerStructureComponent(FeatureOceanMonument.class, "SGCraft:FeatureOceanMonument");
     }
 
     @Override //[VILL]
     protected void registerVillagers() {
-        tokraProfession = new VillagerProfession("sgcraft:tokra", "sgcraft:textures/skins/tokra.png","sgcraft:textures/skins/tokra.png");
+        tokraProfession = new VillagerProfession("sgcraft:tokra", "sgcraft:textures/skins/tokra.png", "sgcraft:textures/skins/tokra.png");
         // Update: Needs new skin for Zombie mode?
         VillagerCareer tokraCareer = new VillagerCareer(tokraProfession, "sgcraft:tokra");
         tokraCareer.addTrade(1, new SGTradeHandler());
@@ -565,9 +583,11 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public void onServerTick(TickEvent.ServerTickEvent e) {
         switch (e.phase) {
             case START: {
-                for (BaseSubsystem om : subsystems)
-                    if (om instanceof IIntegration)
-                        ((IIntegration)om).onServerTick();
+                for (BaseSubsystem om : subsystems) {
+                    if (om instanceof IIntegration) {
+                        ((IIntegration) om).onServerTick();
+                    }
+                }
                 break;
             }
         }
@@ -579,7 +599,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         if (!chunk.getWorld().isRemote) {
             for (Object obj : chunk.getTileEntityMap().values()) {
                 if (obj instanceof SGBaseTE) {
-                    SGBaseTE te = (SGBaseTE)obj;
+                    SGBaseTE te = (SGBaseTE) obj;
                     te.disconnect();
                 }
             }
@@ -615,11 +635,11 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     private void setOptions() {
         // Block Harvests
         canHarvestDHD = config.getBoolean("block-harvest", "dhdBlock", canHarvestDHD);
-        canHarvestSGBaseBlock  = config.getBoolean("block-harvest", "sgBaseBlock", canHarvestSGBaseBlock);
-        canHarvestSGRingBlock  = config.getBoolean("block-harvest", "sgRingBlock", canHarvestSGRingBlock);
+        canHarvestSGBaseBlock = config.getBoolean("block-harvest", "sgBaseBlock", canHarvestSGBaseBlock);
+        canHarvestSGRingBlock = config.getBoolean("block-harvest", "sgRingBlock", canHarvestSGRingBlock);
 
         // IC2
-        Ic2SafeInput  = config.getInteger("ic2", "safeInputRate", Ic2SafeInput);
+        Ic2SafeInput = config.getInteger("ic2", "safeInputRate", Ic2SafeInput);
         Ic2MaxEnergyBuffer = config.getInteger("ic2", "energyBufferSize", Ic2MaxEnergyBuffer);
         Ic2euPerSGEnergyUnit = config.getDouble("ic2", "euPerSGEnergyUnit", Ic2euPerSGEnergyUnit);
         Ic2PowerTETier = config.getInteger("ic2", "PowerTETier", Ic2PowerTETier);
@@ -643,7 +663,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
         forcePlayerAccessSystemReset = config.getBoolean("player-access", "force-reset-on-load", forcePlayerAccessSystemReset);
 
         // Transient Damage - Unbreakable Blocks
-        wormholeCanDestroyUnbreakableBlocks = config.getBoolean("stargate", "wormholeCanDestroyUnbreakableBlocks", wormholeCanDestroyUnbreakableBlocks);
+        wormholeCanDestroyUnbreakableBlocks =
+                config.getBoolean("stargate", "wormholeCanDestroyUnbreakableBlocks", wormholeCanDestroyUnbreakableBlocks);
     }
 
     public static boolean isAdmin(EntityPlayer player) {
@@ -651,7 +672,7 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     }
 
     public static boolean hasPermission(EntityPlayer player, String permission, boolean checkAdmin) {
-        return (checkAdmin ^ isAdmin(player)) || hasPermission(player, permission);
+        return (checkAdmin && isAdmin(player)) || hasPermission(player, permission);
     }
 
     public static boolean hasPermission(EntityPlayer player, String permission) {

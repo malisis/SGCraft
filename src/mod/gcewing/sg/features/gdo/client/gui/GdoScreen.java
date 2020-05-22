@@ -1,7 +1,7 @@
 package gcewing.sg.features.gdo.client.gui;
 
 import gcewing.sg.SGCraft;
-import gcewing.sg.features.ego.SGWindow;
+import gcewing.sg.features.ego.SGComponent;
 import gcewing.sg.features.gdo.network.GdoNetworkHandler;
 import gcewing.sg.network.GuiNetworkHandler;
 import gcewing.sg.tileentity.SGBaseTE;
@@ -91,10 +91,10 @@ public class GdoScreen extends EGOGui {
         }
 
         // Master Panel
-        this.form = SGWindow.builder("sgcraft.gui.gdo.label.gdoController")
-            .middleCenter()
-            .size(400, 225)
-            .build();
+        this.form = SGComponent.window("sgcraft.gui.gdo.label.gdoController")
+							   .middleCenter()
+							   .size(400, 225)
+							   .build();
 
         UILabel titleLabel = UILabel.builder()
             .text(TextFormatting.WHITE + I18n.format("sgcraft.gui.gdo.label.gdoController"))
@@ -107,11 +107,11 @@ public class GdoScreen extends EGOGui {
         // ****************************************************************************************************************************
         // Local Gate Control
         // ****************************************************************************************************************************
-        localGateControlArea = SGWindow.builder()
-            .parent(form)
-            .topCenter()
-            .size(190, 175)
-            .build();
+        localGateControlArea = SGComponent.window()
+										  .parent(form)
+										  .topCenter()
+										  .size(190, 175)
+										  .build();
 
         final UILabel localGateControlLabel = UILabel.builder()
             .parent(localGateControlArea)
@@ -174,11 +174,11 @@ public class GdoScreen extends EGOGui {
         // ****************************************************************************************************************************
         // Remote Gate Control
         // ****************************************************************************************************************************
-        remoteGateControlArea = SGWindow.builder()
-            .parent(form)
-            .middleRight()
-            .size(190, 175)
-            .build();
+        remoteGateControlArea = SGComponent.window()
+										   .parent(form)
+										   .middleRight()
+										   .size(190, 175)
+										   .build();
 
         final UILabel remoteGateControlLabel = UILabel.builder()
             .parent(remoteGateControlArea)
