@@ -11,9 +11,9 @@ import net.malisis.ego.gui.element.size.Size;
 import net.malisis.ego.gui.element.size.Sizes;
 import net.malisis.ego.gui.render.shape.GuiShape;
 
-public class AddressComponent extends UIContainer {
+public class ItemAddress extends UIContainer {
 
-    public AddressComponent(UIListContainer<Address> parent, Address address) {
+    public ItemAddress(UIListContainer<Address> parent, Address address) {
 
         GuiShape bg = GuiShape.builder(this)
                 .color(() -> parent.isSelected(address) ? 0x414141 : isHovered() ? 0x282828 : 0x000000)

@@ -59,7 +59,7 @@ public class PddScreenEGO extends EGOGui {
                 .fillHeight(18)
                 .padding(2)
                 .background(SGComponent::defaultBackground)
-                .factory(AddressComponent::new)
+                .factory(ItemAddress::new)
                 .selectable()
                 .deselectable()
                 .build();
@@ -70,7 +70,7 @@ public class PddScreenEGO extends EGOGui {
                 .textColor(TextFormatting.GREEN)
                 .text("+")
                 .tooltip("Add")
-                .onClick(null)
+                .onClick(() -> new AddressEditComponent(null))
                 .build();
         UIButton delete = UIButton.builder()
                 .parent(window)
@@ -89,8 +89,8 @@ public class PddScreenEGO extends EGOGui {
                 .textColor(TextFormatting.YELLOW)
                 .text("?")
                 .tooltip("Edit")
-                .enabled(() -> listAddresses.selected() != null && !listAddresses.selected().isLocked())
-                .onClick(null)
+                .enabled(() -> listAddresses.selected() != null)
+                .onClick(() -> new AddressEditComponent(listAddresses.selected()))
                 .build();
 
 
@@ -108,6 +108,8 @@ public class PddScreenEGO extends EGOGui {
                 .text("sgcraft.gui.button.close")
                 .onClick(this::close)
                 .build();
+
+        watch("movable");
 
         addToScreen(window);
     }
