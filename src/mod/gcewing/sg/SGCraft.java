@@ -69,6 +69,7 @@ import gcewing.sg.util.Info;
 import gcewing.sg.util.PermissionsUtil;
 import gcewing.sg.util.SGChunkData;
 import gcewing.sg.util.Sound;
+import net.malisis.ego.font.EGOFont;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
@@ -187,6 +188,8 @@ public class SGCraft extends BaseMod<SGCraftClient> {
     public static boolean wormholeCanDestroyUnbreakableBlocks = false;
 
     public static PermissionsUtil permissionsUtil;
+
+    public static EGOFont GLYPHS_FONT;
 
     public SGCraft() {
         mod = this;

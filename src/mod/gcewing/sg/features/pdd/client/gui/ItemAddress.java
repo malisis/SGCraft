@@ -1,5 +1,6 @@
 package gcewing.sg.features.pdd.client.gui;
 
+import gcewing.sg.features.ego.SGAddressComponent;
 import gcewing.sg.features.pdd.Address;
 import net.malisis.ego.gui.EGOGui;
 import net.malisis.ego.gui.component.UIComponent;
@@ -29,18 +30,16 @@ public class ItemAddress extends UIContainer {
         UILabel name = UILabel.builder()
                 .parent(this)
                 .text(address::getName)
-                .topLeft(2, 1)
+                .middleLeft(10, 0)
                 .textColor(0xFFFFFF)
                 .when(this::isHovered)
                 .textColor(0xFFFFA0)
                 .build();
 
-        UILabel addressLabel = UILabel.builder()
+        SGAddressComponent addressComponent = SGAddressComponent.builder(address.getAddress())
                 .parent(this)
-                .text(address::getAddress)
-                .x(4)
-                .below(name, 2)
-                .textColor(0x5555FF)
+                .rightAligned(10)
+                .middleAligned()
                 .build();
 
 

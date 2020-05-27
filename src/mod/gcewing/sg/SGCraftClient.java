@@ -22,6 +22,10 @@ import gcewing.sg.features.ic2.zpm.modulehub.ZpmHubScreen;
 import gcewing.sg.features.zpm.console.ZPMConsoleScreen;
 import gcewing.sg.tileentity.DHDTE;
 import gcewing.sg.tileentity.SGBaseTE;
+import gcewing.sg.util.Info;
+import net.malisis.ego.font.EGOFont;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 
 public class SGCraftClient extends BaseModClient<SGCraft> {
 
@@ -30,7 +34,14 @@ public class SGCraftClient extends BaseModClient<SGCraft> {
         //debugSound = true;
         //debugModelRegistration = true;
     }
-    
+
+    @Override
+    public void postInit(FMLPostInitializationEvent e) {
+        super.postInit(e);
+        ResourceLocation rl = new ResourceLocation(Info.modID, "symbols.ttf");
+        SGCraft.GLYPHS_FONT = new EGOFont(rl);
+    }
+
     @Override
     protected void registerScreens() {
         //System.out.printf("SGCraft: ProxyClient.registerScreens\n");
@@ -48,7 +59,7 @@ public class SGCraftClient extends BaseModClient<SGCraft> {
         addTileEntityRenderer(SGBaseTE.class, new SGBaseTERenderer());
         addTileEntityRenderer(DHDTE.class, new DHDTERenderer());
     }
-    
+
     @Override
     protected void registerEntityRenderers() {
         addEntityRenderer(EntityStargateIris.class, IrisRenderer.class);

@@ -1,5 +1,6 @@
 package gcewing.sg.features.pdd.client.gui;
 
+import gcewing.sg.SGCraft;
 import gcewing.sg.features.ego.SGComponent;
 import gcewing.sg.features.pdd.Address;
 import net.malisis.ego.font.FontOptions;
@@ -48,26 +49,10 @@ public class AddressEditComponent extends UIContainer {
                 .shadow()
                 .build();
 
-        UILabel addressLabel = UILabel.builder()
-                .parent(this)
-                .below(name, 2)
-                .text("{sgcraft.gui.pdd.label.address} :")
-                .fontOptions(options)
-                .build();
-
-        UITextField address = UITextField.builder()
-                .parent(this)
-                .rightAligned()
-                .below(name, 2)
-                .width(180)
-                .background(this::tfBackground)
-                .text(add != null ? add.getAddress() : "")
-                .textColor(TextFormatting.BLUE)
-                .build();
 
         UILabel indexLabel = UILabel.builder()
                 .parent(this)
-                .below(address, 2)
+                .below(name, 2)
                 .text("{sgcraft.gui.pdd.label.index} :")
                 .fontOptions(options)
                 .build();
@@ -75,13 +60,34 @@ public class AddressEditComponent extends UIContainer {
         UITextField index = UITextField.builder()
                 .parent(this)
                 .rightAligned()
-                .below(address, 2)
+                .below(name, 2)
                 .width(180)
                 .background(this::tfBackground)
                 .text(add != null ? "" + add.getIndex() : "")
                 .textColor(TextFormatting.WHITE)
                 .shadow()
                 .build();
+
+        UILabel addressLabel = UILabel.builder()
+                .parent(this)
+                .below(index, 2)
+                .text("{sgcraft.gui.pdd.label.address} :")
+                .fontOptions(options)
+                .build();
+
+        UITextField address = UITextField.builder()
+                .parent(this)
+                .rightAligned()
+                .below(index, 2)
+                .width(180)
+                .height(24)
+                .background(this::tfBackground)
+                .text(add != null ? add.getAddress() : "")
+                .textColor(TextFormatting.WHITE)
+                .font(SGCraft.GLYPHS_FONT)
+                .scale(2.5F)
+                .build();
+
 
         UIButton close = UIButton.builder()
                 .parent(this)

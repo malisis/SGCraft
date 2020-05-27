@@ -2,6 +2,7 @@ package gcewing.sg.features.pdd.client.gui;
 
 import com.google.common.collect.Lists;
 import gcewing.sg.SGCraft;
+import gcewing.sg.features.ego.SGAddressComponent;
 import gcewing.sg.features.ego.SGComponent;
 import gcewing.sg.features.pdd.Address;
 import gcewing.sg.tileentity.SGBaseTE;
@@ -17,8 +18,8 @@ import java.util.List;
 
 public class PddScreenEGO extends EGOGui {
 
-    private SGBaseTE localGate;
-    private boolean showLocalAddress;
+    private final SGBaseTE localGate;
+    private final boolean showLocalAddress;
     private List<Address> addresses = Lists.newArrayList();
 
     public PddScreenEGO() {
@@ -30,7 +31,6 @@ public class PddScreenEGO extends EGOGui {
     @Override
     public void construct() {
 
-
         UIContainer window = SGComponent.window("sgcraft.gui.pdd.label.personalDialerDevice")
                 .middleCenter()
                 .size(300, 225)
@@ -38,23 +38,21 @@ public class PddScreenEGO extends EGOGui {
 
         UILabel localLbl = UILabel.builder()
                 .parent(window)
-                .topLeft()
+                .topLeft(3, 3)
                 .text("{sgcraft.gui.pdd.label.availableAddresses} :")
                 .textColor(0xFFFFFF)
-                .visible(showLocalAddress)
                 .build();
 
-        UILabel localAddress = UILabel.builder()
+
+        SGAddressComponent local = SGAddressComponent.builder(localGate != null ? localGate.homeAddress : "")
                 .parent(window)
                 .topRight()
-                .text(showLocalAddress ? localGate.homeAddress : "")
-                .visible(showLocalAddress)
-                .textColor(0x5555FF)
+                .obfuscated(showLocalAddress)
                 .build();
 
         UIListContainer<Address> listAddresses = UIListContainer.builder(addresses)
                 .parent(window)
-                .below(localLbl, 3)
+                .below(local, 3)
                 .fillWidth()
                 .fillHeight(18)
                 .padding(2)
@@ -108,8 +106,6 @@ public class PddScreenEGO extends EGOGui {
                 .text("sgcraft.gui.button.close")
                 .onClick(this::close)
                 .build();
-
-        watch("movable");
 
         addToScreen(window);
     }

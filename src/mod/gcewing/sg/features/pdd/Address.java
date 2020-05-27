@@ -1,9 +1,6 @@
 package gcewing.sg.features.pdd;
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import gcewing.sg.SGCraft;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.ConfigurationOptions;
@@ -15,11 +12,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 
 public class Address {
 
+    public static String baseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    public static String glyphsChars = "BCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijk";
     private static final Path configPath = Paths.get(".", "config", "SGCraft", "pdd.yml");
     //NBT tag names
     public static final String ADDRESSES = "addresses";//public because used from PddItem
@@ -30,14 +28,16 @@ public class Address {
 
     private static final Map<String, Address> defaultAddresses = Maps.newHashMap();
 
-    private String address;
-    private String name;
-    private int index;
-    private boolean locked;
+    private final String address;
+    private final String glyphAddress;
+    private final String name;
+    private final int index;
+    private final boolean locked;
 
 
     public Address(String address, String name, int index, boolean locked) {
-        this.address = address.toUpperCase();
+        this.address = address.replace("-", "").toUpperCase();
+        this.glyphAddress = convertToGlyphs(this.address);
         this.name = name;
         this.index = index;
         this.locked = locked;
@@ -45,6 +45,10 @@ public class Address {
 
     public String getAddress() {
         return address;
+    }
+
+    public String getGlyphAddress() {
+        return glyphAddress;
     }
 
     public String getName() {
@@ -75,6 +79,22 @@ public class Address {
         compound.setBoolean(LOCKED, locked);
         return compound;
     }
+
+
+    public static String convertToGlyphs(String address) {
+        address = address.replace("-", "");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < address.length(); i++) {
+            sb.append(glyph(address.charAt(i)));
+        }
+
+        return sb.toString();
+    }
+
+    public static char glyph(char c) {
+        return glyphsChars.charAt(baseChars.indexOf(c));
+    }
+
 
     public static Collection<Address> getDefaultAddresses() {
         return defaultAddresses.values();
