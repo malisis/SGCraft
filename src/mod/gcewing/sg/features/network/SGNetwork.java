@@ -83,6 +83,6 @@ public class SGNetwork extends SimpleNetworkWrapper {
     }
 
     public static void init() {
-        INSTANCE.registerMessage(new PddMessage(), PddMessage.PddPacket.class, Side.CLIENT);
+        new PddMessage();
     }
 }

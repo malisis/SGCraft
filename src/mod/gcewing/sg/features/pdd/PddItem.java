@@ -21,8 +21,10 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -46,6 +48,40 @@ public class PddItem extends Item {
         return itemStack.getTagCompound();
     }
 
+
+    private boolean canEdit(List<Address> addresses, String oldKey, String newKey) {
+        Address oldAddress = getAddress(addresses, oldKey);
+        Address newAddress = getAddress(addresses, newKey);
+
+        return (oldAddress == null || !oldAddress.isLocked()) && (newAddress == null || !newAddress.isLocked());
+    }
+
+
+    public Address getAddress(List<Address> addresses, String address) {
+        if (StringUtils.isEmpty(address)) {
+            return null;
+        }
+        return addresses.stream().filter(a -> a.getAddress().equals(address)).findAny().orElse(null);
+    }
+
+
+    public void saveAddress(ItemStack itemStack, Address address, String old) {
+        List<Address> addresses = getAddresses(itemStack);
+        if (!canEdit(addresses, old, address.getAddress())) {
+            return;
+        }
+
+        addresses.remove(getAddress(addresses, old)); //always delete old address
+        addresses.add(address);
+        saveAddresses(itemStack, addresses);
+    }
+
+    public void deleteAddress(ItemStack itemStack, String address) {
+        List<Address> addresses = getAddresses(itemStack);
+        addresses.removeIf(a -> a.getAddress().equals(address));
+        saveAddresses(itemStack, addresses);
+    }
+
     public void saveAddresses(ItemStack itemStack, Collection<Address> addresses) {
         NBTTagCompound nbt = getNBT(itemStack);
         NBTTagList list = new NBTTagList();
@@ -59,6 +95,7 @@ public class PddItem extends Item {
         NBTTagList list = getNBT(itemStack).getTagList(Address.ADDRESSES, Constants.NBT.TAG_COMPOUND);
         List<Address> addresses = Lists.newArrayList();
         list.forEach(nbt -> addresses.add(Address.fromNBT((NBTTagCompound) nbt)));
+        addresses.sort(Comparator.comparingInt(Address::getIndex).thenComparing(Address::getName));
         return addresses;
     }
 

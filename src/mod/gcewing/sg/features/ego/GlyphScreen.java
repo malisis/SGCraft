@@ -47,7 +47,7 @@ public class GlyphScreen extends EGOGui {
         UILabel base = UILabel.builder().parent(cont)
                 .centered()
                 .below(lbl)
-                .text("" + Address.glyph(c))
+                .text("" + Address.toGlyph(c))
                 .textColor(TextFormatting.BLUE)
                 .scale(2)
                 .build();

@@ -5,6 +5,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
+import org.apache.commons.lang3.StringUtils;
 import org.yaml.snakeyaml.DumperOptions;
 
 import java.io.IOException;
@@ -16,8 +17,9 @@ import java.util.Map;
 
 public class Address {
 
-    public static String baseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    public static String glyphsChars = "BCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijk";
+    public static final String baseChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    public static final String glyphsChars = "BCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijk";
+
     private static final Path configPath = Paths.get(".", "config", "SGCraft", "pdd.yml");
     //NBT tag names
     public static final String ADDRESSES = "addresses";//public because used from PddItem
@@ -36,8 +38,14 @@ public class Address {
 
 
     public Address(String address, String name, int index, boolean locked) {
+        if (StringUtils.isEmpty(address)) {
+            address = "";
+        }
+        if (StringUtils.isEmpty(name)) {
+            name = "";
+        }
         this.address = address.replace("-", "").toUpperCase();
-        this.glyphAddress = convertToGlyphs(this.address);
+        this.glyphAddress = toGlyphs(this.address);
         this.name = name;
         this.index = index;
         this.locked = locked;
@@ -81,18 +89,33 @@ public class Address {
     }
 
 
-    public static String convertToGlyphs(String address) {
-        address = address.replace("-", "");
+    public static String toGlyphs(String address) {
+        address = address.replace("[^" + baseChars + "]", "");//replace everything that is NOT in baseChars
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < address.length(); i++) {
-            sb.append(glyph(address.charAt(i)));
+            sb.append(toGlyph(address.charAt(i)));
         }
 
         return sb.toString();
     }
 
-    public static char glyph(char c) {
+    public static String fromGlyphs(String address) {
+        address = address.replace("[^" + glyphsChars + "]", "");//replace everything that is NOT in glyphsChars
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < address.length(); i++) {
+            sb.append(fromGlyph(address.charAt(i)));
+        }
+
+        return sb.toString();
+    }
+
+
+    public static char toGlyph(char c) {
         return glyphsChars.charAt(baseChars.indexOf(c));
+    }
+
+    public static char fromGlyph(char c) {
+        return baseChars.charAt(glyphsChars.indexOf(c));
     }
 
 
@@ -120,6 +143,7 @@ public class Address {
 
             //load default address from config
             ConfigurationNode addresses = loader.load(ConfigurationOptions.defaults()).getNode(ADDRESSES);
+            int index = 0;
             for (Map.Entry<Object, ? extends ConfigurationNode> addressEntry : addresses.getChildrenMap().entrySet()) {
                 final String address = addressEntry.getKey().toString().toLowerCase();
                 final String name = addressEntry.getValue().getNode("name").getString("");
@@ -129,7 +153,7 @@ public class Address {
                     continue;
                 }
 
-                defaultAddresses.put(address, new Address(address, name, 0, locked));
+                defaultAddresses.put(address, new Address(address, name, index++, locked));
             }
 
         } catch (IOException exception) {

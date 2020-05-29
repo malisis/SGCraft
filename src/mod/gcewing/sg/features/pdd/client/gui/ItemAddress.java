@@ -11,6 +11,7 @@ import net.malisis.ego.gui.element.Padding;
 import net.malisis.ego.gui.element.size.Size;
 import net.malisis.ego.gui.element.size.Sizes;
 import net.malisis.ego.gui.render.shape.GuiShape;
+import net.minecraft.util.text.TextFormatting;
 
 public class ItemAddress extends UIContainer {
 
@@ -40,6 +41,10 @@ public class ItemAddress extends UIContainer {
                 .parent(this)
                 .rightAligned(10)
                 .middleAligned()
+                .when(this::isHovered)
+                .textColor(TextFormatting.AQUA)
+                .when(() -> parent.isSelected(address))
+                .textColor(TextFormatting.DARK_AQUA)
                 .build();
 
 
